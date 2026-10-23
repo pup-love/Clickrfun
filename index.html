@@ -99,8 +99,10 @@ footer { text-align: center; padding: 25px; color: #c5a9d0; }
 
 <nav>
   <button onclick="showSection('welcome')">Home</button>
-  <button onclick="showSection('account')">Sign Up / Login</button>
-  <button onclick="showSection('chat')">Chatroom</button>
+  <button onclick="showSection('account')">Sign Up / Login/
+  <button><button onclick="openRoom('puppy-lounge', '🐾 Puppy Lounge')">🐾 Puppy Lounge</button>
+<button onclick="openRoom('new-pups', '🎀 New Pups')">🎀 New Pups</button>
+<button onclick="openRoom('secret-den', '🌙 Secret Den')">🌙 Secret Den</button>
 </nav>
 
 <main>
@@ -168,6 +170,7 @@ let supabaseClient = null;
 let currentUser = null;
 let currentUsername = null;
 let messageSubscription = null;
+  let currentRoom = "puppy-lounge";
 
 if (configured) {
   supabaseClient = window.supabase.createClient(
@@ -175,14 +178,25 @@ if (configured) {
     SUPABASE_PUBLISHABLE_KEY
   );
 }
-
 function showSection(sectionId) {
   document.querySelectorAll("main section").forEach(section => {
     section.classList.add("hidden");
   });
+
   document.getElementById(sectionId).classList.remove("hidden");
-  if (sectionId === "chat") loadMessages();
+
+  if (sectionId === "chat") {
+    loadMessages();
+  }
 }
+
+function openRoom(roomId, roomName) {
+  currentRoom = roomId;
+  document.querySelector("#chat h2").textContent = roomName;
+  showSection("chat");
+}
+
+
 
 function setStatus(message) {
   document.getElementById("status").textContent = message;
@@ -384,8 +398,41 @@ async function loadMessages() {
   const { data, error } = await supabaseClient
     .from("messages")
     .select("id, username, content, created_at")
+    .eq("room", currentRoom)
     .order("created_at", { ascending: true })
     .limit(100);
+
+  if (error) {
+    container.textContent = "Could not load messages: " + error.message;
+    return;
+  }
+
+  container.replaceChildren();
+
+  if (!data.length) {
+    const empty = document.createElement("p");
+    empty.className = "small";
+    empty.textContent = "No messages yet. Be the first to say hi! 🐾";
+    container.appendChild(empty);
+  } else {
+    data.forEach(addMessage);
+  }
+
+  if (!messageSubscription) {
+    messageSubscription = supabaseClient
+      .channel("public-chat-messages")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        payload => {
+          if (payload.new && payload.new.room === currentRoom) {
+            addMessage(payload.new);
+          }
+        }
+      )
+      .subscribe();
+  }
+}
 
   if (error) {
     container.textContent = "Could not load messages: " + error.message;
@@ -443,10 +490,11 @@ document.getElementById("messageForm").addEventListener("submit", async event =>
   sendButton.disabled = true;
 
   const { error } = await supabaseClient.from("messages").insert({
-    user_id: currentUser.id,
-    username: currentUsername,
-    content
-  });
+  user_id: currentUser.id,
+  username: currentUsername,
+  content,
+  room: currentRoom
+});
 
   sendButton.disabled = false;
 
