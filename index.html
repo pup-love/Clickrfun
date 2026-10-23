@@ -1,323 +1,474 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#19131f">
-<title>Clickr ♡ Find Your Pack</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clickrfun 🐾</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-:root {
-  --bg:#19141f;
-  --panel:#251d2e;
-  --panel2:#30243a;
-  --pink:#ff9dce;
-  --purple:#c4a5ff;
-  --text:#fff2fa;
-  --muted:#c8b8ce;
-  --border:#4c3856;
-}
-* { box-sizing:border-box; }
+* { box-sizing: border-box; }
 body {
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family:Arial,Helvetica,sans-serif;
+  margin: 0;
+  font-family: Arial, sans-serif;
+  color: #fff0fb;
+  background: #180d27;
 }
-button,input,textarea { font:inherit; }
-button {
-  border:1px solid var(--border);
-  background:var(--panel2);
-  color:var(--text);
-  border-radius:12px;
-  padding:11px 15px;
-  cursor:pointer;
-  transition:.2s;
-}
-button:hover { border-color:var(--pink); transform:translateY(-1px); }
-button.primary { background:var(--pink); color:#291827; font-weight:bold; }
 header {
-  background:#211827;
-  border-bottom:1px solid var(--border);
-  padding:20px 6%;
-  position:sticky;
-  top:0;
-  z-index:3;
+  padding: 24px 16px;
+  text-align: center;
+  background: #29143d;
+  border-bottom: 2px solid #f28bd4;
 }
-.top { display:flex; align-items:center; justify-content:space-between; gap:15px; flex-wrap:wrap; }
-.logo { color:var(--pink); font-size:29px; font-weight:900; cursor:pointer; }
-.logo span { color:var(--text); }
-.tagline { font-size:12px; color:var(--muted); margin-top:4px; }
-nav { display:flex; gap:8px; flex-wrap:wrap; margin-top:18px; }
-nav button { padding:9px 12px; }
-nav button.active { background:var(--pink); color:#291827; }
-main { max-width:1050px; padding:28px 18px; margin:auto; min-height:70vh; }
-.page { display:none; }
-.page.active { display:block; }
-.hero {
-  padding:clamp(25px,5vw,48px);
-  border-radius:25px;
-  background:radial-gradient(circle at 90% 15%,#70446d 0,transparent 38%),linear-gradient(135deg,#48263f,#29213f);
-  border:1px solid #654264;
+h1 { color: #ff9cde; margin: 0 0 8px; }
+header p { margin: 0; color: #e9c8ee; }
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 14px;
+  background: #211131;
 }
-.eyebrow { color:var(--pink); font-size:12px; letter-spacing:2px; font-weight:bold; }
-h1 { font-size:clamp(32px,7vw,54px); margin:13px 0; letter-spacing:-1px; }
-h2 { color:var(--pink); margin-top:30px; }
-h3 { margin:10px 0; }
-p { line-height:1.6; color:var(--muted); }
-.actions { display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; }
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(215px,1fr)); gap:15px; }
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 16px;
+  background: #e879c4;
+  color: #28132f;
+  font-weight: bold;
+  cursor: pointer;
+}
+button:hover { background: #ffa4df; }
+button:disabled { opacity: .5; cursor: wait; }
+main {
+  width: min(760px, 92%);
+  margin: 28px auto;
+}
 .card {
-  background:var(--panel);
-  border:1px solid var(--border);
-  padding:20px;
-  border-radius:18px;
+  background: #29183b;
+  border: 1px solid #704276;
+  border-radius: 18px;
+  padding: 22px;
+  margin-bottom: 20px;
+  box-shadow: 0 8px 25px #09041055;
 }
-.icon { font-size:38px; }
-.pill { display:inline-block; border-radius:30px; padding:5px 10px; background:#49304d; color:#ffc8e7; font-size:12px; }
-.muted { color:var(--muted); font-size:13px; }
-.room { display:flex; align-items:center; gap:13px; margin:12px 0; }
-.room .room-icon { font-size:28px; }
-.room-info { flex:1; }
-.room-info p { margin:4px 0; font-size:13px; }
-input,textarea {
-  width:100%;
-  padding:12px;
-  margin:6px 0 13px;
-  border-radius:10px;
-  border:1px solid var(--border);
-  background:#17111e;
-  color:var(--text);
+h2 { color: #ff9cde; margin-top: 0; }
+input, textarea {
+  display: block;
+  width: 100%;
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid #a56da9;
+  border-radius: 10px;
+  background: #180d27;
+  color: white;
+  font: inherit;
 }
-label { font-size:13px; color:var(--muted); }
-footer { border-top:1px solid var(--border); padding:25px 15px; text-align:center; color:var(--muted); }
-#toast {
-  position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
-  background:var(--pink); color:#281624; font-weight:bold;
-  padding:13px 18px; border-radius:13px; z-index:10;
-  display:none; width:max-content; max-width:90%;
+textarea { resize: vertical; min-height: 70px; }
+.small { color: #d7b9df; font-size: .9rem; }
+#status { white-space: pre-wrap; color: #ffd0ed; }
+#chatMessages {
+  height: 300px;
+  overflow-y: auto;
+  background: #180d27;
+  border-radius: 12px;
+  padding: 12px;
+  margin: 12px 0;
 }
-#paw {
-  position:fixed; right:17px; bottom:17px; z-index:4;
-  background:#34243d; border-radius:50%; font-size:23px;
-  width:52px; height:52px; padding:0;
+.message {
+  padding: 10px;
+  margin-bottom: 9px;
+  border-radius: 10px;
+  background: #392149;
+  overflow-wrap: anywhere;
 }
-hr { border:0; border-top:1px solid var(--border); margin:20px 0; }
-@media(max-width:520px) {
-  header { padding:17px 15px; }
-  .logo { font-size:25px; }
-  nav button { font-size:12px; padding:9px; }
-  .room { align-items:flex-start; flex-wrap:wrap; }
-}
+.message strong { color: #ff9cde; }
+.message time { color: #c5a9d0; font-size: .75rem; }
+.hidden { display: none !important; }
+footer { text-align: center; padding: 25px; color: #c5a9d0; }
 </style>
 </head>
-<body>
 
+<body>
 <header>
-  <div class="top">
-    <div onclick="showPage('home')" class="logo">♡ <span>Clickr</span> 🐾
-      <div class="tagline">your people. your pack. your place.</div>
-    </div>
-    <button onclick="notify('♡ Welcome to Clickr!')">♡ Welcome, friend</button>
-  </div>
-  <nav>
-    <button class="active" data-page="home">Home</button>
-    <button data-page="pack">Find Your Pack</button>
-    <button data-page="rooms">Chatrooms</button>
-    <button data-page="ids">Puppy IDs</button>
-    <button data-page="shop">Treat Shop</button>
-    <button data-page="about">About</button>
-  </nav>
+  <h1>🐾 Clickrfun 🐾</h1>
+  <p>Your little corner of the internet to meet your pack 💗</p>
 </header>
 
+<nav>
+  <button onclick="showSection('welcome')">Home</button>
+  <button onclick="showSection('account')">Sign Up / Login</button>
+  <button onclick="showSection('chat')">Chatroom</button>
+</nav>
+
 <main>
-  <section id="home" class="page active">
-    <div class="hero">
-      <div class="eyebrow">✦ YOUR LITTLE CORNER OF THE INTERNET ✦</div>
-      <h1>Find your people.<br>Find your pack. ♡</h1>
-      <p>Welcome to Clickr, a cozy community for making friends,
-      discovering chatrooms, showing off your personality, and
-      following the pawprints to somewhere unexpected.</p>
-      <div class="actions">
-        <button class="primary" onclick="showPage('pack')">Find your pack →</button>
-        <button onclick="showPage('rooms')">Explore chatrooms ♡</button>
-      </div>
-    </div>
-
-    <h2>✦ Explore Clickr</h2>
-    <div class="grid">
-      <div class="card"><div class="icon">🐕</div><h3>Find Your Pack</h3>
-        <p>Meet people, discover shared interests, and find your community.</p>
-        <button onclick="showPage('pack')">Explore →</button>
-      </div>
-      <div class="card"><div class="icon">🪪</div><h3>Puppy IDs</h3>
-        <p>Every pup deserves a little card to call their own.</p>
-        <button onclick="showPage('ids')">View IDs →</button>
-      </div>
-      <div class="card"><div class="icon">🦴</div><h3>Treat Shop</h3>
-        <p>Browse cute badges, collectibles, and virtual treats.</p>
-        <button onclick="showPage('shop')">Visit shop →</button>
-      </div>
-    </div>
-
-    <h2>🐾 A little mystery...</h2>
-    <div class="card">
-      <p>Somewhere around Clickr, a pawprint is hiding.
-      A curious pup might discover something special.</p>
-      <span class="pill">keep your eyes open ♡</span>
-    </div>
+  <section id="welcome" class="card">
+    <h2>Welcome to Clickrfun! 🐶</h2>
+    <p>Find your pack, make friends, and chat with the community.</p>
+    <p class="small">Create a free account to join the chatroom.</p>
+    <button onclick="showSection('account')">Join the pack 💕</button>
   </section>
 
-  <section id="pack" class="page">
-    <div class="eyebrow">MEET YOUR PEOPLE</div>
-    <h1>Find Your Pack 🐾</h1>
-    <p>Discover new friends and find people who share your interests.
-    These example profiles are placeholders for now.</p>
-    <input id="search" placeholder="Search names or interests..." oninput="filterProfiles()">
-    <div class="grid" id="profiles">
-      <div class="card profile" data-search="peaches music plushies friends">
-        <div class="icon">🐶</div><h3>Peaches ♡</h3>
-        <span class="pill">Looking for friends</span>
-        <p>Sweet, a little shy, and always listening to music.</p>
-        <div class="muted">Interests: music, plushies, cozy chats</div>
-      </div>
-      <div class="card profile" data-search="moon night art pack">
-        <div class="icon">🌙</div><h3>Moon</h3>
-        <span class="pill">Finding a pack</span>
-        <p>A night owl who loves art and late-night conversations.</p>
-        <div class="muted">Interests: art, stars, games</div>
-      </div>
-      <div class="card profile" data-search="cookie cute friends collectibles">
-        <div class="icon">🐾</div><h3>Cookie</h3>
-        <span class="pill">Here to socialize</span>
-        <p>Collecting cute things and making new friends.</p>
-        <div class="muted">Interests: collectibles, fashion, animals</div>
-      </div>
-    </div>
-    <p class="muted">Demo profiles only — real member accounts aren't connected yet.</p>
+  <section id="account" class="card hidden">
+    <h2>🐾 Join the pack</h2>
+    <p class="small">New here? Choose a username and sign up. Already a member? Log in below.</p>
+
+    <form id="signupForm">
+      <h3>Create an account</h3>
+      <input id="signupUsername" maxlength="24" placeholder="Username" required>
+      <input id="signupEmail" type="email" placeholder="Email address" required>
+      <input id="signupPassword" type="password" minlength="6" placeholder="Password (at least 6 characters)" required>
+      <button type="submit">Sign Up 💗</button>
+    </form>
+
+    <hr style="border-color:#704276; margin:24px 0">
+
+    <form id="loginForm">
+      <h3>Welcome back!</h3>
+      <input id="loginEmail" type="email" placeholder="Email address" required>
+      <input id="loginPassword" type="password" placeholder="Password" required>
+      <button type="submit">Log In 🐾</button>
+    </form>
+
+    <p id="status" role="status" aria-live="polite"></p>
+    <button id="logoutButton" class="hidden">Log Out</button>
   </section>
 
-  <section id="rooms" class="page">
-    <div class="eyebrow">PICK A PLACE TO HANG OUT</div>
-    <h1>The Chatrooms 💬</h1>
-    <p>Choose a room to preview. Live multi-user messaging will need a separate service.</p>
-    <div class="card">
-      <div class="room"><div class="room-icon">☁️</div><div class="room-info"><b>The Puppy Lounge</b><p>General chat and new friends</p></div><button onclick="roomPreview('The Puppy Lounge')">Enter</button></div>
-      <hr>
-      <div class="room"><div class="room-icon">🎀</div><div class="room-info"><b>New Pups</b><p>Introduce yourself and say hello</p></div><button onclick="roomPreview('New Pups')">Enter</button></div>
-      <hr>
-      <div class="room"><div class="room-icon">🌙</div><div class="room-info"><b>The Secret Den</b><p>A hidden room for curious explorers</p></div><button onclick="secretRoom()">Enter</button></div>
+  <section id="chat" class="card hidden">
+    <h2>💬 The Pack Chatroom</h2>
+    <p id="accountStatus" class="small">Log in to join the conversation.</p>
+    <div id="chatMessages" aria-live="polite">
+      <p class="small">Messages will appear here after you log in.</p>
     </div>
-    <p class="muted">Please respect people's boundaries and never share sensitive personal information with strangers.</p>
-  </section>
 
-  <section id="ids" class="page">
-    <div class="eyebrow">THIS IS YOUR SPACE</div>
-    <h1>Puppy ID Cards 🪪</h1>
-    <p>Preview an ID card design. The form below makes a local preview,
-    but doesn't publish an account or save it for other users.</p>
-    <div class="grid">
-      <div class="card"><div class="icon">🐕‍🦺</div>
-        <h3>Peaches ♡</h3><span class="pill">Friendly pup</span>
-        <p>Pronouns: they/she<br>Interests: music, plushies, friends</p>
-      </div>
-      <div class="card"><div class="icon">🎀</div>
-        <h3 id="previewName">Your Puppy ID</h3><span class="pill" id="previewRole">Community member</span>
-        <p id="previewBio">Your personality belongs here. ♡</p>
-      </div>
-    </div>
-    <h2>Create a preview</h2>
-    <div class="card">
-      <label for="idName">Display name</label><input id="idName" maxlength="30" placeholder="Your puppy name">
-      <label for="idRole">Role or status</label><input id="idRole" maxlength="40" placeholder="Looking for friends">
-      <label for="idBio">Short bio and interests</label><textarea id="idBio" maxlength="180" placeholder="Tell us a little about yourself..."></textarea>
-      <button class="primary" onclick="makeID()">Preview my ID ♡</button>
-    </div>
-  </section>
-
-  <section id="shop" class="page">
-    <div class="eyebrow">LITTLE THINGS TO COLLECT</div>
-    <h1>The Treat Shop 🦴</h1>
-    <p>Collectible previews for your future profile. These buttons
-    are demonstrations, not a real currency or purchase system.</p>
-    <div class="grid">
-      <div class="card"><div class="icon">🎀</div><h3>Pink Bow</h3><p>100 treats</p><button onclick="demoItem('Pink Bow')">Collect preview</button></div>
-      <div class="card"><div class="icon">🦴</div><h3>Golden Bone</h3><p>250 treats</p><button onclick="demoItem('Golden Bone')">Collect preview</button></div>
-      <div class="card"><div class="icon">✨</div><h3>Shiny Badge</h3><p>500 treats</p><button onclick="demoItem('Shiny Badge')">Collect preview</button></div>
-      <div class="card"><div class="icon">🐾</div><h3>Pack Badge</h3><p>750 treats</p><button onclick="demoItem('Pack Badge')">Collect preview</button></div>
-    </div>
-  </section>
-
-  <section id="about" class="page">
-    <div class="eyebrow">A COMMUNITY MADE WITH LOVE</div>
-    <h1>About Clickr ♡</h1>
-    <div class="card">
-      <p>Clickr is a puppy-themed social community concept built around
-      making friends, finding your pack, and discovering little secrets.</p>
-      <p>We're building it one pawprint at a time. Some features are
-      still demos while we work toward real member accounts and chat.</p>
-      <h3>Our pack rules 🐾</h3>
-      <p>♡ Respect boundaries and consent.<br>
-      ♡ Be kind to other members.<br>
-      ♡ Don't share private information.<br>
-      ♡ Block and report anyone who makes you uncomfortable.</p>
-    </div>
+    <form id="messageForm">
+      <textarea id="messageInput" maxlength="1000"
+        placeholder="Say something nice to your pack..." required></textarea>
+      <button id="sendButton" type="submit" disabled>Send Message 💌</button>
+    </form>
+    <p class="small">Please be kind to other members. Messages are visible to signed-in users.</p>
   </section>
 </main>
 
-<footer>Clickr ♡ made with love, friendship, and pawprints.</footer>
-<button id="paw" aria-label="A mysterious pawprint" onclick="findPaw()">🐾</button>
-<div id="toast" role="status"></div>
+<footer>Made with 💗 and paw prints 🐾</footer>
 
 <script>
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('nav button').forEach(b =>
-    b.classList.toggle('active', b.dataset.page === id));
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-document.querySelectorAll('nav button').forEach(b =>
-  b.addEventListener('click', () => showPage(b.dataset.page)));
+// STEP 3: Put your own Supabase project details here.
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_PUBLISHABLE_KEY = "YOUR_SUPABASE_PUBLISHABLE_KEY";
 
-let toastTimer;
-function notify(message) {
-  const t = document.getElementById('toast');
-  t.textContent = message;
-  t.style.display = 'block';
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.style.display='none', 3200);
+const configured =
+  SUPABASE_URL.startsWith("https://") &&
+  !SUPABASE_URL.includes("YOUR_SUPABASE") &&
+  !SUPABASE_PUBLISHABLE_KEY.includes("YOUR_SUPABASE");
+
+let supabaseClient = null;
+let currentUser = null;
+let currentUsername = null;
+let messageSubscription = null;
+
+if (configured) {
+  supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+  );
 }
-function roomPreview(name) {
-  notify(name + ' is a preview for now — live chat is coming later! ♡');
+
+function showSection(sectionId) {
+  document.querySelectorAll("main section").forEach(section => {
+    section.classList.add("hidden");
+  });
+  document.getElementById(sectionId).classList.remove("hidden");
+  if (sectionId === "chat") loadMessages();
 }
-function findPaw() {
-  localStorage.setItem('clickrSecretFound','yes');
-  notify('You found a secret pawprint! 🌙 Try entering the Secret Den.');
+
+function setStatus(message) {
+  document.getElementById("status").textContent = message;
 }
-function secretRoom() {
-  if(localStorage.getItem('clickrSecretFound') === 'yes') {
-    notify('🌙 You found the entrance! The real secret chatroom is still being built.');
+
+function setLoggedIn(user, username) {
+  currentUser = user;
+  currentUsername = username;
+  document.getElementById("logoutButton").classList.toggle("hidden", !user);
+  document.getElementById("sendButton").disabled = !user;
+  document.getElementById("accountStatus").textContent = user
+    ? "Logged in as " + username + " 🐾"
+    : "Log in to join the conversation.";
+}
+
+async function ensureProfile(user) {
+  const { data: existing, error: readError } = await supabaseClient
+    .from("profiles")
+    .select("username")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (readError) throw readError;
+  if (existing) return existing.username;
+
+  const username = user.user_metadata?.username;
+  if (!username) {
+    throw new Error("No username found. Please sign up again with a username.");
+  }
+
+  const { error: insertError } = await supabaseClient
+    .from("profiles")
+    .insert({ id: user.id, username });
+
+  if (insertError) {
+    if (insertError.code === "23505") {
+      throw new Error("That username is already taken. Please sign up with another.");
+    }
+    throw insertError;
+  }
+
+  return username;
+}
+
+async function refreshSession() {
+  if (!supabaseClient) return;
+
+  const { data, error } = await supabaseClient.auth.getSession();
+  if (error) {
+    setStatus(error.message);
+    return;
+  }
+
+  if (data.session) {
+    try {
+      const username = await ensureProfile(data.session.user);
+      setLoggedIn(data.session.user, username);
+    } catch (err) {
+      setLoggedIn(null, null);
+      setStatus("Could not load your profile: " + err.message);
+    }
   } else {
-    notify('🔒 The Den is hidden. Search around Clickr for a pawprint!');
+    setLoggedIn(null, null);
   }
 }
-function demoItem(name) {
-  notify(name + ' added to your imagination collection! ♡');
+
+document.getElementById("signupForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!supabaseClient) {
+    setStatus("Add your Supabase URL and publishable key in the code first.");
+    return;
+  }
+
+  const username = document.getElementById("signupUsername").value.trim();
+  const email = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+
+  if (!/^[a-zA-Z0-9_-]{3,24}$/.test(username)) {
+    setStatus("Use 3–24 characters for your username: letters, numbers, _ or -.");
+    return;
+  }
+
+  setStatus("Creating your account...");
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: { data: { username } }
+  });
+
+  if (error) {
+    setStatus(error.message);
+    return;
+  }
+
+  if (!data.session) {
+    setStatus("Account created! Check your email for a confirmation link. Then come back and log in.");
+    return;
+  }
+
+  try {
+    const savedUsername = await ensureProfile(data.user);
+    setLoggedIn(data.user, savedUsername);
+    setStatus("You're in! Welcome to the pack 💗");
+    showSection("chat");
+  } catch (err) {
+    setStatus("Your account was created, but your profile needs attention: " + err.message);
+  }
+});
+
+document.getElementById("loginForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (!supabaseClient) {
+    setStatus("Add your Supabase URL and publishable key in the code first.");
+    return;
+  }
+
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+
+  setStatus("Logging in...");
+
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
+  });
+
+  if (error) {
+    setStatus(error.message);
+    return;
+  }
+
+  try {
+    const username = await ensureProfile(data.user);
+    setLoggedIn(data.user, username);
+    setStatus("Welcome back, " + username + "! 🐾");
+    showSection("chat");
+  } catch (err) {
+    setStatus("Logged in, but your profile could not load: " + err.message);
+  }
+});
+
+document.getElementById("logoutButton").addEventListener("click", async () => {
+  const { error } = await supabaseClient.auth.signOut();
+  if (error) {
+    setStatus(error.message);
+    return;
+  }
+
+  if (messageSubscription) {
+    await supabaseClient.removeChannel(messageSubscription);
+    messageSubscription = null;
+  }
+
+  setLoggedIn(null, null);
+  document.getElementById("chatMessages").replaceChildren();
+  setStatus("You have logged out. See you next time! 💗");
+  showSection("welcome");
+});
+
+function addMessage(message) {
+  const container = document.getElementById("chatMessages");
+  const empty = container.querySelector(".small");
+  if (empty && container.children.length === 1) empty.remove();
+
+  const item = document.createElement("div");
+  item.className = "message";
+
+  const heading = document.createElement("strong");
+  heading.textContent = message.username || "Pack member";
+
+  const body = document.createElement("p");
+  body.textContent = message.content;
+  body.style.margin = "6px 0";
+
+  const time = document.createElement("time");
+  time.textContent = message.created_at
+    ? new Date(message.created_at).toLocaleString()
+    : "";
+
+  item.append(heading, body, time);
+  container.appendChild(item);
+  container.scrollTop = container.scrollHeight;
 }
-function makeID() {
-  const name = document.getElementById('idName').value.trim();
-  const role = document.getElementById('idRole').value.trim();
-  const bio = document.getElementById('idBio').value.trim();
-  document.getElementById('previewName').textContent = name || 'Your Puppy ID';
-  document.getElementById('previewRole').textContent = role || 'Community member';
-  document.getElementById('previewBio').textContent = bio || 'Your personality belongs here. ♡';
-  notify('Your ID preview has been updated!');
+
+async function loadMessages() {
+  const container = document.getElementById("chatMessages");
+
+  if (!supabaseClient) {
+    container.textContent = "The site owner needs to add the Supabase project details first.";
+    return;
+  }
+
+  if (!currentUser) {
+    container.textContent = "Please log in to see the chat.";
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("messages")
+    .select("id, username, content, created_at")
+    .order("created_at", { ascending: true })
+    .limit(100);
+
+  if (error) {
+    container.textContent = "Could not load messages: " + error.message;
+    return;
+  }
+
+  container.replaceChildren();
+
+  if (!data.length) {
+    const empty = document.createElement("p");
+    empty.className = "small";
+    empty.textContent = "No messages yet. Be the first to say hi! 🐾";
+    container.appendChild(empty);
+  } else {
+    data.forEach(addMessage);
+  }
+
+  if (!messageSubscription) {
+    messageSubscription = supabaseClient
+      .channel("public-chat-messages")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        payload => {
+          if (payload.new) {
+            const alreadyShown = container.querySelector(
+              '[data-message-id="' + payload.new.id + '"]'
+            );
+            if (!alreadyShown) {
+              addMessage(payload.new);
+              const last = container.lastElementChild;
+              if (last) last.dataset.messageId = payload.new.id;
+            }
+          }
+        }
+      )
+      .subscribe();
+  }
 }
-function filterProfiles() {
-  const query = document.getElementById('search').value.toLowerCase();
-  document.querySelectorAll('.profile').forEach(card => {
-    card.style.display = card.dataset.search.includes(query) ? '' : 'none';
+
+document.getElementById("messageForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!currentUser || !currentUsername) {
+    setStatus("Please log in before sending a message.");
+    showSection("account");
+    return;
+  }
+
+  const input = document.getElementById("messageInput");
+  const content = input.value.trim();
+  if (!content) return;
+
+  const sendButton = document.getElementById("sendButton");
+  sendButton.disabled = true;
+
+  const { error } = await supabaseClient.from("messages").insert({
+    user_id: currentUser.id,
+    username: currentUsername,
+    content
+  });
+
+  sendButton.disabled = false;
+
+  if (error) {
+    setStatus("Message could not be sent: " + error.message);
+    return;
+  }
+
+  input.value = "";
+});
+
+if (!configured) {
+  setStatus("Setup needed: add your Supabase project URL and publishable key in the code.");
+} else {
+  refreshSession();
+
+  supabaseClient.auth.onAuthStateChange((_event, session) => {
+    if (!session) {
+      setLoggedIn(null, null);
+    } else {
+      setTimeout(() => refreshSession(), 0);
+    }
   });
 }
 </script>
