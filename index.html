@@ -108,11 +108,11 @@ footer { text-align: center; padding: 25px; color: #c5a9d0; }
     <h2>Welcome to Clickrfun! 🐶</h2>
     <p>Find your pack, make friends, and chat with the community.</p>
     <p class="small">Create a free account to join the chatroom.</p>
-    <button onclick="showSection('account')">Join the pack 💕</button>
+    <button onclick="showSection('account')">Join The Chat 💕</button>
   </section>
 
   <section id="account" class="card hidden">
-    <h2>🐾 Join the pack</h2>
+    <h2>🐾 Join The Chat</h2>
     <p class="small">New here? Choose a username and sign up. Already a member? Log in below.</p>
 
     <form id="signupForm">
@@ -137,7 +137,7 @@ footer { text-align: center; padding: 25px; color: #c5a9d0; }
   </section>
 
   <section id="chat" class="card hidden">
-    <h2>💬 The Pack Chatroom</h2>
+    <h2>💬 The Chat Chatroom</h2>
     <p id="accountStatus" class="small">Log in to join the conversation.</p>
     <div id="chatMessages" aria-live="polite">
       <p class="small">Messages will appear here after you log in.</p>
@@ -152,7 +152,7 @@ footer { text-align: center; padding: 25px; color: #c5a9d0; }
   </section>
 </main>
 
-<footer>Made with 💗 and paw prints 🐾</footer>
+<footer>Made with luv 🐾</footer>
 
 <script>
 // STEP 3: Put your own Supabase project details here.
@@ -286,7 +286,7 @@ document.getElementById("signupForm").addEventListener("submit", async event => 
   try {
     const savedUsername = await ensureProfile(data.user);
     setLoggedIn(data.user, savedUsername);
-    setStatus("You're in! Welcome to the pack 💗");
+    setStatus("You're in! Welcome to Clickr 💗");
     showSection("chat");
   } catch (err) {
     setStatus("Your account was created, but your profile needs attention: " + err.message);
