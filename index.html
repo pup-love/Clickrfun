@@ -1955,8 +1955,8 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   const ear2=ball(headPivot,earMat,[-.2,.43,-.28],[.18,.32,.12]);ear2.rotation.z=-.42;
   ball(headPivot,pink,[.36,-.22,.12],[.12,.055,.035]);
   const tailPivot=new THREE.Group();tailPivot.position.set(-.69,1.12,0);body.add(tailPivot);
-  const tail=ball(tailPivot,gold,[-.24,.15,0],[.34,.14,.15]);tail.rotation.z=-.45;
-  ball(tailPivot,cream,[-.49,.27,0],[.12,.1,.11]);
+  const tail=ball(tailPivot,gold,[-.34,.18,0],[.48,.13,.13]);tail.rotation.z=-.32;
+  ball(tailPivot,cream,[-.73,.34,0],[.14,.11,.11]);
   const legs=[];
   for(const x of [-.48,.48])for(const z of [-.26,.26]){const pivot=new THREE.Group();pivot.position.set(x,.72,z);body.add(pivot);ball(pivot,gold,[0,-.23,0],[.17,.34,.16]);ball(pivot,cream,[.035,-.43,.025],[.18,.1,.17]);legs.push(pivot);}
   // collar + little heart tag
@@ -1999,16 +1999,16 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   function animate(now){
    requestAnimationFrame(animate);const dt=Math.min(.05,(now-last)/1000);last=now;const active=now<state.until;const action=active?state.action:"idle";
    body.position.y=-.95+.025+Math.sin(now*.004)*.025;headPivot.rotation.z=Math.sin(now*.002)*.018;
-   tailPivot.rotation.z=Math.sin(now*.018)*(action==="wag"?1.25:.62);
-   tailPivot.rotation.x=Math.sin(now*.021)*.35;
-   legs.forEach((leg,i)=>{const phase=now*.009+(i%2)*Math.PI;leg.rotation.x=action==="follow"?Math.sin(phase)*.38:action==="jump"?(i<2?.22:-.18):action==="sit"&&i>=2?-.48:action==="sit"&&i<2?-.08:Math.sin(now*.002+i)*.012;});
+   tailPivot.rotation.z=Math.sin(now*.018)*(action==="wag"?1.45:.78);
+   tailPivot.rotation.x=Math.sin(now*.021)*(action==="wag"?.5:.2);
+   legs.forEach((leg,i)=>{const phase=now*.009+(i%2)*Math.PI;leg.rotation.x=action==="follow"?Math.sin(phase)*.38:action==="jump"?-.12:action==="sit"&&i>=2?-.48:action==="sit"&&i<2?-.08:Math.sin(now*.002+i)*.012;});
    if(action==="follow"){puppy.position.x+=(0-puppy.position.x)*.12;puppy.rotation.y=-Math.PI/2+Math.sin(now*.0025)*.48;body.rotation.y=0;}
    else if(action==="spin"){state.spin+=dt*5.3;puppy.rotation.y=-Math.PI/2+state.spin;}
    else if(action==="roll"){
     state.roll+=dt*3.3;
     const rollProgress=Math.min(1,state.roll/(Math.PI*2));
-    puppy.rotation.x=rollProgress*Math.PI*2;
-    puppy.position.y=.95+Math.sin(rollProgress*Math.PI)*.22;
+    puppy.rotation.z=rollProgress*Math.PI*2;
+    puppy.position.y=.95;
     body.rotation.z=0;
    }
    else if(action==="jump"){state.jump+=dt*7;puppy.position.y=.95+Math.max(0,Math.sin(state.jump))*.72;body.rotation.z=Math.sin(state.jump)*.035;}
