@@ -1538,7 +1538,10 @@ const stickerBadges=[
  {id:"rare-cloud",emoji:"☁️",name:"Dreamy Cloud",hint:"Rare sticker at 75 clicks",goal:75,rare:true},
  {id:"rare-comet",emoji:"☄️",name:"Zoomy Comet",hint:"Rare sticker at 150 clicks",goal:150,rare:true},
  {id:"rare-moon",emoji:"🌙",name:"Moonbeam Magic",hint:"Rare sticker at 300 clicks",goal:300,rare:true},
- {id:"thousand-clicks",emoji:"💎",name:"Diamond Clicker",hint:"Reach 1,000 clicks",goal:1000}
+ {id:"thousand-clicks",emoji:"💎",name:"Diamond Clicker",hint:"Reach 1,000 clicks",goal:1000},
+ {id:"two-thousand-clicks",emoji:"🦄",name:"Lilac Legend",hint:"Reach 2,000 clicks for a rare animated sticker",goal:2000,rare:true},
+ {id:"three-thousand-clicks",emoji:"🪄",name:"Magic Clicker",hint:"Reach 3,000 clicks for a rare animated sticker",goal:3000,rare:true},
+ {id:"four-thousand-clicks",emoji:"🌟",name:"Ultra Rare Star",hint:"Reach 4,000 clicks for a legendary animated sticker",goal:4000,rare:true,legendary:true}
 ];
 const badgeStorageKey="clickrfun-sticker-badges-v1";
 let unlockedBadgeIds=[];
@@ -1548,7 +1551,7 @@ function renderStickerCollection(newlyUnlocked=[]){
  grid.innerHTML="";
  stickerBadges.forEach(badge=>{
   const unlocked=unlockedBadgeIds.includes(badge.id);
-  const tile=document.createElement("div");tile.className="sticker-badge "+(unlocked?"unlocked":"locked")+(badge.rare?" rare":"")+(badge.goal===1000?" legendary":"");
+  const tile=document.createElement("div");tile.className="sticker-badge "+(unlocked?"unlocked":"locked")+(badge.rare?" rare":"")+(badge.legendary?" legendary":"");
   tile.innerHTML='<span class="sticker-art" aria-hidden="true">'+(unlocked?badge.emoji:"🔒")+'</span><span class="sticker-name"></span><span class="sticker-hint"></span>';
   tile.querySelector(".sticker-name").textContent=unlocked?badge.name:"Mystery sticker";
   tile.querySelector(".sticker-hint").textContent=unlocked?"Collected! 💖":badge.hint;
