@@ -138,6 +138,9 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 /* Sticker book is a top-level visible card, independent of the hidden playroom. */
 #stickerCollection{display:block!important;visibility:visible!important;opacity:1!important;width:100%;margin:24px auto;position:relative;z-index:1;}
 #stickerCollection .sticker-grid{display:grid;}
+/* Unread private message and gift counters */
+.unread-bubble{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;margin-left:5px;border-radius:999px;background:#e94d9b;color:#fff;font-size:12px;font-weight:800;line-height:1;vertical-align:middle;box-shadow:0 1px 5px #6c285b55}
+.dm-unread-bubble{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 7px;margin-left:8px;border-radius:999px;background:#e94d9b;color:#fff;font-size:12px;font-weight:800}
 /* Virtual puppy adoption corner */
 .virtual-pet-card{margin:18px 0;padding:20px;border:3px solid #fff;border-radius:24px;background:linear-gradient(135deg,#f3e8ff,#eadbff 55%,#ffe9f5);color:#442b5b;box-shadow:0 8px 22px rgba(96,60,130,.16);text-align:center}
 .virtual-pet-card h3,.virtual-pet-card p{color:#442b5b}
@@ -202,7 +205,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <button onclick="showSection('inventory')">🎒 Inventory</button>
 <button onclick="showSection('myprofile')">🐶 My Profile</button>
 <button onclick="showSection('members')">🔎 Find Paws</button>
-<button onclick="showSection('privateDMs')">💌 Private DMs</button>
+<button id="privateDmsNavButton" onclick="showSection('privateDMs')">💌 Private DMs <span id="privateDmUnreadBadge" class="unread-bubble hidden">0</span></button>
 <button onclick="openRoom('puppy-lounge','🐾 Puppy Lounge')">🐶 Puppy Lounge</button>
 <button onclick="openRoom('kitty-lounge','🐱 Kitty Lounge')">🐱 Kitty Lounge</button>
 <button onclick="openRoom('new-pups','🎀 New Pups')">🎀 New Pups</button>
@@ -462,6 +465,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <section id="privateDMs" class="card hidden">
 <h2>💌 Private Puppy DMs</h2>
 <p class="small">Choose a pup to have a private conversation with. Only you and that pup should be able to read your messages.</p>
+<button type="button" id="enableMessageNotifications">🔔 Turn on message &amp; gift notifications</button> <span id="notificationPreferenceStatus" class="small" role="status"></span>
 <div id="dmStatus" class="small" role="status" aria-live="polite">Log in to use private messages.</div>
 <h3>🐾 Your Conversations</h3><div id="dmInbox"></div>
 <hr>
@@ -598,6 +602,7 @@ async function openPrivateDM(userId,username){
  catch(error){$("dmStatus").textContent="Couldn't check block settings: "+error.message;return;}
  activeDmUserId=userId;
  activeDmUsername=username;
+ dmLastRead[userId]=new Date().toISOString();saveDmLastRead();
  $("dmChatTitle").textContent="💌 Chat with "+username;
  $("dmStatus").textContent="Loading your private conversation...";
  $("dmSendButton").disabled=false;
@@ -605,6 +610,51 @@ async function openPrivateDM(userId,username){
  await loadPrivateMessages();
 }
 
+/* Unread DM/gift counts and optional browser notifications.
+   Gift notices are stored as incoming private_messages rows too. */
+const dmReadStorageKey="clickrfun-dm-last-read-v1";
+let dmLastRead={};
+let dmNotificationKnown=new Set();
+let dmNotificationPrimed=false;
+try{dmLastRead=JSON.parse(localStorage.getItem(dmReadStorageKey)||"{}")||{};}catch(e){}
+function saveDmLastRead(){try{localStorage.setItem(dmReadStorageKey,JSON.stringify(dmLastRead));}catch(e){}}
+function updateDmUnreadBadge(count){
+ const badge=$("privateDmUnreadBadge");if(!badge)return;
+ badge.textContent=String(count);badge.classList.toggle("hidden",count<1);
+ badge.setAttribute("aria-label",count+" unread private messages or gifts");
+}
+async function refreshDmNotifications(showBrowserNotices=false){
+ if(!currentUser||!supabaseClient)return;
+ const {data,error}=await supabaseClient.from("private_messages")
+  .select("id,sender_id,recipient_id,content,created_at")
+  .eq("recipient_id",currentUser.id).order("created_at",{ascending:false}).limit(300);
+ if(error)return;
+ const incoming=data||[];
+ const unread=incoming.filter(m=>m.sender_id!==currentUser.id&&(!dmLastRead[m.sender_id]||new Date(m.created_at).getTime()>new Date(dmLastRead[m.sender_id]).getTime()));
+ updateDmUnreadBadge(unread.length);
+ if(showBrowserNotices&&dmNotificationPrimed&&"Notification" in window&&Notification.permission==="granted"){
+  for(const m of incoming){
+   if(!dmNotificationKnown.has(String(m.id))){
+    if(dmNotificationKnown.size&&m.sender_id!==currentUser.id){
+     const isGift=(m.content||"").includes("sent you a gift");
+     try{new Notification(isGift?"🎁 You got a gift!":"💌 New private message",{body:isGift?m.content:"You have a new message in Clickrfun.",icon:"clickrfun-logo.svg"});}catch(e){}
+    }
+    dmNotificationKnown.add(String(m.id));
+   }
+  }
+ }
+ incoming.forEach(m=>dmNotificationKnown.add(String(m.id)));
+ dmNotificationPrimed=true;
+}
+$("enableMessageNotifications").addEventListener("click",async()=>{
+ const status=$("notificationPreferenceStatus");
+ if(!("Notification" in window)){status.textContent="Browser notifications aren't supported here. 💗";return;}
+ try{
+  const permission=await Notification.requestPermission();
+  if(permission==="granted"){status.textContent="Notifications are on! You'll be alerted to new messages and gifts while this site is open. 🔔";await refreshDmNotifications(false);}
+  else status.textContent="Notifications are off. You can still see unread bubbles here. 💌";
+ }catch(e){status.textContent="Couldn't enable notifications in this browser.";}
+});
 async function loadPrivateInbox(){
  const inbox=$("dmInbox");
  inbox.replaceChildren();
@@ -644,13 +694,22 @@ async function loadPrivateInbox(){
   return;
  }
 
+ const unreadByPerson=new Map();
+ for(const message of(data||[])){
+  if(message.recipient_id===currentUser.id&&message.sender_id!==currentUser.id&&(!dmLastRead[message.sender_id]||new Date(message.created_at).getTime()>new Date(dmLastRead[message.sender_id]).getTime())){
+   unreadByPerson.set(message.sender_id,(unreadByPerson.get(message.sender_id)||0)+1);
+  }
+ }
  for(const profile of(profiles||[])){
   const button=document.createElement("button");
   button.type="button";
-  button.textContent="💌 "+profile.username;
+  const unreadCount=unreadByPerson.get(profile.id)||0;
+  button.append(document.createTextNode("💌 "+profile.username+" "));
+  if(unreadCount){const bubble=document.createElement("span");bubble.className="dm-unread-bubble";bubble.textContent=String(unreadCount);bubble.setAttribute("aria-label",unreadCount+" unread");button.appendChild(bubble);}
   button.addEventListener("click",()=>openPrivateDM(profile.id,profile.username));
   inbox.appendChild(button);
  }
+ await refreshDmNotifications(false);
 }
 
 async function loadPrivateMessages(){
@@ -1736,6 +1795,7 @@ if(!window.supabase){
   {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}
  );
  restoreSession();
+ setInterval(()=>{if(currentUser)refreshDmNotifications(true);},20000);
  supabaseClient.auth.onAuthStateChange((event,session)=>{
   if(event==="SIGNED_OUT"||!session){
    setLoggedIn(null,null);
