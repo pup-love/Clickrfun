@@ -134,6 +134,10 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 @keyframes userLottieBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-7px) rotate(3deg)}}
 @media(max-width:480px){.user-lottie-sticker,.user-lottie-sticker dotlottie-wc{width:78px!important;height:78px!important}.user-lottie-sticker{flex-basis:78px}}
 @media(prefers-reduced-motion:reduce){.user-lottie-sticker{animation:none}}
+
+/* Sticker book is a top-level visible card, independent of the hidden playroom. */
+#stickerCollection{display:block!important;visibility:visible!important;opacity:1!important;width:100%;margin:24px auto;position:relative;z-index:1;}
+#stickerCollection .sticker-grid{display:grid;}
 </style>
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js"></script>
 </head>
@@ -231,7 +235,10 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </div>
 </div>
 <br>🐾 Made with luv for every furfriend in the pack 🐾</p>
-<section class="item sticker-collection" id="stickerCollection" aria-labelledby="stickerCollectionTitle">
+
+</section>
+
+<section class="card sticker-collection" id="stickerCollection" aria-labelledby="stickerCollectionTitle">
   <div class="sticker-heading">
     <div><h3 id="stickerCollectionTitle">🎀 My Sticker & Badge Book</h3><p class="small">Click buttons, collect cute treasures, and fill your page with happy little badges!</p></div>
     <div class="sticker-progress"><strong id="badgeProgress">0 / 8</strong><span>badges</span></div>
@@ -243,7 +250,6 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
   <p id="badgeUnlockMessage" class="badge-unlock-message" aria-live="polite">Your first sticker is waiting for you. Tap a button to begin! 💗</p>
   <div class="rare-sticker-floaters" aria-hidden="true"><span>✨</span><span>💖</span><span>🌙</span><span>⭐</span><span>🫧</span></div>
   <div class="sticker-grid" id="stickerGrid"></div>
-</section>
 </section>
 
 <section id="buttonPlayroom" class="card hidden">
