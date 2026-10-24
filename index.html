@@ -3,9 +3,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Clickrfun 🐾</title>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
@@ -120,9 +119,9 @@ footer {
 <nav>
   <button type="button" onclick="showSection('welcome')">Home</button>
   <button type="button" onclick="showSection('account')">Sign Up / Login</button>
-  <button type="button" onclick="openRoom('puppy-lounge', '🐾 Puppy Lounge')">🐾 Puppy Lounge</button>
-  <button type="button" onclick="openRoom('new-pups', '🎀 New Pups')">🎀 New Pups</button>
-  <button type="button" onclick="openRoom('secret-den', '🌙 Secret Den')">🌙 Secret Den</button>
+  <button type="button" onclick="openRoom('puppy-lounge','🐾 Puppy Lounge')">🐾 Puppy Lounge</button>
+  <button type="button" onclick="openRoom('new-pups','🎀 New Pups')">🎀 New Pups</button>
+  <button type="button" onclick="openRoom('secret-den','🌙 Secret Den')">🌙 Secret Den</button>
 </nav>
 
 <main>
@@ -135,12 +134,12 @@ footer {
 
   <section id="account" class="card hidden">
     <h2>🐾 Join The Chat</h2>
-    <p class="small">New here? Choose a username and sign up. Already a member? Log in below.</p>
+    <p class="small">New here? Sign up. Already a member? Log in below.</p>
 
     <form id="signupForm">
       <h3>Create an account</h3>
       <input id="signupUsername" maxlength="24" autocomplete="username"
-        placeholder="Username" required>
+        placeholder="Username (3–24 letters, numbers, _ or -)" required>
       <input id="signupEmail" type="email" autocomplete="email"
         placeholder="Email address" required>
       <input id="signupPassword" type="password" minlength="6"
@@ -160,11 +159,11 @@ footer {
     </form>
 
     <p id="status" role="status" aria-live="polite"></p>
-    <button id="logoutButton" class="hidden" type="button">Log Out</button>
+    <button id="logoutButton" type="button" class="hidden">Log Out</button>
   </section>
 
   <section id="chat" class="card hidden">
-    <h2>💬 The Chat Chatroom</h2>
+    <h2 id="roomTitle">🐾 Puppy Lounge</h2>
     <p id="accountStatus" class="small">Log in to join the conversation.</p>
 
     <div id="chatMessages" aria-live="polite">
@@ -186,29 +185,27 @@ footer {
 <script>
 "use strict";
 
-// Supabase project settings
+// Your Supabase project settings
 const SUPABASE_URL = "https://fbrecutmmotwnsqzxaxv.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_uDxX8PVStNcE56hQx0ShpQ_XUxx9Z1g";
-
-const configured =
-  SUPABASE_URL.startsWith("https://") &&
-  SUPABASE_PUBLISHABLE_KEY.startsWith("sb_publishable_");
 
 let supabaseClient = null;
 let currentUser = null;
 let currentUsername = null;
 let currentRoom = "puppy-lounge";
 let messageSubscription = null;
-let loadingRoom = null;
+let loadVersion = 0;
+let authVersion = 0;
 
-// Navigation
+const $ = id => document.getElementById(id);
+
+function setStatus(message) {
+  $("status").textContent = message;
+}
+
 function showSection(sectionId) {
-  const target = document.getElementById(sectionId);
-
-  if (!target) {
-    console.error("Section not found:", sectionId);
-    return;
-  }
+  const target = $(sectionId);
+  if (!target) return;
 
   document.querySelectorAll("main section").forEach(section => {
     section.classList.add("hidden");
@@ -223,162 +220,152 @@ function showSection(sectionId) {
 
 function openRoom(roomId, roomName) {
   currentRoom = roomId;
-  document.querySelector("#chat h2").textContent = roomName;
+  $("roomTitle").textContent = roomName;
   showSection("chat");
-}
-
-function setStatus(message) {
-  document.getElementById("status").textContent = message;
 }
 
 function setLoggedIn(user, username) {
   currentUser = user;
   currentUsername = username;
 
-  document.getElementById("logoutButton")
-    .classList.toggle("hidden", !user);
+  $("logoutButton").classList.toggle("hidden", !user);
+  $("sendButton").disabled = !user || !username;
 
-  document.getElementById("sendButton").disabled = !user;
-
-  document.getElementById("accountStatus").textContent = user
-    ? "Logged in as " + username + " 🐾"
+  $("accountStatus").textContent = user
+    ? "Logged in as " + (username || user.email || "member") + " 🐾"
     : "Log in to join the conversation.";
 }
 
-// Get or create the member profile
-async function ensureProfile(user) {
-  const { data: existing, error: readError } = await supabaseClient
-    .from("profiles")
-    .select("username")
-    .eq("id", user.id)
-    .maybeSingle();
+function showEmptyChat(message) {
+  const container = $("chatMessages");
+  container.replaceChildren();
 
-  if (readError) throw readError;
-  if (existing) return existing.username;
-
-  const username = user.user_metadata?.username;
-
-  if (!username) {
-    throw new Error("No username found. Please sign up again with a username.");
-  }
-
-  const { error: insertError } = await supabaseClient
-    .from("profiles")
-    .insert({ id: user.id, username });
-
-  if (insertError) {
-    if (insertError.code === "23505") {
-      throw new Error("That username is already taken. Please choose another.");
-    }
-    throw insertError;
-  }
-
-  return username;
+  const p = document.createElement("p");
+  p.className = "small empty-chat";
+  p.textContent = message;
+  container.appendChild(p);
 }
 
-// Restore the saved login
-async function refreshSession() {
-  if (!supabaseClient) return;
-
-  const { data, error } = await supabaseClient.auth.getSession();
-
-  if (error) {
-    setStatus(error.message);
-    return;
-  }
-
-  if (data.session) {
-    try {
-      const username = await ensureProfile(data.session.user);
-      setLoggedIn(data.session.user, username);
-    } catch (err) {
-      setLoggedIn(null, null);
-      setStatus("Could not load your profile: " + err.message);
-    }
-  } else {
-    setLoggedIn(null, null);
-  }
-}
-
-// Display a message safely
 function addMessage(message) {
-  const container = document.getElementById("chatMessages");
+  const container = $("chatMessages");
 
-  // Avoid duplicates when realtime updates arrive during a refresh.
-  if (message.id && container.querySelector('[data-message-id="' + message.id + '"]')) {
+  if (message.id &&
+      container.querySelector('[data-message-id="' + message.id + '"]')) {
     return;
   }
 
-  const emptyMessage = container.querySelector(".empty-chat");
-  if (emptyMessage) emptyMessage.remove();
+  const empty = container.querySelector(".empty-chat");
+  if (empty) empty.remove();
 
   const item = document.createElement("div");
   item.className = "message";
+  if (message.id) item.dataset.messageId = message.id;
 
-  if (message.id) {
-    item.dataset.messageId = message.id;
-  }
+  const name = document.createElement("strong");
+  name.textContent = message.username || "Pack member";
 
-  const heading = document.createElement("strong");
-  heading.textContent = message.username || "Pack member";
-
-  const body = document.createElement("p");
-  body.textContent = message.content || "";
-  body.style.margin = "6px 0";
+  const content = document.createElement("p");
+  content.textContent = message.content || "";
+  content.style.margin = "6px 0";
 
   const time = document.createElement("time");
   time.textContent = message.created_at
     ? new Date(message.created_at).toLocaleString()
     : "";
 
-  item.append(heading, body, time);
+  item.append(name, content, time);
   container.appendChild(item);
   container.scrollTop = container.scrollHeight;
 }
 
-function showEmptyChat(message) {
-  const container = document.getElementById("chatMessages");
-  container.replaceChildren();
+// Load the signed-in member's profile
+async function ensureProfile(user) {
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select("username")
+    .eq("id", user.id)
+    .maybeSingle();
 
-  const paragraph = document.createElement("p");
-  paragraph.className = "small empty-chat";
-  paragraph.textContent = message;
+  if (error) throw error;
+  if (data && data.username) return data.username;
 
-  container.appendChild(paragraph);
+  const username = user.user_metadata && user.user_metadata.username;
+  if (!username) {
+    throw new Error("No username is saved to this account.");
+  }
+
+  const { error: insertError } = await supabaseClient
+    .from("profiles")
+    .upsert({ id: user.id, username }, { onConflict: "id" });
+
+  if (insertError) throw insertError;
+  return username;
 }
 
-// Subscribe once to new messages
-function startMessageSubscription() {
+// Restore session once at startup
+async function restoreSession() {
+  if (!supabaseClient) return;
+
+  const version = ++authVersion;
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (version !== authVersion) return;
+
+  if (error) {
+    setStatus("Couldn't restore login: " + error.message);
+    return;
+  }
+
+  if (!data.session) {
+    setLoggedIn(null, null);
+    return;
+  }
+
+  try {
+    const username = await ensureProfile(data.session.user);
+    if (version !== authVersion) return;
+
+    setLoggedIn(data.session.user, username);
+    if (!$("chat").classList.contains("hidden")) loadMessages();
+  } catch (err) {
+    setStatus("Login restored, but the profile couldn't load: " + err.message);
+  }
+}
+
+// Live updates subscription
+function startRealtime() {
   if (!supabaseClient || messageSubscription) return;
 
   messageSubscription = supabaseClient
-    .channel("clickrfun-chat-messages")
+    .channel("clickrfun-live-messages")
     .on(
       "postgres_changes",
-      {
-        event: "INSERT",
-        schema: "public",
-        table: "messages"
-      },
+      { event: "*", schema: "public", table: "messages" },
       payload => {
-        const message = payload.new;
+        const row = payload.new;
+        if (!row || row.room !== currentRoom || !currentUser) return;
 
-        if (
-          currentUser &&
-          message &&
-          message.room === currentRoom
-        ) {
-          addMessage(message);
+        if (payload.eventType === "INSERT") {
+          addMessage(row);
+        } else {
+          // Keep the room in sync after edits/deletions too.
+          loadMessages();
         }
       }
     )
-    .subscribe();
+    .subscribe(status => {
+      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        console.warn("Chat realtime status:", status);
+        setStatus("Live chat connection trouble. Check Supabase Realtime settings.");
+      }
+    });
 }
 
-// Load messages for the selected room
 async function loadMessages() {
+  const version = ++loadVersion;
+
   if (!supabaseClient) {
-    showEmptyChat("The site owner needs to configure Supabase first.");
+    showEmptyChat("Supabase isn't configured. Check the project settings in the code.");
     return;
   }
 
@@ -387,32 +374,25 @@ async function loadMessages() {
     return;
   }
 
-  const requestedRoom = currentRoom;
-
-  loadingRoom = requestedRoom;
+  const room = currentRoom;
   showEmptyChat("Loading messages... 🐾");
 
   const { data, error } = await supabaseClient
     .from("messages")
     .select("id, username, content, created_at, room")
-    .eq("room", requestedRoom)
+    .eq("room", room)
     .order("created_at", { ascending: true })
     .limit(100);
 
-  // If the user switched rooms while loading, don't show the wrong room.
-  if (requestedRoom !== currentRoom) {
-    loadingRoom = null;
-    return;
-  }
-
-  loadingRoom = null;
+  // Ignore stale results if another room was selected meanwhile.
+  if (version !== loadVersion || room !== currentRoom) return;
 
   if (error) {
-    showEmptyChat("Could not load messages: " + error.message);
+    showEmptyChat("Couldn't load messages: " + error.message);
     return;
   }
 
-  const container = document.getElementById("chatMessages");
+  const container = $("chatMessages");
   container.replaceChildren();
 
   if (!data || data.length === 0) {
@@ -421,28 +401,28 @@ async function loadMessages() {
     data.forEach(addMessage);
   }
 
-  startMessageSubscription();
+  startRealtime();
 }
 
 // Sign up
-document.getElementById("signupForm").addEventListener("submit", async event => {
+$("signupForm").addEventListener("submit", async event => {
   event.preventDefault();
 
   if (!supabaseClient) {
-    setStatus("Supabase isn't configured correctly. Check the project URL and publishable key.");
+    setStatus("Supabase isn't configured correctly.");
     return;
   }
 
-  const username = document.getElementById("signupUsername").value.trim();
-  const email = document.getElementById("signupEmail").value.trim();
-  const password = document.getElementById("signupPassword").value;
+  const username = $("signupUsername").value.trim();
+  const email = $("signupEmail").value.trim();
+  const password = $("signupPassword").value;
+  const button = event.currentTarget.querySelector('button[type="submit"]');
 
   if (!/^[a-zA-Z0-9_-]{3,24}$/.test(username)) {
-    setStatus("Use 3–24 characters for your username: letters, numbers, _ or -.");
+    setStatus("Username must be 3–24 characters using letters, numbers, _ or -.");
     return;
   }
 
-  const button = event.currentTarget.querySelector('button[type="submit"]');
   button.disabled = true;
   setStatus("Creating your account... 💗");
 
@@ -456,12 +436,12 @@ document.getElementById("signupForm").addEventListener("submit", async event => 
     if (error) throw error;
 
     if (!data.user) {
-      setStatus("The account wasn't returned. Please try again.");
+      setStatus("No account was returned. Please try again.");
       return;
     }
 
     if (!data.session) {
-      setStatus("Your account was created. If email confirmation is enabled in Supabase, confirm your email first. Then log in here.");
+      setStatus("Account created! If email confirmation is enabled in Supabase, confirm your email, then log in.");
       return;
     }
 
@@ -470,23 +450,23 @@ document.getElementById("signupForm").addEventListener("submit", async event => 
     setStatus("You're in! Welcome to Clickrfun 💗");
     showSection("chat");
   } catch (err) {
-    setStatus("Sign-up failed: " + (err.message || "Please try again."));
+    setStatus("Sign-up failed: " + err.message);
   } finally {
     button.disabled = false;
   }
 });
 
 // Log in
-document.getElementById("loginForm").addEventListener("submit", async event => {
+$("loginForm").addEventListener("submit", async event => {
   event.preventDefault();
 
   if (!supabaseClient) {
-    setStatus("Supabase isn't configured correctly. Check the project URL and publishable key.");
+    setStatus("Supabase isn't configured correctly.");
     return;
   }
 
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
   const button = event.currentTarget.querySelector('button[type="submit"]');
 
   button.disabled = true;
@@ -505,61 +485,49 @@ document.getElementById("loginForm").addEventListener("submit", async event => {
     setStatus("Welcome back, " + username + "! 🐾");
     showSection("chat");
   } catch (err) {
-    setStatus("Login failed: " + (err.message || "Please try again."));
+    setStatus("Login failed: " + err.message);
   } finally {
     button.disabled = false;
   }
 });
 
 // Log out
-document.getElementById("logoutButton").addEventListener("click", async () => {
+$("logoutButton").addEventListener("click", async () => {
   if (!supabaseClient) return;
 
-  const button = document.getElementById("logoutButton");
-  button.disabled = true;
+  $("logoutButton").disabled = true;
 
   try {
     const { error } = await supabaseClient.auth.signOut();
     if (error) throw error;
 
-    if (messageSubscription) {
-      await supabaseClient.removeChannel(messageSubscription);
-      messageSubscription = null;
-    }
-
     setLoggedIn(null, null);
     showEmptyChat("Please log in to see the chat.");
-    setStatus("You have logged out. See you next time! 💗");
+    setStatus("You've logged out. See you next time! 💗");
     showSection("welcome");
   } catch (err) {
-    setStatus("Could not log out: " + (err.message || "Please try again."));
+    setStatus("Couldn't log out: " + err.message);
   } finally {
-    button.disabled = false;
+    $("logoutButton").disabled = false;
   }
 });
 
-// Send a message to the selected room
-document.getElementById("messageForm").addEventListener("submit", async event => {
+// Send message
+$("messageForm").addEventListener("submit", async event => {
   event.preventDefault();
 
-  if (!supabaseClient) {
-    setStatus("Supabase isn't configured correctly.");
-    return;
-  }
-
-  if (!currentUser || !currentUsername) {
+  if (!supabaseClient || !currentUser || !currentUsername) {
     setStatus("Please log in before sending a message.");
     showSection("account");
     return;
   }
 
-  const input = document.getElementById("messageInput");
+  const input = $("messageInput");
   const content = input.value.trim();
-
   if (!content) return;
 
-  const sendButton = document.getElementById("sendButton");
-  sendButton.disabled = true;
+  const button = $("sendButton");
+  button.disabled = true;
 
   try {
     const { error } = await supabaseClient
@@ -574,32 +542,44 @@ document.getElementById("messageForm").addEventListener("submit", async event =>
     if (error) throw error;
 
     input.value = "";
+    // Realtime normally adds the new message. Reload as a fallback.
+    await loadMessages();
   } catch (err) {
-    setStatus("Message could not be sent: " + (err.message || "Please try again."));
+    setStatus("Message could not be sent: " + err.message);
   } finally {
-    sendButton.disabled = !currentUser;
+    button.disabled = !currentUser || !currentUsername;
   }
 });
 
-// Start the app
-if (!configured) {
-  setStatus("Setup needed: check the Supabase project URL and publishable key.");
-} else if (!window.supabase) {
-  setStatus("Supabase could not load. Refresh the page and try again.");
+// Start
+if (!window.supabase) {
+  setStatus("Supabase failed to load. Refresh the page and try again.");
+} else if (
+  !SUPABASE_URL.startsWith("https://") ||
+  !SUPABASE_PUBLISHABLE_KEY.startsWith("sb_publishable_")
+) {
+  setStatus("Check your Supabase URL and publishable key.");
 } else {
   supabaseClient = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+    SUPABASE_PUBLISHABLE_KEY,
+    {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true
+      }
+    }
   );
 
-  refreshSession();
+  // Restore the session on page load.
+  restoreSession();
 
-  supabaseClient.auth.onAuthStateChange((_event, session) => {
-    if (!session) {
+  // React to explicit sign-outs; successful login/signup handlers set the user.
+  supabaseClient.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT" || !session) {
       setLoggedIn(null, null);
-    } else {
-      // Avoid performing another auth request inside the auth callback.
-      Promise.resolve().then(() => refreshSession());
+      showEmptyChat("Please log in to see the chat.");
     }
   });
 }
