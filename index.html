@@ -1937,7 +1937,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   // Little flowers in the yard
   const gardenFlowers=new THREE.Group();scene.add(gardenFlowers);
   for(let i=0;i<18;i++){const a=i*2.399,r=2.15+(i%3)*.4;const x=Math.cos(a)*r,z=Math.sin(a)*r;const stem=new THREE.Mesh(new THREE.CylinderGeometry(.018,.025,.22,6),mat("#4d9b5c"));stem.position.set(x,.1,z);gardenFlowers.add(stem);for(let j=0;j<5;j++){ball(gardenFlowers,mat(i%2?"#ffcae2":"#fff5a5"),[x+Math.cos(j*1.256)*.07,.23,z+Math.sin(j*1.256)*.07],[.055,.035,.055]);}ball(gardenFlowers,mat("#f6b94a"),[x,.24,z],[.04,.035,.04]);}
-  const puppy=new THREE.Group();scene.add(puppy);
+  const puppy=new THREE.Group();scene.add(puppy);puppy.rotation.y=-Math.PI/2;
   const body=new THREE.Group();puppy.add(body);
   ball(body,gold,[0,.95,0],[.78,.48,.43]);
   ball(body,cream,[.18,.72,.07],[.46,.25,.36]);
@@ -2002,10 +2002,16 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
    tailPivot.rotation.x=Math.sin(now*.021)*.35;
    legs.forEach((leg,i)=>{const phase=now*.009+(i%2)*Math.PI;leg.rotation.x=(action==="follow"||action==="jump")?Math.sin(phase)*.72:action==="sit"&&i<2?-.85:Math.sin(now*.002+i)*.025;});
    if(action==="follow"){puppy.position.x=state.baseX+Math.sin(now*.002)*.45;body.rotation.y=Math.sin(now*.002)*.12;}
-   else if(action==="spin"){state.spin+=dt*5.3;puppy.rotation.y=state.spin;}
-   else if(action==="roll"){state.roll+=dt*3.3;body.rotation.z=Math.sin(Math.min(Math.PI,state.roll))*Math.PI;puppy.position.y=Math.max(0,Math.sin(state.roll)*.14);}
+   else if(action==="spin"){state.spin+=dt*5.3;puppy.rotation.y=-Math.PI/2+state.spin;}
+   else if(action==="roll"){
+    state.roll+=dt*3.3;
+    const rollProgress=Math.min(1,state.roll/(Math.PI*2));
+    puppy.rotation.z=rollProgress*Math.PI*2;
+    puppy.position.y=.92+Math.sin(rollProgress*Math.PI)*.12;
+    body.rotation.z=0;
+   }
    else if(action==="jump"){state.jump+=dt*7;puppy.position.y=Math.max(0,Math.sin(state.jump)*.8);body.rotation.z=Math.sin(state.jump)*.08;}
-   else {puppy.position.y+=(0-puppy.position.y)*.12;puppy.position.x+=(0-puppy.position.x)*.06;puppy.rotation.y+=(0-puppy.rotation.y)*.06;body.rotation.z+=(0-body.rotation.z)*.08;}
+   else {puppy.position.y+=(0-puppy.position.y)*.12;puppy.position.x+=(0-puppy.position.x)*.06;puppy.rotation.y+=(-Math.PI/2-puppy.rotation.y)*.12;puppy.rotation.z+=(0-puppy.rotation.z)*.12;body.rotation.z+=(0-body.rotation.z)*.08;}
    if(action==="sit"){body.position.y=-.17;headPivot.rotation.z=-.1;}else if(action!=="roll"){body.position.y=.035+Math.sin(now*.004)*.035;}
    toy.visible=true;toy.position.x=puppy.position.x+.9+Math.sin(now*.006)*.55;toy.position.y=.18+Math.abs(Math.sin(now*.01))*.28;toy.position.z=.5;toy.rotation.y+=dt*(action==="follow"||action==="spin"?4:1.1);
    renderer.render(scene,camera);
