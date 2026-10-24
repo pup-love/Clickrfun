@@ -443,7 +443,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
   <p class="small">Adopt a little kitty too! Name her or him, give cuddles, offer snacks, and play.</p>
   <h3 id="virtualKittyDisplayName" style="margin:8px 0 0">Your new kitty</h3>
   <p id="virtualKittyAge" class="small" style="margin:2px 0 10px">Age: not adopted yet</p>
-  <div id="virtualKittyAvatar" role="img" aria-label="Cute virtual kitty" style="font-size:112px;line-height:1.5;filter:drop-shadow(0 8px 5px #6b4b7b22);transition:transform .2s">🐱</div>
+  <div class="puppy3d-wrap"><div class="puppy3d-stage" id="virtualKitty3dStage" aria-label="Interactive 3D kitty play area"><div class="puppy3d-loading" id="virtualKitty3dLoading">🐾 Waking up your kitty's 3D world…</div></div><p class="puppy-photo-hint">BOOP MY NOSE! 🐱</p><div class="puppy-trick-controls" aria-label="Kitty tricks"><button type="button" data-kitty-action="walk">🚶 Walk</button><button type="button" data-kitty-action="sit">🪑 Sit</button><button type="button" data-kitty-action="purr">💗 Purr</button><button type="button" data-kitty-action="jump">⬆️ Jump</button><button type="button" data-kitty-action="spin">🌀 Spin</button><button type="button" data-kitty-action="loaf">🍞 Cat loaf</button></div><p class="small">Your own 3D kitty! Try a trick or give them a cuddle. ✨</p></div><div id="virtualKittyAvatar" role="img" aria-label="Cute virtual kitty" style="display:none">🐱</div>
   <h3 id="virtualKittyName">Your new kitty</h3>
   <p id="virtualKittyMood" role="status" aria-live="polite">A tiny kitty is waiting to meet you! ✨</p>
   <div id="virtualKittyAdoptionRow" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
@@ -1746,7 +1746,7 @@ function renderVirtualKitty(message){
  $("virtualKittyHappiness").textContent=String(virtualKitty.happiness);
  $("virtualKittyFullness").textContent=String(virtualKitty.fullness);
  $("virtualKittyNameInput").value=virtualKitty.adopted?virtualKitty.name:$("virtualKittyNameInput").value;
- avatar.textContent=virtualKitty.adopted?"🐈":"🐱";
+ if(window.setKitty3DAction)window.setKitty3DAction("idle");
 }
 $("virtualKittyAdopt").addEventListener("click",()=>{
  const input=$("virtualKittyNameInput"),name=input.value.trim();
@@ -2087,6 +2087,50 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   }
   requestAnimationFrame(animate);
  }catch(error){console.warn("3D puppy unavailable; keeping photo fallback.",error);if(loading)loading.textContent="3D puppy couldn't load on this browser — here's your puppy photo instead! 🐶";const fallback=host.querySelector(".puppy3d-fallback");if(fallback)fallback.style.display="block";}
+})();
+</script>
+
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js";
+(()=>{
+ const host=document.getElementById("virtualKitty3dStage"),loading=document.getElementById("virtualKitty3dLoading");
+ if(!host)return;
+ try{
+  const scene=new THREE.Scene();scene.background=new THREE.Color("#f4dff8");scene.fog=new THREE.Fog("#f4dff8",9,20);
+  const camera=new THREE.PerspectiveCamera(35,1,.1,100);camera.position.set(0,2.1,8.4);camera.lookAt(0,1,0);
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor("#f4dff8");host.prepend(renderer.domElement);
+  scene.add(new THREE.HemisphereLight("#ffffff","#b99ac9",2.2));const sun=new THREE.DirectionalLight("#fff4fb",3);sun.position.set(-3,7,5);sun.castShadow=true;scene.add(sun);
+  const mat=(c,r=.78)=>new THREE.MeshStandardMaterial({color:c,roughness:r}),sphere=new THREE.SphereGeometry(1,24,18);
+  function ball(parent,m,p,sc){const o=new THREE.Mesh(sphere,m);o.position.set(...p);o.scale.set(...sc);o.castShadow=true;o.receiveShadow=true;parent.add(o);return o;}
+  const floor=new THREE.Mesh(new THREE.PlaneGeometry(200,200),mat("#cba7df"));floor.rotation.x=-Math.PI/2;floor.position.y=-.06;floor.receiveShadow=true;scene.add(floor);
+  const rug=new THREE.Mesh(new THREE.CircleGeometry(2.45,48),mat("#f8cde8"));rug.rotation.x=-Math.PI/2;rug.position.y=-.04;scene.add(rug);
+  for(let i=0;i<14;i++){const a=i*2.4,r=2.3+(i%3)*.28,x=Math.cos(a)*r,z=Math.sin(a)*r;for(let j=0;j<5;j++)ball(scene,mat(i%2?"#ffb6dc":"#fff3a8"),[x+Math.cos(j*1.256)*.07,.05,z+Math.sin(j*1.256)*.07],[.055,.035,.055]);ball(scene,mat("#ffcf67"),[x,.07,z],[.04,.035,.04]);}
+  const cat=new THREE.Group();scene.add(cat);cat.position.y=.95;const body=new THREE.Group();cat.add(body);
+  const fur=mat("#f3f0f8"),patch=mat("#aaa0bd"),inner=mat("#f2a3c7"),dark=mat("#34283d",.3),eye=mat("#55a987",.25),nose=mat("#ed7aa8",.3),white=mat("#ffffff");
+  ball(body,fur,[0,.78,0],[.68,.48,.42]);ball(body,white,[.13,.64,.08],[.39,.23,.34]);
+  const head=new THREE.Group();head.position.set(.34,1.28,0);body.add(head);ball(head,fur,[0,.1,0],[.48,.45,.42]);
+  const earL=ball(head,fur,[-.29,.48,.18],[.18,.3,.14]);earL.rotation.z=-.25;const earR=ball(head,fur,[-.29,.48,-.18],[.18,.3,.14]);earR.rotation.z=-.25;
+  ball(head,inner,[-.27,.49,.205],[.09,.19,.035]);ball(head,inner,[-.27,.49,-.205],[.09,.19,.035]);ball(head,patch,[.08,.4,.12],[.19,.12,.22]);
+  ball(head,eye,[.37,.18,.17],[.055,.075,.035]);ball(head,eye,[.37,.18,-.17],[.055,.075,.035]);ball(head,white,[.39,.205,.19],[.018,.022,.012]);ball(head,white,[.39,.205,-.15],[.018,.022,.012]);
+  ball(head,white,[.42,-.04,.015],[.18,.13,.2]);ball(head,nose,[.52,-.01,.025],[.055,.04,.055]);
+  const whiskerMat=mat("#7d718c");for(const side of [-1,1])for(let j=0;j<2;j++){const w=new THREE.Mesh(new THREE.CylinderGeometry(.008,.008,.32,6),whiskerMat);w.position.set(.49,-.08,side*(.17+j*.045));w.rotation.x=side*.22;w.rotation.z=j?-.12:.12;head.add(w);}
+  const tailPivot=new THREE.Group();tailPivot.position.set(-.58,.95,0);body.add(tailPivot);const tail=ball(tailPivot,fur,[-.31,.24,0],[.4,.14,.14]);tail.rotation.z=-.35;ball(tailPivot,patch,[-.59,.42,0],[.13,.12,.12]);
+  const legs=[];for(const x of [-.4,.4])for(const z of [-.25,.25]){const p=new THREE.Group();p.position.set(x,.55,z);body.add(p);ball(p,fur,[0,-.19,0],[.14,.29,.14]);ball(p,white,[.025,-.36,.02],[.16,.09,.15]);legs.push(p);}
+  const collar=new THREE.Mesh(new THREE.TorusGeometry(.25,.045,8,28),mat("#f16eae"));collar.position.set(.3,1.08,0);collar.rotation.x=Math.PI/2;body.add(collar);ball(body,mat("#ffd66f"),[.52,.98,.03],[.065,.075,.045]);
+  let action="idle",spin=0,jump=0,last=0;window.setKitty3DAction=a=>{action=a||"idle";if(action==="spin")spin=0;if(action==="jump")jump=0;};
+  function resize(){const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+  new ResizeObserver(resize).observe(host);resize();if(loading)loading.remove();host.classList.add("ready");
+  host.addEventListener("pointerdown",()=>{action="purr";setTimeout(()=>{if(action==="purr")action="idle";},1200);});
+  document.querySelectorAll("[data-kitty-action]").forEach(b=>b.addEventListener("click",()=>{window.setKitty3DAction(b.dataset.kittyAction);}));
+  function animate(now){requestAnimationFrame(animate);const dt=Math.min(.05,(now-last)/1000||0);last=now;cat.position.y=.95+Math.sin(now*.003)*.035;head.rotation.z=Math.sin(now*.002)*.025;tailPivot.rotation.z=Math.sin(now*.014)*(action==="purr"?1.25:.62);legs.forEach((p,i)=>p.rotation.x=action==="walk"?Math.sin(now*.009+(i%2)*Math.PI)*.42:0);
+   if(action==="spin"){spin+=dt*4.5;cat.rotation.y=spin;if(spin>Math.PI*2){action="idle";cat.rotation.y=0;}}
+   else if(action==="jump"){jump+=dt*7;cat.position.y=.95+Math.max(0,Math.sin(jump))*.72;if(jump>Math.PI){action="idle";cat.position.y=.95;}}
+   else if(action==="walk"){cat.position.x=Math.sin(now*.0018)*.65;cat.rotation.y=Math.cos(now*.0018)*.18;}
+   else if(action==="sit"||action==="loaf"){body.scale.y=action==="loaf"?.72:1;body.position.y=action==="sit"?-.13:0;}
+   else{body.scale.y=1;body.position.y=0;cat.position.x+=(0-cat.position.x)*.05;cat.rotation.y+=(0-cat.rotation.y)*.08;}
+   renderer.render(scene,camera);
+  }requestAnimationFrame(animate);
+ }catch(e){console.warn("3D kitty unavailable",e);if(loading)loading.textContent="Your kitty's 3D world couldn't load in this browser. Try refreshing! 🐱";}
 })();
 </script>
 </body>
