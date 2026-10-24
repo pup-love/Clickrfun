@@ -1361,15 +1361,31 @@ function playPuppySound(type="bark"){
   if(!puppyAudio)puppyAudio=new AudioContextClass();
   if(puppyAudio.state==="suspended")puppyAudio.resume();
   const now=puppyAudio.currentTime;
+  // A little rubbery pitch-slide makes the plushie sound like a real squeaky toy.
+  if(type==="squeak"){
+   [0,.16].forEach((offset,index)=>{
+    const start=now+offset;
+    const oscillator=puppyAudio.createOscillator();
+    const volume=puppyAudio.createGain();
+    oscillator.type="sawtooth";
+    oscillator.frequency.setValueAtTime(index?1550:1900,start);
+    oscillator.frequency.exponentialRampToValueAtTime(index?720:850,start+.12);
+    volume.gain.setValueAtTime(.0001,start);
+    volume.gain.exponentialRampToValueAtTime(.32,start+.012);
+    volume.gain.exponentialRampToValueAtTime(.0001,start+.14);
+    oscillator.connect(volume);volume.connect(puppyAudio.destination);
+    oscillator.start(start);oscillator.stop(start+.15);
+   });
+   return;
+  }
   const notes={
    bark:[{f:420,d:.09},{f:260,d:.13}],
    yip:[{f:650,d:.07},{f:820,d:.08}],
    click:[{f:1050,d:.035},{f:720,d:.045}],
-   squeak:[{f:1250,d:.08},{f:980,d:.10}],
    pop:[{f:880,d:.045}],
    boing:[{f:300,d:.07},{f:520,d:.08},{f:760,d:.10}],
-   drumLow:[{f:140,d:.12}],
-   drumHigh:[{f:1300,d:.055}],
+   drumLow:[{f:105,d:.18},{f:72,d:.14}],
+   drumHigh:[{f:1650,d:.08},{f:1050,d:.10}],
    treat:[{f:660,d:.08},{f:880,d:.10}],
    win:[{f:523,d:.12},{f:659,d:.12},{f:784,d:.20}]
   };
@@ -1377,10 +1393,12 @@ function playPuppySound(type="bark"){
   (notes[type]||notes.bark).forEach(note=>{
    const oscillator=puppyAudio.createOscillator();
    const volume=puppyAudio.createGain();
-   oscillator.type="sine";
+   oscillator.type=type==="drumLow"?"triangle":type==="drumHigh"?"square":"sine";
    oscillator.frequency.setValueAtTime(note.f,start);
+   if(type==="drumLow")oscillator.frequency.exponentialRampToValueAtTime(Math.max(35,note.f*.55),start+note.d);
    volume.gain.setValueAtTime(.0001,start);
-   volume.gain.exponentialRampToValueAtTime(.15,start+.015);
+   const loudness=type==="drumLow"?.48:type==="drumHigh"?.30:.15;
+   volume.gain.exponentialRampToValueAtTime(loudness,start+.012);
    volume.gain.exponentialRampToValueAtTime(.0001,start+note.d);
    oscillator.connect(volume);volume.connect(puppyAudio.destination);
    oscillator.start(start);oscillator.stop(start+note.d+.02);
