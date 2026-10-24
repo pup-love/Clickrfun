@@ -1108,6 +1108,16 @@ async function viewMember(id){
   });
   actions.appendChild(action);
  });
+ const starButton=document.createElement("button");starButton.type="button";starButton.textContent="🌟 Give a Gold Star";starButton.addEventListener("click",async()=>{
+  if(!requireLogin()||id===currentUser.id)return;
+  starButton.disabled=true;
+  try{
+   const result=await supabaseClient.from("private_messages").insert({sender_id:currentUser.id,receiver_id:id,recipient_id:id,content:"🌟 Gold Star gift from "+(currentUsername||"a friend")+"!"});
+   if(result.error)throw result.error;
+   starButton.textContent="🌟 Star sent!";
+   starCounter.textContent="🌟 Gold Stars: "+((starCountResult.count||0)+1);
+  }catch(error){starButton.disabled=false;starButton.textContent="🌟 Give a Gold Star";setStatus("Couldn't send Gold Star: "+error.message);}
+ });
  const giftTitle=document.createElement("h3");giftTitle.textContent="🎁 Send a real gift";
  const giftHelp=document.createElement("p");giftHelp.className="small";giftHelp.textContent="Choose one toy or snack from your inventory to send.";
  const giftSelect=document.createElement("select");giftSelect.setAttribute("aria-label","Choose an item to gift");
@@ -1146,7 +1156,7 @@ async function viewMember(id){
    }
   }catch(giftError){giftStatus.textContent="Couldn't send gift: "+giftError.message;giftButton.disabled=false;}
  });
- social.append(giftTitle,giftHelp,giftSelect,giftButton,giftStatus);
+ social.append(starButton,giftTitle,giftHelp,giftSelect,giftButton,giftStatus);
  social.append(socialTitle,socialHelp,actions);container.appendChild(social);
 }
 
