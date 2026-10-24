@@ -933,13 +933,27 @@ async function loadShop(){
  container.replaceChildren();
  if(!supabaseClient){container.textContent="Shop unavailable.";return;}
  container.textContent="Loading shop... 🐾";
- const {data,error}=await supabaseClient.from("shop_items").select("id,name,description:desc,price,emoji").order("price");
+ const {data,error}=await supabaseClient.from("shop_items").select("id,name,description,price,emoji").order("price");
  container.replaceChildren();
  if(error){$("shopStatus").textContent="Couldn't load shop: "+error.message;return;}
  $("shopStatus").textContent="";
  shopCache=data||[];
  if(!shopCache.length){container.textContent="No items in the shop yet.";return;}
- shopCache.forEach(item=>{
+ let profileType="puppy";
+ if(currentUser){
+  const profileResult=await supabaseClient.from("profiles").select("account_type").eq("id",currentUser.id).maybeSingle();
+  if(!profileResult.error)profileType=accountTypeOf(profileResult.data,currentUser);
+ }
+ const catToyIds=new Set(["mouse_toy","yarn_ball","feather_wand"]);
+ const dogToyIds=new Set(["tennis_ball","chew_bone","tug_rope"]);
+ const visibleItems=shopCache.filter(item=>{
+  const itemId=String(item.id);
+  if(catToyIds.has(itemId))return profileType==="kitty";
+  if(dogToyIds.has(itemId))return profileType!=="kitty";
+  return true;
+ });
+ if(!visibleItems.length){container.textContent="No items for this shop yet.";return;}
+ visibleItems.forEach(item=>{
   const box=document.createElement("div");box.className="item";
   const emoji=document.createElement("div");emoji.className="emoji";emoji.textContent=item.emoji||"🐾";
   const title=document.createElement("h3");title.textContent=item.name;
@@ -968,7 +982,7 @@ async function loadInventory(){
  const owned=(data||[]).map(item=>String(item.item_id));
  if(!owned.length){$("inventoryStatus").textContent="Your inventory is empty. Visit the shop to adopt some accessories! 💗";return;}
  if(!shopCache.length){
-  const result=await supabaseClient.from("shop_items").select("id,name,description:desc,price,emoji");
+  const result=await supabaseClient.from("shop_items").select("id,name,description,price,emoji");
   if(result.error){$("inventoryStatus").textContent="Couldn't load item details: "+result.error.message;return;}
   shopCache=result.data||[];
  }
@@ -1127,7 +1141,7 @@ async function viewMember(id){
   const ownedResult=await supabaseClient.from("inventory").select("item_id").eq("user_id",currentUser.id);
   if(ownedResult.error)throw ownedResult.error;
   const counts={};(ownedResult.data||[]).forEach(row=>{const key=String(row.item_id);counts[key]=(counts[key]||0)+1;});
-  if(!shopCache.length){const itemsResult=await supabaseClient.from("shop_items").select("id,name,emoji");if(itemsResult.error)throw itemsResult.error;shopCache=itemsResult.data||[];}
+  if(!shopCache.length){const itemsResult=await supabaseClient.from("shop_items").select("id,name,description,price,emoji");if(itemsResult.error)throw itemsResult.error;shopCache=itemsResult.data||[];}
   giftSelect.replaceChildren();
   const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Choose an item you own...";giftSelect.appendChild(placeholder);
   shopCache.filter(item=>counts[String(item.id)]>0).forEach(item=>{const option=document.createElement("option");option.value=String(item.id);option.textContent=(item.emoji||"🎁")+" "+item.name+" × "+counts[String(item.id)];giftSelect.appendChild(option);});
