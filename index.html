@@ -100,6 +100,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <h2>🎮 Paw Arcade</h2>
 <p class="small">Take a little break and catch some treats! 💗</p>
 <button type="button" onclick="startCatchTreats()">🍪 Catch the Treats!</button>
+<button type="button" onclick="startPawMemory()">🧠 Paw Memory Match!</button>
 <button type="button" onclick="closeGames()">✖ Close</button>
 <div id="gameArea"></div>
 <hr>
@@ -586,7 +587,7 @@ function startCatchTreats(){
  heading.textContent="🍪 Catch the Treats!";
  const instructions=document.createElement("p");
  instructions.className="small";
- instructions.textContent="Tap the falling treats before they hit the bottom! You have 30 seconds. 🐾";
+ instructions.textContent="Tap falling treats for points, but avoid 💣 bombs! A bomb costs 2 points. You have 30 seconds. 🐾";
 
  const stats=document.createElement("div");
  stats.className="treat-game-stats";
@@ -647,8 +648,10 @@ function startCatchTreats(){
   const treat=document.createElement("button");
   treat.type="button";
   treat.className="treat-game-item";
-  treat.textContent=["🍪","🦴","🧁","🍖"][Math.floor(Math.random()*4)];
-  treat.setAttribute("aria-label","Catch treat");
+  const isBomb=Math.random()<0.22;
+  treat.textContent=isBomb?"💣":["🍪","🦴","🧁","🍖"][Math.floor(Math.random()*4)];
+  treat.setAttribute("aria-label",isBomb?"Avoid bomb":"Catch treat");
+  if(isBomb){treat.style.background="#7a243d";treat.style.borderColor="#ff7070";}
   const maxLeft=Math.max(0,board.clientWidth-48);
   treat.style.left=Math.floor(Math.random()*maxLeft)+"px";
   treat.style.top="-45px";
@@ -675,9 +678,15 @@ function startCatchTreats(){
   treat.addEventListener("click",()=>{
    if(caught||!catchGameRunning||generation!==catchGameGeneration)return;
    caught=true;
-   score++;
+   if(treat.textContent==="💣"){
+    score=Math.max(0,score-2);
+    message.textContent="💥 Oops! Bomb! -2 points — watch out!";
+   }else{
+    score++;
+    playPuppySound("treat");
+    message.textContent="Yummy! +1 treat! 🍪";
+   }
    updateStats();
-   playPuppySound("treat");
    clearInterval(fallTimer);
    catchFallTimers=catchFallTimers.filter(timer=>timer!==fallTimer);
    treat.remove();
@@ -707,6 +716,42 @@ function startCatchTreats(){
   },1000);
  });
  updateStats();
+}
+
+function startPawMemory(){
+ stopCatchGame();
+ const area=$("gameArea");
+ area.replaceChildren();
+ const game=document.createElement("div");
+ const heading=document.createElement("h3"); heading.textContent="🧠 Paw Memory Match!";
+ const instructions=document.createElement("p"); instructions.className="small"; instructions.textContent="Find all matching pairs! Tap two cards at a time. 🐾";
+ const stats=document.createElement("p"); stats.className="treat-game-stats";
+ const board=document.createElement("div"); board.style.cssText="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:12px 0;";
+ const message=document.createElement("p"); message.setAttribute("aria-live","polite"); message.textContent="Find the matching paws! 💗";
+ game.append(heading,instructions,stats,board,message); area.appendChild(game);
+ const pets=["🐶","🐱","🦴","🐾","🍪","🐰","🐹","🧁"];
+ const cards=[...pets,...pets].sort(()=>Math.random()-.5);
+ let first=null,locked=false,moves=0,matches=0;
+ stats.textContent="Moves: 0 · Pairs: 0/8";
+ cards.forEach(pet=>{
+  const card=document.createElement("button"); card.type="button"; card.textContent="❔"; card.setAttribute("aria-label","Hidden memory card");
+  card.style.cssText="min-width:0;min-height:58px;font-size:24px;padding:8px;margin:0;background:#633477;border:2px solid #ffb5ed;border-radius:12px;";
+  card.addEventListener("click",()=>{
+   if(locked||card.dataset.matched==="yes"||card===first||card.textContent===pet)return;
+   card.textContent=pet;card.setAttribute("aria-label",pet);
+   if(!first){first=card;return;}
+   moves++;stats.textContent="Moves: "+moves+" · Pairs: "+matches+"/8";
+   if(first.textContent===card.textContent){
+    first.dataset.matched="yes";card.dataset.matched="yes";matches++;first=null;
+    stats.textContent="Moves: "+moves+" · Pairs: "+matches+"/8";
+    if(matches===8){message.textContent="🎉 You matched every pair in "+moves+" moves! Amazing! 💗";playPuppySound("win");}
+   }else{
+    locked=true;const previous=first;first=null;
+    setTimeout(()=>{previous.textContent="❔";card.textContent="❔";previous.setAttribute("aria-label","Hidden memory card");card.setAttribute("aria-label","Hidden memory card");locked=false;},700);
+   }
+  });
+  board.appendChild(card);
+ });
 }
 
 /* HELPERS AND LOGIN STATE */
