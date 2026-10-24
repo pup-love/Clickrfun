@@ -138,6 +138,17 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 /* Sticker book is a top-level visible card, independent of the hidden playroom. */
 #stickerCollection{display:block!important;visibility:visible!important;opacity:1!important;width:100%;margin:24px auto;position:relative;z-index:1;}
 #stickerCollection .sticker-grid{display:grid;}
+/* Virtual puppy adoption corner */
+.virtual-pet-card{margin:18px 0;padding:20px;border:3px solid #fff;border-radius:24px;background:linear-gradient(135deg,#f3e8ff,#eadbff 55%,#ffe9f5);color:#442b5b;box-shadow:0 8px 22px rgba(96,60,130,.16);text-align:center}
+.virtual-pet-card h3,.virtual-pet-card p{color:#442b5b}
+.virtual-pet-display{font-size:clamp(64px,12vw,94px);line-height:1.25;filter:drop-shadow(0 5px 3px #9d7bc544);margin:8px auto}
+.virtual-pet-stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.virtual-pet-stat{background:#fff9ff;border:1px solid #d8b9f2;border-radius:14px;padding:8px 12px;color:#56366e;font-weight:700}
+.virtual-pet-card input,.virtual-pet-card select{max-width:100%;padding:10px 12px;border:2px solid #d5b4ed;border-radius:12px;background:#fff;color:#442b5b}
+.virtual-pet-actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:12px}
+.virtual-pet-actions button{border:2px solid #fff;border-radius:14px;padding:10px 15px;background:#b990e8;color:#2e1940;font-weight:700;cursor:pointer}
+.virtual-pet-actions button:hover{filter:brightness(1.05);transform:translateY(-1px)}
+#virtualPetMessage{min-height:1.5em;font-weight:700}
 /* Soft lilac sticker-book theme with a crisp white border and readable text. */
 #stickerCollection{background:linear-gradient(135deg,#c9a8f2 0%,#b99be8 55%,#d8c3fa 100%);border:3px solid #fff;color:#352047;box-shadow:0 8px 24px rgba(82,48,125,.22);}
 #stickerCollection h3,#stickerCollection p,#stickerCollection .sticker-heading{color:#352047;}
@@ -254,6 +265,29 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 
 <section id="buttonPlayroom" class="card hidden">
 <h2>🔘 The Clicky Button Playroom! 🐶</h2>
+<div class="virtual-pet-card" id="virtualPetCard">
+  <h3>🐶 Adopt Your Very Own Puppy! 💗</h3>
+  <p class="small">Give your little buddy a name, feed them treats, and give them lots of love!</p>
+  <div class="virtual-pet-display" id="virtualPetEmoji" aria-live="polite">🐶</div>
+  <h3 id="virtualPetName">Your new bestie</h3>
+  <p id="virtualPetMood">Your puppy can't wait to meet you! ✨</p>
+  <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
+    <label for="virtualPetNameInput">Name your puppy</label>
+    <input id="virtualPetNameInput" maxlength="20" placeholder="e.g. Mochi" aria-label="Puppy's name">
+    <button type="button" id="virtualPetAdopt">Adopt puppy 💕</button>
+  </div>
+  <div class="virtual-pet-stats">
+    <span class="virtual-pet-stat">💖 Happiness: <strong id="virtualPetHappiness">3</strong>/10</span>
+    <span class="virtual-pet-stat">🦴 Fullness: <strong id="virtualPetFullness">5</strong>/10</span>
+  </div>
+  <div class="virtual-pet-actions">
+    <button type="button" id="virtualPetFeed">🦴 Feed a treat</button>
+    <button type="button" id="virtualPetPet">🐾 Give cuddles</button>
+    <button type="button" id="virtualPetPlay">🎾 Play together</button>
+  </div>
+  <p id="virtualPetMessage" role="status" aria-live="polite">Adopt your puppy to start your little adventure!</p>
+</div>
+
 <section class="card sticker-collection" id="stickerCollection" aria-labelledby="stickerCollectionTitle">
   <div class="sticker-heading">
     <div><h3 id="stickerCollectionTitle">🎀 My Sticker & Badge Book</h3><p class="small">Click buttons, collect cute treasures, and fill your page with happy little badges!</p></div>
@@ -1518,6 +1552,44 @@ $("soundToggle").addEventListener("click",()=>{
  if(puppySoundsOn)playPuppySound("yip");
 });
 
+/* VIRTUAL PUPPY PET */
+const virtualPetKey="clickrfun-virtual-puppy-v1";
+const defaultVirtualPet={adopted:false,name:"",happiness:3,fullness:5,emoji:"🐶"};
+let virtualPet={...defaultVirtualPet};
+try{const savedPet=JSON.parse(localStorage.getItem(virtualPetKey)||"null");if(savedPet&&typeof savedPet==="object")virtualPet={...defaultVirtualPet,...savedPet};}catch(e){}
+function saveVirtualPet(){try{localStorage.setItem(virtualPetKey,JSON.stringify(virtualPet));}catch(e){}}
+function renderVirtualPet(message){
+ const emoji=$("virtualPetEmoji"),name=$("virtualPetName"),mood=$("virtualPetMood");
+ if(!emoji||!name||!mood)return;
+ emoji.textContent=virtualPet.emoji;
+ name.textContent=virtualPet.adopted?virtualPet.name:"Your new bestie";
+ $("virtualPetHappiness").textContent=String(virtualPet.happiness);
+ $("virtualPetFullness").textContent=String(virtualPet.fullness);
+ $("virtualPetNameInput").value=virtualPet.adopted?virtualPet.name:$("virtualPetNameInput").value;
+ mood.textContent=!virtualPet.adopted?"Your puppy can't wait to meet you! ✨":virtualPet.happiness>=8?"So happy! "+virtualPet.name+" is doing happy wiggles! 💖":virtualPet.fullness<=2?"Rumble, rumble... "+virtualPet.name+" could use a treat! 🦴":"You're doing great together! 🐾";
+ $("virtualPetMessage").textContent=message||(virtualPet.adopted?"Your bestie is saved on this device. Come back for more cuddles! 💗":"Adopt your puppy to start your little adventure!");
+}
+$("virtualPetAdopt").addEventListener("click",()=>{
+ const input=$("virtualPetNameInput"),name=input.value.trim();
+ if(!name){$("virtualPetMessage").textContent="Pick a cute name for your puppy first! 💕";input.focus();return;}
+ virtualPet.adopted=true;virtualPet.name=name.slice(0,20);virtualPet.happiness=Math.max(virtualPet.happiness,3);virtualPet.fullness=Math.max(virtualPet.fullness,5);saveVirtualPet();renderVirtualPet("YAY! "+virtualPet.name+" is officially part of your pack! 🎉🐶");
+});
+function virtualPetAction(action){
+ if(!virtualPet.adopted){$("virtualPetMessage").textContent="Name and adopt your puppy first! 💗";return;}
+ if(action==="feed"){
+  if(virtualPet.fullness>=10){renderVirtualPet(virtualPet.name+" is all full up! Give them cuddles instead. 💕");return;}
+  virtualPet.fullness=Math.min(10,virtualPet.fullness+2);virtualPet.happiness=Math.min(10,virtualPet.happiness+1);renderVirtualPet("Yum yum! "+virtualPet.name+" loved that treat! 🦴");
+ }else if(action==="pet"){
+  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);renderVirtualPet("Awww, "+virtualPet.name+" is soaking up the cuddles! 🥹💗");
+ }else{
+  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);virtualPet.fullness=Math.max(0,virtualPet.fullness-1);renderVirtualPet("WHEEE! "+virtualPet.name+" had the best playtime! 🎾✨");
+ }
+ saveVirtualPet();
+}
+$("virtualPetFeed").addEventListener("click",()=>virtualPetAction("feed"));
+$("virtualPetPet").addEventListener("click",()=>virtualPetAction("pet"));
+$("virtualPetPlay").addEventListener("click",()=>virtualPetAction("play"));
+renderVirtualPet();
 /* BUTTON PLAYROOM + INTERACTIVE TOYS */
 let playroomClicks=0;
 let playroomWiggles=0;
