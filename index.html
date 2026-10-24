@@ -144,7 +144,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 /* Virtual puppy adoption corner */
 .virtual-pet-card{margin:18px 0;padding:20px;border:3px solid #fff;border-radius:24px;background:linear-gradient(135deg,#f3e8ff,#eadbff 55%,#ffe9f5);color:#442b5b;box-shadow:0 8px 22px rgba(96,60,130,.16);text-align:center}
 .virtual-pet-card h3,.virtual-pet-card p{color:#442b5b}
-.virtual-pet-photo-button{display:flex;flex-direction:column;align-items:center;gap:8px;margin:12px auto;border:0;background:transparent;cursor:pointer;color:#56366e;font-weight:900}.virtual-pet-photo{display:block;width:min(100%,340px);aspect-ratio:1/1;object-fit:cover;border-radius:28px;border:5px solid #fff;box-shadow:0 10px 28px #6d4a8840;transition:transform .2s;animation:puppyBreathe 3s ease-in-out infinite}.virtual-pet-photo-button:hover .virtual-pet-photo{transform:scale(1.035) rotate(-1deg)}.virtual-pet-photo-button:active .virtual-pet-photo{transform:scale(.96)}.puppy-photo-hint{font-size:.85rem;letter-spacing:.08em;background:#fff9ff;border:1px solid #d8b9f2;border-radius:999px;padding:7px 12px}@keyframes puppyBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.puppy3d-wrap{max-width:700px;margin:12px auto}.puppy3d-stage{position:relative;width:100%;height:360px;overflow:hidden;border:5px solid #fff;border-radius:28px;background:linear-gradient(#c8e7ff 0%,#e8f5ff 58%,#c5edc4 58%,#91d99d 100%);box-shadow:0 10px 28px #6d4a8840;touch-action:pan-y}.puppy3d-stage canvas{display:block;width:100%;height:100%;outline:none}.puppy3d-loading{position:absolute;z-index:2;inset:0;display:grid;place-items:center;color:#56366e;font-weight:900;background:linear-gradient(#c8e7ff,#d8f7dc);padding:20px;text-align:center}.puppy3d-stage.ready .puppy3d-loading{display:none}.puppy3d-fallback{display:none!important}.puppy-trick-controls{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin:12px auto}.puppy-trick-controls button{border:2px solid #fff;border-radius:14px;padding:9px 13px;background:#fff5ff;color:#56366e;font-weight:900;cursor:pointer;box-shadow:0 3px 0 #d8b9f2}.puppy-trick-controls button:hover{transform:translateY(-2px)}.puppy-trick-controls button:active{transform:translateY(1px)}@media(max-width:520px){.puppy3d-stage{height:290px}}
 .virtual-pet-stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:12px 0}
 .virtual-pet-stat{background:#fff9ff;border:1px solid #d8b9f2;border-radius:14px;padding:8px 12px;color:#56366e;font-weight:700}
 .virtual-pet-card input,.virtual-pet-card select{max-width:100%;padding:10px 12px;border:2px solid #d5b4ed;border-radius:12px;background:#fff;color:#442b5b}
@@ -368,7 +368,22 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <div class="virtual-pet-card" id="virtualPetCard">
   <h3>🐶 Adopt Your Very Own Puppy! 💗</h3>
   <p class="small">Give your little buddy a name, feed them treats, and give them lots of love!</p>
-  <button type="button" class="virtual-pet-photo-button" id="virtualPetBoop" aria-label="Boop your puppy to hear a bark!"><img class="virtual-pet-photo" id="virtualPetEmoji" src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=700&q=85" alt="A fluffy golden retriever puppy" loading="lazy"><span class="puppy-photo-hint">BOOP MY NOSE! 🐾</span></button>
+  <div class="puppy3d-wrap">
+  <div class="puppy3d-stage" id="puppy3dStage" aria-label="Interactive 3D puppy play area">
+    <div class="puppy3d-loading" id="puppy3dLoading">🐾 Waking up your puppy's 3D world…</div>
+    <img class="virtual-pet-photo puppy3d-fallback" id="virtualPetEmoji" src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=700&q=85" alt="A fluffy golden retriever puppy" loading="lazy">
+  </div>
+  <p class="puppy-photo-hint">BOOP MY NOSE! 🐾</p>
+  <div class="puppy-trick-controls" aria-label="Puppy tricks">
+    <button type="button" data-puppy-action="follow">🚶 Walk</button>
+    <button type="button" data-puppy-action="sit">🪑 Sit</button>
+    <button type="button" data-puppy-action="wag">💖 Wag tail</button>
+    <button type="button" data-puppy-action="jump">⬆️ Jump</button>
+    <button type="button" data-puppy-action="spin">🌀 Spin</button>
+    <button type="button" data-puppy-action="roll">😴 Roll over</button>
+  </div>
+  <p class="small">A little 3D pup you can command — try a trick! Sound plays when you interact.</p>
+</div>
   <h3 id="virtualPetName">Your new bestie</h3>
   <p id="virtualPetMood">Your puppy can't wait to meet you! ✨</p>
   <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
@@ -1705,7 +1720,8 @@ function virtualPetAction(action){
  }
  saveVirtualPet();
 }
-$("virtualPetBoop").addEventListener("click",()=>{playPuppySound("bark");const photo=$("virtualPetEmoji");photo.style.animation="none";void photo.offsetWidth;photo.style.animation="puppyBreathe .45s ease-in-out 2";renderVirtualPet(virtualPet.adopted?virtualPet.name+" says WOOF! 🐶💗":"WOOF! Adopt me and let us be best friends! 🐾");});
+document.querySelectorAll("[data-puppy-action]").forEach(button=>button.addEventListener("click",()=>{const action=button.dataset.puppyAction;if(window.clickrPuppyAction)window.clickrPuppyAction(action);else $("virtualPetMessage").textContent="Your puppy is still waking up! Try again in a moment. 🐾";playPuppySound(action==="jump"||action==="spin"?"boing":action==="wag"?"yip":"bark");}));
+$("puppy3dStage").addEventListener("click",event=>{if(event.target.closest("canvas")){if(window.clickrPuppyAction)window.clickrPuppyAction("boop");playPuppySound("bark");renderVirtualPet(virtualPet.adopted?virtualPet.name+" says WOOF! 🐶💗":"WOOF! Adopt me and let us be best friends! 🐾");}});
 $("virtualPetSleep").addEventListener("click",()=>{
  if(!virtualPet.adopted){$("virtualPetMessage").textContent="Adopt your puppy first! 💗";return;}
  virtualPet.happiness=Math.min(10,virtualPet.happiness+1);const leveled=addVirtualPetXP(2);playPuppySound("yip");puppyPhotoReact("sleep");renderVirtualPet("Zzz... "+virtualPet.name+" is having the sweetest puppy dreams. 💤"+(leveled?" LEVEL UP! ⭐":""));
@@ -1896,6 +1912,83 @@ if(!window.supabase){
   }
  });
 }
+</script>
+
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js";
+(()=>{
+ const host=document.getElementById("puppy3dStage"),loading=document.getElementById("puppy3dLoading");
+ if(!host)return;
+ try{
+  const scene=new THREE.Scene();scene.background=new THREE.Color("#c8e7ff");scene.fog=new THREE.Fog("#c8e7ff",8,18);
+  const camera=new THREE.PerspectiveCamera(34,1,.1,100);camera.position.set(0,2.25,8.5);camera.lookAt(0,1,0);
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.setClearColor("#c8e7ff");host.prepend(renderer.domElement);
+  const hemi=new THREE.HemisphereLight("#ffffff","#9bcf9b",2.1);scene.add(hemi);
+  const sun=new THREE.DirectionalLight("#fff5df",3);sun.position.set(-3,7,5);sun.castShadow=true;scene.add(sun);
+  const mat=(color,roughness=.8)=>new THREE.MeshStandardMaterial({color,roughness});
+  const gold=mat("#d99a45"),cream=mat("#ffe0a6"),white=mat("#fff2d9"),earMat=mat("#9c5a2b"),dark=mat("#30242b",.35),pink=mat("#ef9cae"),eyeMat=mat("#201820",.25),groundMat=mat("#8bd18b");
+  const sphereGeo=new THREE.SphereGeometry(1,24,18);
+  function ball(parent,material,pos,scale){const m=new THREE.Mesh(sphereGeo,material);m.position.set(...pos);m.scale.set(...scale);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;}
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.05;ground.receiveShadow=true;scene.add(ground);
+  const floorCircle=new THREE.Mesh(new THREE.CircleGeometry(2.5,48),mat("#b6e7a8"));floorCircle.rotation.x=-Math.PI/2;floorCircle.position.y=-.035;scene.add(floorCircle);
+  // Little flowers in the yard
+  for(let i=0;i<18;i++){const a=i*2.399,r=2.15+(i%3)*.4;const x=Math.cos(a)*r,z=Math.sin(a)*r;const stem=new THREE.Mesh(new THREE.CylinderGeometry(.018,.025,.22,6),mat("#4d9b5c"));stem.position.set(x,.1,z);scene.add(stem);for(let j=0;j<5;j++){const p=ball(scene,mat(i%2?"#ffcae2":"#fff5a5"),[x+Math.cos(j*1.256)*.07,.23,z+Math.sin(j*1.256)*.07],[.055,.035,.055]);}ball(scene,mat("#f6b94a"),[x,.24,z],[.04,.035,.04]);}
+  const puppy=new THREE.Group();scene.add(puppy);
+  const body=new THREE.Group();puppy.add(body);
+  ball(body,gold,[0,.95,0],[.78,.48,.43]);
+  ball(body,cream,[.18,.72,.07],[.46,.25,.36]);
+  const headPivot=new THREE.Group();headPivot.position.set(.48,1.35,0);body.add(headPivot);
+  ball(headPivot,gold,[0,.12,0],[.48,.48,.43]);
+  ball(headPivot,cream,[.23,-.08,.015],[.32,.25,.31]);
+  ball(headPivot,white,[.43,-.03,.02],[.15,.12,.17]);
+  ball(headPivot,dark,[.54,.015,.025],[.095,.07,.11]);
+  // Eyes on the camera-facing side and far side.
+  ball(headPivot,eyeMat,[.20,.2,.355],[.062,.075,.035]);
+  ball(headPivot,eyeMat,[.20,.2,-.355],[.062,.075,.035]);
+  ball(headPivot,white,[.215,.225,.383],[.018,.022,.012]);
+  const ear1=ball(headPivot,earMat,[-.2,.43,.28],[.18,.32,.12]);ear1.rotation.z=-.42;
+  const ear2=ball(headPivot,earMat,[-.2,.43,-.28],[.18,.32,.12]);ear2.rotation.z=-.42;
+  ball(headPivot,pink,[.36,-.22,.12],[.12,.055,.035]);
+  const tailPivot=new THREE.Group();tailPivot.position.set(-.69,1.12,0);body.add(tailPivot);
+  const tail=ball(tailPivot,gold,[-.24,.15,0],[.34,.14,.15]);tail.rotation.z=-.45;
+  ball(tailPivot,cream,[-.49,.27,0],[.12,.1,.11]);
+  const legs=[];
+  for(const x of [-.48,.48])for(const z of [-.26,.26]){const pivot=new THREE.Group();pivot.position.set(x,.72,z);body.add(pivot);ball(pivot,gold,[0,-.23,0],[.17,.34,.16]);ball(pivot,cream,[.035,-.43,.025],[.18,.1,.17]);legs.push(pivot);}
+  // collar + little heart tag
+  const collar=new THREE.Mesh(new THREE.TorusGeometry(.31,.055,8,28),mat("#f16eae"));collar.position.set(.39,1.13,0);collar.rotation.y=Math.PI/2;body.add(collar);
+  const tag=ball(body,mat("#ffd64f"),[.58,.98,.32],[.1,.12,.045]);
+  // ball prop that follows puppy's play animation
+  const toy=new THREE.Group();scene.add(toy);ball(toy,mat("#ff7fb7"),[0,0,0],[.19,.19,.19]);for(let i=0;i<3;i++){const stripe=new THREE.Mesh(new THREE.TorusGeometry(.192,.018,6,20),mat("#fff4f8"));stripe.rotation.y=i*Math.PI/3;toy.add(stripe);}toy.position.set(1.3,.2,.2);
+  const state={action:"idle",until:0,walkPhase:0,spin:0,roll:0,jump:0,tailMode:1,baseX:0,blink:0};let last=performance.now();
+  window.clickrPuppyAction=(action)=>{
+   const now=performance.now();state.action=action;state.until=now+({follow:2500,sit:2600,wag:2500,jump:1000,spin:1300,roll:1900,boop:900}[action]||1600);
+   if(action==="follow")state.baseX=state.baseX>.5?-.5:.5;
+   if(action==="spin")state.spin=0;if(action==="roll")state.roll=0;if(action==="jump")state.jump=0;
+   if(action==="wag")state.tailMode=2;
+   const msg={follow:"Zoomies! Your puppy is trotting around! 🐾",sit:"Good sit! Such a clever puppy! 🥹",wag:"TAIL WAGS ACTIVATED! 💗",jump:"BOING! Look at that jump! ✨",spin:"SPINNING PUPPY! 🌀",roll:"Roll over! What a good pup! 🐶",boop:"Boop! Your puppy gives your finger a tiny sniff. 🐾"};
+   const message=document.getElementById("virtualPetMessage");if(message)message.textContent=msg[action]||"Woof!";
+  };
+  function resize(){const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
+  const ro=new ResizeObserver(resize);ro.observe(host);resize();
+  host.classList.add("ready");
+  function animate(now){
+   requestAnimationFrame(animate);const dt=Math.min(.05,(now-last)/1000);last=now;const active=now<state.until;const action=active?state.action:"idle";
+   body.position.y=.035+Math.sin(now*.004)*.035;headPivot.rotation.z=Math.sin(now*.002)*.035;
+   tailPivot.rotation.z=Math.sin(now*.018)*(action==="wag"?1.25:.62);
+   tailPivot.rotation.x=Math.sin(now*.021)*.35;
+   legs.forEach((leg,i)=>{const phase=now*.009+(i%2)*Math.PI;leg.rotation.x=(action==="follow"||action==="jump")?Math.sin(phase)*.72:action==="sit"&&i<2?-.85:Math.sin(now*.002+i)*.025;});
+   if(action==="follow"){puppy.position.x=state.baseX+Math.sin(now*.002)*.45;body.rotation.y=Math.sin(now*.002)*.12;}
+   else if(action==="spin"){state.spin+=dt*5.3;puppy.rotation.y=state.spin;}
+   else if(action==="roll"){state.roll+=dt*3.3;body.rotation.z=Math.sin(Math.min(Math.PI,state.roll))*Math.PI;puppy.position.y=Math.max(0,Math.sin(state.roll)*.14);}
+   else if(action==="jump"){state.jump+=dt*7;puppy.position.y=Math.max(0,Math.sin(state.jump)*.8);body.rotation.z=Math.sin(state.jump)*.08;}
+   else {puppy.position.y+=(0-puppy.position.y)*.12;puppy.position.x+=(0-puppy.position.x)*.06;puppy.rotation.y+=(0-puppy.rotation.y)*.06;body.rotation.z+=(0-body.rotation.z)*.08;}
+   if(action==="sit"){body.position.y=-.17;headPivot.rotation.z=-.1;}else if(action!=="roll"){body.position.y=.035+Math.sin(now*.004)*.035;}
+   toy.visible=action==="follow"||action==="jump"||action==="spin";toy.position.x=puppy.position.x+.9+Math.sin(now*.006)*.55;toy.position.y=.18+Math.abs(Math.sin(now*.01))*.28;toy.position.z=.5;
+   renderer.render(scene,camera);
+  }
+  requestAnimationFrame(animate);
+ }catch(error){console.warn("3D puppy unavailable; keeping photo fallback.",error);if(loading)loading.textContent="3D puppy couldn't load on this browser — here's your puppy photo instead! 🐶";const fallback=host.querySelector(".puppy3d-fallback");if(fallback)fallback.style.display="block";}
+})();
 </script>
 </body>
 </html>
