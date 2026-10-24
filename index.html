@@ -76,6 +76,10 @@ hr{border-color:#704276;margin:24px 0}
 </header>
 
 <button id="gamesToggle" class="games-float" type="button">🎮 Games</button>
+ <button id="soundToggle" type="button"
+style="position:fixed;bottom:18px;right:18px;z-index:1002;border:2px solid #ff9cde;border-radius:50px;padding:14px;background:#e879c4;color:#28132f;font-weight:bold;cursor:pointer">
+🔊 Sounds: ON
+</button>
 
 <div id="gamesPanel" class="games-panel hidden">
 <h2>🎮 Puppy Arcade</h2>
@@ -379,6 +383,7 @@ function startCatchTreats(){
   startButton.disabled=false;
   startButton.textContent="🔄 Play Again!";
   message.textContent="🎉 Time's up! You caught "+score+" treats! Great job, puppy! 💗";
+  playPuppySound("win");
  }
 
  function spawnTreat(generation){
@@ -446,6 +451,7 @@ function startCatchTreats(){
   startButton.disabled=true;
   startButton.textContent="🐾 Catch as many as you can!";
   message.textContent="GO GO GO! 🍪";
+  playPuppySound("bark");
   updateStats();
 
   spawnTreat(generation);
@@ -1157,6 +1163,84 @@ $("messageForm").addEventListener("submit",async event=>{
  }finally{
   button.disabled=!currentUser||!currentUsername;
  }
+});
+ 
+
+/* 🐶 CLICKRFUN PUPPY SOUNDS */
+let puppySoundsOn = true;
+let puppyAudio = null;
+
+function playPuppySound(type = "bark") {
+  if (!puppySoundsOn) return;
+
+  try {
+    const AudioContextClass =
+      window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContextClass) return;
+
+    if (!puppyAudio) puppyAudio = new AudioContextClass();
+
+    if (puppyAudio.state === "suspended") {
+      puppyAudio.resume();
+    }
+
+    const now = puppyAudio.currentTime;
+
+    // Cute synthesized puppy-style sounds
+    const notes = {
+      bark:  [{ f: 420, d: 0.09 }, { f: 260, d: 0.13 }],
+      yip:   [{ f: 650, d: 0.07 }, { f: 820, d: 0.08 }],
+      treat: [{ f: 660, d: 0.08 }, { f: 880, d: 0.10 }],
+      win:   [{ f: 523, d: 0.12 }, { f: 659, d: 0.12 },
+              { f: 784, d: 0.20 }]
+    };
+
+    let start = now;
+
+    (notes[type] || notes.bark).forEach(note => {
+      const oscillator = puppyAudio.createOscillator();
+      const volume = puppyAudio.createGain();
+
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(note.f, start);
+
+      volume.gain.setValueAtTime(0.0001, start);
+      volume.gain.exponentialRampToValueAtTime(0.15, start + 0.015);
+      volume.gain.exponentialRampToValueAtTime(
+        0.0001, start + note.d
+      );
+
+      oscillator.connect(volume);
+      volume.connect(puppyAudio.destination);
+
+      oscillator.start(start);
+      oscillator.stop(start + note.d + 0.02);
+
+      start += note.d + 0.035;
+    });
+  } catch (error) {
+    console.warn("Puppy sound unavailable:", error);
+  }
+}
+
+const soundToggle = document.getElementById("soundToggle");
+
+soundToggle.addEventListener("click", () => {
+  puppySoundsOn = !puppySoundsOn;
+
+  soundToggle.textContent = puppySoundsOn
+    ? "🔊 Sounds: ON"
+    : "🔇 Sounds: OFF";
+
+  if (puppySoundsOn) playPuppySound("yip");
+});
+
+// Play sounds when catching treats.
+document.addEventListener("click", event => {
+  if (event.target.closest(".treat-game-item")) {
+    playPuppySound("treat");
+  }
 });
 
 /* CONNECT TO SUPABASE */
