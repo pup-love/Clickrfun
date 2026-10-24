@@ -1356,7 +1356,7 @@ function playPuppySound(type="bark"){
  if(!puppySoundsOn)return;
  try{
   // Use uploaded real WAV recordings for clicks, bubble pops, and both drum pads.
-  const recordedFiles={click:"mixkit-mouse-click-close-1113.wav",pop:"mixkit-liquid-bubble-3000.wav",drumLow:"mixkit-tribal-dry-drum-558.wav",drumHigh:"mixkit-achievement-win-drums-555.wav"};
+  const recordedFiles={click:"mixkit-mouse-click-close-1113.wav",pop:"mixkit-liquid-bubble-3000.wav",drumLow:"mixkit-tribal-dry-drum-558.wav",drumHigh:"mixkit-achievement-win-drums-555.wav",gift:"mixkit-achievement-win-drums-555.wav"};
   if(recordedFiles[type]){
    const recordedSound=new Audio(recordedFiles[type]);
    recordedSound.volume=.8;
