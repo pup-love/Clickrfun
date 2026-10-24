@@ -1074,6 +1074,10 @@ async function viewMember(id){
  const name=document.createElement("h3");name.textContent=(accountTypeOf(data,null)==="owner"?"💗 Owner · ":accountTypeOf(data,null)==="kitty"?"🐱 Kitty · ":"🐶 Puppy · ")+data.username;
  const pid=document.createElement("p");pid.className="profile-id";pid.textContent=data.profile_id||"";
  const bio=document.createElement("p");bio.textContent=data.bio||"This pup hasn't written a bio yet. 💗";
+ const starCounter=document.createElement("p");starCounter.className="profile-id";starCounter.textContent="🌟 Gold Stars: counting...";
+ container.appendChild(starCounter);
+ const starCountResult=await supabaseClient.from("private_messages").select("id",{count:"exact",head:true}).eq("recipient_id",id).like("content","%Gold Star gift%");
+ if(starCountResult.error){starCounter.textContent="🌟 Gold Stars: unavailable right now";}else{starCounter.textContent="🌟 Gold Stars: "+(starCountResult.count||0);}
  const dmButton=document.createElement("button");dmButton.type="button";dmButton.textContent="💌 Send Private Message";
  dmButton.addEventListener("click",()=>openPrivateDM(id,data.username));
  container.append(look,name,pid,bio);
@@ -1085,7 +1089,7 @@ async function viewMember(id){
  const socialTitle=document.createElement("h3");socialTitle.textContent="💞 Send some paw love!";
  const socialHelp=document.createElement("p");socialHelp.className="small";socialHelp.textContent="Boop or nuzzle them, or send a little toy/snack surprise!";
  const actions=document.createElement("div");actions.style.cssText="display:flex;flex-wrap:wrap;gap:6px;";
- [["👉","Boop","booped you! 👉💗"],["🐾","Nuzzle","gave you a cozy nuzzle! 🐾💕"],["🧸","Gift a toy","sent you a toy! 🧸"],["🍪","Gift a snack","sent you a yummy snack! 🍪"]].forEach(([emoji,label,content])=>{
+ [["👉","Boop","booped you! 👉💗"],["🐾","Nuzzle","gave you a cozy nuzzle! 🐾💕"],["🧸","Gift a toy","sent you a toy! 🧸"],["🍪","Gift a snack","sent you a yummy snack! 🍪"],["🌟","Gold Star gift","sent you a Gold Star gift! 🌟"]].forEach(([emoji,label,content])=>{
   const action=document.createElement("button");action.type="button";action.textContent=emoji+" "+label;
   action.addEventListener("click",async()=>{
    if(!requireLogin())return;
