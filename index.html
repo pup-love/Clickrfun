@@ -2112,7 +2112,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   const earL=ball(head,fur,[-.27,.405,.18],[.145,.19,.105]);earL.rotation.z=-.22;const earR=ball(head,fur,[-.27,.405,-.18],[.145,.19,.105]);earR.rotation.z=-.22;
   ball(head,inner,[-.255,.415,.205],[.068,.105,.022]);ball(head,inner,[-.255,.415,-.205],[.068,.105,.022]);
   // Tiny ginger tabby markings for her Garfield-inspired look.
-  for(const side of [-1,1]){const stripe=ball(head,patch,[-.12,.34,side*.196],[.035,.12,.012]);stripe.rotation.z=-.28;const cheekStripe=ball(head,patch,[.18,-.035,side*.246],[.028,.07,.01]);cheekStripe.rotation.z=.45;}
+  for(const side of [-1,1]){for(const [x,y,z,rx,ry] of [[-.18,.34,.19,.045,.15],[-.08,.35,.205,.045,.16],[.02,.33,.19,.04,.13]]){const stripe=ball(head,patch,[x,y,side*z],[rx,ry,.018]);stripe.rotation.z=-.24;}const cheekStripe=ball(head,patch,[.18,-.035,side*.25],[.04,.085,.018]);cheekStripe.rotation.z=.45;}
   // Small, soft kitten eyes that sit naturally in the face.
   for(const side of [-1,1]){
    ball(head,eye,[.405,.18,side*.176],[.046,.061,.033]);
