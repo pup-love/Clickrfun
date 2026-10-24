@@ -2010,15 +2010,15 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   ball(body,gold,[0,.95,0],[.78,.48,.43]);
   ball(body,cream,[.18,.72,.07],[.46,.25,.36]);
   const headPivot=new THREE.Group();headPivot.position.set(.48,1.35,0);body.add(headPivot);
-  ball(headPivot,gold,[0,.12,0],[.48,.48,.43]);
-  ball(headPivot,cream,[.23,-.08,.015],[.32,.25,.31]);
-  ball(headPivot,white,[.43,-.03,.02],[.15,.12,.17]);
-  ball(headPivot,dark,[.54,.015,.025],[.095,.07,.11]);
+  ball(headPivot,gold,[0,.12,0],[.41,.42,.39]);
+  ball(headPivot,cream,[.205,-.075,.015],[.255,.18,.255]);
+  ball(headPivot,white,[.405,-.025,.02],[.115,.09,.135]);
+  ball(headPivot,dark,[.505,.005,.025],[.075,.055,.085]);
   // Eyes on the camera-facing side and far side.
-  ball(headPivot,eyeMat,[.385,.2,.17],[.065,.078,.045]);
-  ball(headPivot,eyeMat,[.385,.2,-.17],[.065,.078,.045]);
-  ball(headPivot,white,[.421,.23,.185],[.021,.024,.014]);
-  ball(headPivot,white,[.421,.23,-.155],[.021,.024,.014]);
+  ball(headPivot,eyeMat,[.345,.19,.16],[.055,.066,.04]);
+  ball(headPivot,eyeMat,[.345,.19,-.16],[.055,.066,.04]);
+  ball(headPivot,white,[.375,.215,.173],[.018,.02,.012]);
+  ball(headPivot,white,[.375,.215,-.173],[.018,.02,.012]);
   const ear1=ball(headPivot,earMat,[-.2,.43,.28],[.18,.32,.12]);ear1.rotation.z=-.42;
   const ear2=ball(headPivot,earMat,[-.2,.43,-.28],[.18,.32,.12]);ear2.rotation.z=-.42;
   ball(headPivot,pink,[.36,-.22,.12],[.12,.055,.035]);
@@ -2108,10 +2108,19 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   const cat=new THREE.Group();scene.add(cat);cat.position.y=.95;const body=new THREE.Group();cat.add(body);
   const fur=mat("#f28a2e"),patch=mat("#9b3514"),inner=mat("#f5a0b8"),dark=mat("#34283d",.3),eye=mat("#65b9a0",.25),nose=mat("#e97891",.3),white=mat("#fff0d2");
   ball(body,fur,[0,.78,0],[.72,.37,.34]);ball(body,white,[.13,.65,.075],[.37,.17,.27]);
-  // Bold, curved ginger-tabby stripes on both sides of her body, raised just above the fur so they stay visible.
+  // Tabby markings are thin curved tubes that follow the body's ellipsoid surface,
+  // rather than floating spheres sticking out beyond the fur.
   for(const side of [-1,1]){
-   for(const [x,y,rx,ry,rz,tilt] of [[-.43,.91,.075,.22,.025,-.28],[-.16,.99,.065,.23,.025,-.12],[.12,.99,.065,.22,.025,.12],[.39,.91,.075,.20,.025,.28]]){
-    const bodyStripe=ball(body,patch,[x,y,side*.321],[rx,ry,rz]);bodyStripe.rotation.z=tilt;
+   for(const [x0,lean] of [[-.42,-.10],[-.19,-.045],[.08,.045],[.34,.10]]){
+    const pts=[];
+    for(let k=0;k<=12;k++){
+     const t=k/12, y=.77+t*.43, x=x0+lean*(t-.5);
+     const q=Math.max(.04,1-(x/.72)**2-((y-.78)/.37)**2);
+     pts.push(new THREE.Vector3(x,y,side*(.34*Math.sqrt(q)+.006)));
+    }
+    const curve=new THREE.CatmullRomCurve3(pts);
+    const stripe=new THREE.Mesh(new THREE.TubeGeometry(curve,20,.022,6,false),patch);
+    stripe.castShadow=false;stripe.receiveShadow=false;body.add(stripe);
    }
   }
   const head=new THREE.Group();head.position.set(.34,1.28,0);body.add(head);ball(head,fur,[0,.1,0],[.46,.39,.38]);
