@@ -144,7 +144,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 /* Virtual puppy adoption corner */
 .virtual-pet-card{margin:18px 0;padding:20px;border:3px solid #fff;border-radius:24px;background:linear-gradient(135deg,#f3e8ff,#eadbff 55%,#ffe9f5);color:#442b5b;box-shadow:0 8px 22px rgba(96,60,130,.16);text-align:center}
 .virtual-pet-card h3,.virtual-pet-card p{color:#442b5b}
-.virtual-pet-display{font-size:clamp(64px,12vw,94px);line-height:1.25;filter:drop-shadow(0 5px 3px #9d7bc544);margin:8px auto}
+.virtual-pet-photo-button{display:flex;flex-direction:column;align-items:center;gap:8px;margin:12px auto;border:0;background:transparent;cursor:pointer;color:#56366e;font-weight:900}.virtual-pet-photo{display:block;width:min(100%,340px);aspect-ratio:1/1;object-fit:cover;border-radius:28px;border:5px solid #fff;box-shadow:0 10px 28px #6d4a8840;transition:transform .2s;animation:puppyBreathe 3s ease-in-out infinite}.virtual-pet-photo-button:hover .virtual-pet-photo{transform:scale(1.035) rotate(-1deg)}.virtual-pet-photo-button:active .virtual-pet-photo{transform:scale(.96)}.puppy-photo-hint{font-size:.85rem;letter-spacing:.08em;background:#fff9ff;border:1px solid #d8b9f2;border-radius:999px;padding:7px 12px}@keyframes puppyBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .virtual-pet-stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:12px 0}
 .virtual-pet-stat{background:#fff9ff;border:1px solid #d8b9f2;border-radius:14px;padding:8px 12px;color:#56366e;font-weight:700}
 .virtual-pet-card input,.virtual-pet-card select{max-width:100%;padding:10px 12px;border:2px solid #d5b4ed;border-radius:12px;background:#fff;color:#442b5b}
@@ -363,7 +363,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <div class="virtual-pet-card" id="virtualPetCard">
   <h3>🐶 Adopt Your Very Own Puppy! 💗</h3>
   <p class="small">Give your little buddy a name, feed them treats, and give them lots of love!</p>
-  <div class="virtual-pet-display" id="virtualPetEmoji" aria-live="polite">🐶</div>
+  <button type="button" class="virtual-pet-photo-button" id="virtualPetBoop" aria-label="Boop your puppy to hear a bark!"><img class="virtual-pet-photo" id="virtualPetEmoji" src="https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=700&q=85" alt="A fluffy golden retriever puppy" loading="lazy"><span class="puppy-photo-hint">BOOP MY NOSE! 🐾</span></button>
   <h3 id="virtualPetName">Your new bestie</h3>
   <p id="virtualPetMood">Your puppy can't wait to meet you! ✨</p>
   <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
@@ -1623,9 +1623,9 @@ let virtualPet={...defaultVirtualPet};
 try{const savedPet=JSON.parse(localStorage.getItem(virtualPetKey)||"null");if(savedPet&&typeof savedPet==="object")virtualPet={...defaultVirtualPet,...savedPet};}catch(e){}
 function saveVirtualPet(){try{localStorage.setItem(virtualPetKey,JSON.stringify(virtualPet));}catch(e){}}
 function renderVirtualPet(message){
- const emoji=$("virtualPetEmoji"),name=$("virtualPetName"),mood=$("virtualPetMood");
- if(!emoji||!name||!mood)return;
- emoji.textContent=virtualPet.emoji;
+ const puppyPhoto=$("virtualPetEmoji"),name=$("virtualPetName"),mood=$("virtualPetMood");
+ if(!puppyPhoto||!name||!mood)return;
+ puppyPhoto.alt=virtualPet.adopted?"Your puppy "+virtualPet.name:"A fluffy golden retriever puppy";
  name.textContent=virtualPet.adopted?virtualPet.name:"Your new bestie";
  $("virtualPetHappiness").textContent=String(virtualPet.happiness);
  $("virtualPetFullness").textContent=String(virtualPet.fullness);
@@ -1636,20 +1636,21 @@ function renderVirtualPet(message){
 $("virtualPetAdopt").addEventListener("click",()=>{
  const input=$("virtualPetNameInput"),name=input.value.trim();
  if(!name){$("virtualPetMessage").textContent="Pick a cute name for your puppy first! 💕";input.focus();return;}
- virtualPet.adopted=true;virtualPet.name=name.slice(0,20);virtualPet.happiness=Math.max(virtualPet.happiness,3);virtualPet.fullness=Math.max(virtualPet.fullness,5);saveVirtualPet();renderVirtualPet("YAY! "+virtualPet.name+" is officially part of your pack! 🎉🐶");
+ virtualPet.adopted=true;virtualPet.name=name.slice(0,20);virtualPet.happiness=Math.max(virtualPet.happiness,3);virtualPet.fullness=Math.max(virtualPet.fullness,5);saveVirtualPet();playPuppySound("win");renderVirtualPet("YAY! "+virtualPet.name+" is officially part of your pack! 🎉🐶");
 });
 function virtualPetAction(action){
  if(!virtualPet.adopted){$("virtualPetMessage").textContent="Name and adopt your puppy first! 💗";return;}
  if(action==="feed"){
   if(virtualPet.fullness>=10){renderVirtualPet(virtualPet.name+" is all full up! Give them cuddles instead. 💕");return;}
-  virtualPet.fullness=Math.min(10,virtualPet.fullness+2);virtualPet.happiness=Math.min(10,virtualPet.happiness+1);renderVirtualPet("Yum yum! "+virtualPet.name+" loved that treat! 🦴");
+  virtualPet.fullness=Math.min(10,virtualPet.fullness+2);virtualPet.happiness=Math.min(10,virtualPet.happiness+1);playPuppySound("treat");renderVirtualPet("Yum yum! "+virtualPet.name+" loved that treat! 🦴");
  }else if(action==="pet"){
-  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);renderVirtualPet("Awww, "+virtualPet.name+" is soaking up the cuddles! 🥹💗");
+  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);playPuppySound("yip");renderVirtualPet("Awww, "+virtualPet.name+" is soaking up the cuddles! 🥹💗");
  }else{
-  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);virtualPet.fullness=Math.max(0,virtualPet.fullness-1);renderVirtualPet("WHEEE! "+virtualPet.name+" had the best playtime! 🎾✨");
+  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);virtualPet.fullness=Math.max(0,virtualPet.fullness-1);playPuppySound("boing");renderVirtualPet("WHEEE! "+virtualPet.name+" had the best playtime! 🎾✨");
  }
  saveVirtualPet();
 }
+$("virtualPetBoop").addEventListener("click",()=>{playPuppySound("bark");const photo=$("virtualPetEmoji");photo.style.animation="none";void photo.offsetWidth;photo.style.animation="puppyBreathe .45s ease-in-out 2";renderVirtualPet(virtualPet.adopted?virtualPet.name+" says WOOF! 🐶💗":"WOOF! Adopt me and let us be best friends! 🐾");});
 $("virtualPetFeed").addEventListener("click",()=>virtualPetAction("feed"));
 $("virtualPetPet").addEventListener("click",()=>virtualPetAction("pet"));
 $("virtualPetPlay").addEventListener("click",()=>virtualPetAction("play"));
