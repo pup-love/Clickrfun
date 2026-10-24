@@ -940,7 +940,7 @@ async function loadShop(){
  shopCache.forEach(item=>{
   const box=document.createElement("div");box.className="item";
   const emoji=document.createElement("div");emoji.className="emoji";emoji.textContent=item.emoji||"🐾";
-  const title=document.createElement("h3");title.textContent=item.name;
+  const title=document.createElement("h3");title.textContent=item.name+" × "+item.quantity;
   const desc=document.createElement("p");desc.textContent=item.description||"A cute item!";
   const price=document.createElement("p");price.textContent="🦴 "+item.price+" treats";
   const button=document.createElement("button");button.textContent="Buy item";button.addEventListener("click",()=>buyItem(item));
@@ -963,18 +963,20 @@ async function loadInventory(){
  $("inventoryStatus").textContent="Loading your items... 🎒";
  const {data,error}=await supabaseClient.from("inventory").select("item_id").eq("user_id",currentUser.id);
  if(error){$("inventoryStatus").textContent="Couldn't load inventory: "+error.message;return;}
- const owned=(data||[]).map(item=>item.item_id);
+ const owned=(data||[]).map(item=>String(item.item_id));
  if(!owned.length){$("inventoryStatus").textContent="Your inventory is empty. Visit the shop to adopt some accessories! 💗";return;}
  if(!shopCache.length){
   const result=await supabaseClient.from("shop_items").select("id,name,description,price,emoji");
   if(result.error){$("inventoryStatus").textContent="Couldn't load item details: "+result.error.message;return;}
   shopCache=result.data||[];
  }
- const items=shopCache.filter(item=>owned.includes(item.id));
+ const quantities={};
+ owned.forEach(id=>{quantities[id]=(quantities[id]||0)+1;});
+ const items=shopCache.filter(item=>quantities[String(item.id)]>0).map(item=>({...item,quantity:quantities[String(item.id)]}));
  const {data:profile,error:profileError}=await supabaseClient.from("profiles").select("equipped_items").eq("id",currentUser.id).maybeSingle();
  if(profileError){$("inventoryStatus").textContent="Couldn't check equipped items: "+profileError.message;return;}
  const equipped=profile?.equipped_items||[];
- $("inventoryStatus").textContent="You own "+items.length+" item(s). Equipped items show on your profile! ✨";
+ $("inventoryStatus").textContent="You own "+owned.length+" item(s) in total. Equipped items show on your profile! ✨";
  items.forEach(item=>{
   const box=document.createElement("div");box.className="item";
   const emoji=document.createElement("div");emoji.className="emoji";emoji.textContent=item.emoji||"🐾";
