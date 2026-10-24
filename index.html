@@ -754,7 +754,14 @@ async function ensureProfile(user){
  const {data,error}=await supabaseClient.from("profiles").select("username,account_type").eq("id",user.id).maybeSingle();
  if(error)throw error;
  const username=(user.user_metadata&&user.user_metadata.username)||"";
- if(data&&data.username)return data.username;
+ if(data&&data.username){
+  const type=accountTypeOf(data,user);
+  if(data.account_type!==type){
+   const {error:updateError}=await supabaseClient.from("profiles").update({account_type:type}).eq("id",user.id);
+   if(updateError)throw updateError;
+  }
+  return data.username;
+ }
  if(!username)throw new Error("No username is saved to this account.");
  const {error:upsertError}=await supabaseClient.from("profiles").upsert({id:user.id,username,account_type:accountTypeOf(null,user),owned_puppies:""},{onConflict:"id"});
  if(upsertError)throw upsertError;
