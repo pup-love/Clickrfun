@@ -1716,19 +1716,35 @@ function ensurePetGrave(stageId,pet,label){
  grave.style.display=pet.dead?"block":"none";
 }
 function petCareTick(){
- const now=Date.now();
+ const now=Date.now(),HOUR=60*60*1000;
  [[virtualPet,"puppy3dStage","puppy"],[virtualKitty,"virtualKitty3dStage","kitty"]].forEach(([pet,stage,label])=>{
-  if(!pet.adopted||pet.dead)return;
-  if(Number(pet.happiness)<=0||Number(pet.fullness)<=0){
-   if(!pet.zeroSince)pet.zeroSince=now;
-   if(now-pet.zeroSince>=10*60*1000){
-    pet.dead=true;
-    const msg="Rest peacefully, "+pet.name+". You will always be loved. 💗";
-    if(label==="puppy")$("virtualPetMessage").textContent=msg;else $("virtualKittyMood").textContent=msg;
-    if(label==="puppy")saveVirtualPet();else saveVirtualKitty();
+  if(!pet.adopted){ensurePetGrave(stage,pet,label);return;}
+  if(!Number.isFinite(Number(pet.lastCareAt))||!pet.lastCareAt)pet.lastCareAt=now;
+  if(!pet.dead){
+   const elapsed=Math.max(0,now-pet.lastCareAt),previousFullness=Number(pet.fullness)||0,previousHappiness=Number(pet.happiness)||0;
+   // Hunger drops by 1 every 30 minutes; happiness drops by 1 every 45 minutes.
+   const foodSteps=Math.floor(elapsed/(30*60*1000)),happySteps=Math.floor(elapsed/(45*60*1000));
+   if(foodSteps||happySteps){
+    pet.fullness=Math.max(0,previousFullness-foodSteps);
+    pet.happiness=Math.max(0,previousHappiness-happySteps);
+    pet.lastCareAt+=Math.max(foodSteps*30*60*1000,happySteps*45*60*1000);
+    if(!pet.zeroSince){
+     const foodZeroIn=previousFullness>0&&pet.fullness===0?previousFullness*30*60*1000:Infinity;
+     const happyZeroIn=previousHappiness>0&&pet.happiness===0?previousHappiness*45*60*1000:Infinity;
+     const timeToZero=Math.min(foodZeroIn,happyZeroIn);
+     if(timeToZero!==Infinity)pet.zeroSince=now-elapsed+timeToZero;
+    }
    }
-  }else pet.zeroSince=0;
-  if(label==="puppy")saveVirtualPet();else saveVirtualKitty();
+   if(Number(pet.happiness)<=0||Number(pet.fullness)<=0){
+    if(!pet.zeroSince)pet.zeroSince=now;
+    if(now-pet.zeroSince>=10*60*1000){
+     pet.dead=true;
+     const msg="Rest peacefully, "+pet.name+". You will always be loved. 💗";
+     if(label==="puppy")$("virtualPetMessage").textContent=msg;else $("virtualKittyMood").textContent=msg;
+    }
+   }else pet.zeroSince=0;
+  }
+  if(label==="puppy"){saveVirtualPet();renderVirtualPet();}else{saveVirtualKitty();renderVirtualKitty();}
   ensurePetGrave(stage,pet,label);
  });
 }
