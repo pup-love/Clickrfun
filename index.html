@@ -841,29 +841,40 @@ async function loadPrivateMessages(){
  $("dmStatus").textContent="Private conversation with "+activeDmUsername;
 }
 
+let dmSendInFlight=false;
 $("dmForm").addEventListener("submit",async event=>{
  event.preventDefault();
- if(!requireLogin()||!activeDmUserId)return;
+ if(dmSendInFlight||!requireLogin()||!activeDmUserId)return;
  const input=$("dmInput");
  const content=input.value.trim();
  if(!content||content.length>1000)return;
- try{if(await isBlockedEitherWay(activeDmUserId)){$("dmStatus").textContent="This private conversation is unavailable because one of you has blocked the other.";$("dmSendButton").disabled=true;return;}}
- catch(error){$("dmStatus").textContent="Couldn't check block settings: "+error.message;return;}
 
+ // Lock immediately, before any awaited checks, to prevent double-click/Enter races.
+ dmSendInFlight=true;
  const button=$("dmSendButton");
  button.disabled=true;
- const {error}=await supabaseClient.from("private_messages").insert({
-  sender_id:currentUser.id,receiver_id:activeDmUserId,recipient_id:activeDmUserId,content
- });
-
- if(error){
+ const recipientId=activeDmUserId;
+ try{
+  if(await isBlockedEitherWay(recipientId)){
+   $("dmStatus").textContent="This private conversation is unavailable because one of you has blocked the other.";
+   return;
+  }
+  const {error}=await supabaseClient.from("private_messages").insert({
+   sender_id:currentUser.id,receiver_id:recipientId,recipient_id:recipientId,content
+  });
+  if(error){
+   $("dmStatus").textContent="Couldn't send message: "+error.message;
+  }else{
+   input.value="";
+   await loadPrivateMessages();
+   await loadPrivateInbox();
+  }
+ }catch(error){
   $("dmStatus").textContent="Couldn't send message: "+error.message;
- }else{
-  input.value="";
-  await loadPrivateMessages();
-  await loadPrivateInbox();
+ }finally{
+  dmSendInFlight=false;
+  button.disabled=!currentUser||!activeDmUserId;
  }
- button.disabled=!currentUser||!activeDmUserId;
 });
 
 /* NAVIGATION */
