@@ -202,6 +202,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <button onclick="showSection('treats')">🦴 My Treats</button>
 <button onclick="showSection('shop')">🛍️ Shop</button>
 <button onclick="showSection('buttonPlayroom')">🔘 Button Playroom</button>
+<button onclick="showSection('virtualPuppy')">🐶 My Virtual Puppy</button>
 <button onclick="showSection('inventory')">🎒 Inventory</button>
 <button onclick="showSection('myprofile')">🐶 My Profile</button>
 <button onclick="showSection('members')">🔎 Find Paws</button>
@@ -268,29 +269,6 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 
 <section id="buttonPlayroom" class="card hidden">
 <h2>🔘 The Clicky Button Playroom! 🐶</h2>
-<div class="virtual-pet-card" id="virtualPetCard">
-  <h3>🐶 Adopt Your Very Own Puppy! 💗</h3>
-  <p class="small">Give your little buddy a name, feed them treats, and give them lots of love!</p>
-  <div class="virtual-pet-display" id="virtualPetEmoji" aria-live="polite">🐶</div>
-  <h3 id="virtualPetName">Your new bestie</h3>
-  <p id="virtualPetMood">Your puppy can't wait to meet you! ✨</p>
-  <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
-    <label for="virtualPetNameInput">Name your puppy</label>
-    <input id="virtualPetNameInput" maxlength="20" placeholder="e.g. Mochi" aria-label="Puppy's name">
-    <button type="button" id="virtualPetAdopt">Adopt puppy 💕</button>
-  </div>
-  <div class="virtual-pet-stats">
-    <span class="virtual-pet-stat">💖 Happiness: <strong id="virtualPetHappiness">3</strong>/10</span>
-    <span class="virtual-pet-stat">🦴 Fullness: <strong id="virtualPetFullness">5</strong>/10</span>
-  </div>
-  <div class="virtual-pet-actions">
-    <button type="button" id="virtualPetFeed">🦴 Feed a treat</button>
-    <button type="button" id="virtualPetPet">🐾 Give cuddles</button>
-    <button type="button" id="virtualPetPlay">🎾 Play together</button>
-  </div>
-  <p id="virtualPetMessage" role="status" aria-live="polite">Adopt your puppy to start your little adventure!</p>
-</div>
-
 <section class="card sticker-collection" id="stickerCollection" aria-labelledby="stickerCollectionTitle">
   <div class="sticker-heading">
     <div><h3 id="stickerCollectionTitle">🎀 My Sticker & Badge Book</h3><p class="small">Click buttons, collect cute treasures, and fill your page with happy little badges!</p></div>
@@ -377,6 +355,33 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
   </div>
 </div>
 <p id="buttonPlayroomStatus" class="toy-message" role="status" aria-live="polite">Ready to click, boop, bounce, and pop! 🐾</p>
+</section>
+
+<section id="virtualPuppy" class="card hidden">
+<h2>🐶 My Virtual Puppy 💗</h2>
+<p class="small">Your own little bestie: choose a name, share treats, cuddle, and play together!</p>
+<div class="virtual-pet-card" id="virtualPetCard">
+  <h3>🐶 Adopt Your Very Own Puppy! 💗</h3>
+  <p class="small">Give your little buddy a name, feed them treats, and give them lots of love!</p>
+  <div class="virtual-pet-display" id="virtualPetEmoji" aria-live="polite">🐶</div>
+  <h3 id="virtualPetName">Your new bestie</h3>
+  <p id="virtualPetMood">Your puppy can't wait to meet you! ✨</p>
+  <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
+    <label for="virtualPetNameInput">Name your puppy</label>
+    <input id="virtualPetNameInput" maxlength="20" placeholder="e.g. Mochi" aria-label="Puppy's name">
+    <button type="button" id="virtualPetAdopt">Adopt puppy 💕</button>
+  </div>
+  <div class="virtual-pet-stats">
+    <span class="virtual-pet-stat">💖 Happiness: <strong id="virtualPetHappiness">3</strong>/10</span>
+    <span class="virtual-pet-stat">🦴 Fullness: <strong id="virtualPetFullness">5</strong>/10</span>
+  </div>
+  <div class="virtual-pet-actions">
+    <button type="button" id="virtualPetFeed">🦴 Feed a treat</button>
+    <button type="button" id="virtualPetPet">🐾 Give cuddles</button>
+    <button type="button" id="virtualPetPlay">🎾 Play together</button>
+  </div>
+  <p id="virtualPetMessage" role="status" aria-live="polite">Adopt your puppy to start your little adventure!</p>
+</div>
 </section>
 
 <section id="account" class="card hidden">
