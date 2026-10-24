@@ -2117,17 +2117,20 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   const tailPivot=new THREE.Group();tailPivot.position.set(-.58,.95,0);body.add(tailPivot);const tail=ball(tailPivot,fur,[-.31,.24,0],[.4,.14,.14]);tail.rotation.z=-.35;ball(tailPivot,patch,[-.59,.42,0],[.13,.12,.12]);
   const legs=[];for(const x of [-.4,.4])for(const z of [-.25,.25]){const p=new THREE.Group();p.position.set(x,.55,z);body.add(p);ball(p,fur,[0,-.19,0],[.14,.29,.14]);ball(p,white,[.025,-.36,.02],[.16,.09,.15]);legs.push(p);}
   const collar=new THREE.Mesh(new THREE.TorusGeometry(.25,.045,8,28),mat("#f16eae"));collar.position.set(.3,1.08,0);collar.rotation.x=Math.PI/2;body.add(collar);ball(body,mat("#ffd66f"),[.52,.98,.03],[.065,.075,.045]);
-  let action="idle",spin=0,jump=0,last=0;window.setKitty3DAction=a=>{action=a||"idle";if(action==="spin")spin=0;if(action==="jump")jump=0;};
+  const idleY=.95,faceUserY=0;let action="idle",spin=0,jump=0,last=0,actionUntil=0,walkOrigin=0;
+  window.setKitty3DAction=a=>{action=a||"idle";actionUntil=performance.now()+2200;if(action==="spin")spin=0;if(action==="jump")jump=0;if(action==="walk")walkOrigin=performance.now();if(action==="idle")actionUntil=0;};
   function resize(){const w=Math.max(1,host.clientWidth),h=Math.max(1,host.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}
   new ResizeObserver(resize).observe(host);resize();if(loading)loading.remove();host.classList.add("ready");
-  host.addEventListener("pointerdown",()=>{action="purr";setTimeout(()=>{if(action==="purr")action="idle";},1200);});
-  document.querySelectorAll("[data-kitty-action]").forEach(b=>b.addEventListener("click",()=>{window.setKitty3DAction(b.dataset.kittyAction);}));
-  function animate(now){requestAnimationFrame(animate);const dt=Math.min(.05,(now-last)/1000||0);last=now;cat.position.y=.95+Math.sin(now*.003)*.035;head.rotation.z=Math.sin(now*.002)*.025;tailPivot.rotation.z=Math.sin(now*.014)*(action==="purr"?1.25:.62);legs.forEach((p,i)=>p.rotation.x=action==="walk"?Math.sin(now*.009+(i%2)*Math.PI)*.42:0);
-   if(action==="spin"){spin+=dt*4.5;cat.rotation.y=spin;if(spin>Math.PI*2){action="idle";cat.rotation.y=0;}}
-   else if(action==="jump"){jump+=dt*7;cat.position.y=.95+Math.max(0,Math.sin(jump))*.72;if(jump>Math.PI){action="idle";cat.position.y=.95;}}
-   else if(action==="walk"){cat.position.x=Math.sin(now*.0018)*.65;cat.rotation.y=Math.cos(now*.0018)*.18;}
-   else if(action==="sit"||action==="loaf"){body.scale.y=action==="loaf"?.72:1;body.position.y=action==="sit"?-.13:0;}
-   else{body.scale.y=1;body.position.y=0;cat.position.x+=(0-cat.position.x)*.05;cat.rotation.y+=(0-cat.rotation.y)*.08;}
+  host.addEventListener("pointerdown",()=>window.setKitty3DAction("purr"));
+  document.querySelectorAll("[data-kitty-action]").forEach(b=>b.addEventListener("click",()=>window.setKitty3DAction(b.dataset.kittyAction)));
+  function animate(now){requestAnimationFrame(animate);const dt=Math.min(.05,(now-last)/1000||0);last=now;if(action!=="idle"&&now>actionUntil&&action!=="spin"&&action!=="jump")action="idle";
+   cat.position.y=idleY+Math.sin(now*.004)*.025;head.rotation.z=Math.sin(now*.002)*.018;tailPivot.rotation.z=Math.sin(now*.018)*(action==="purr"?1.25:.62);
+   legs.forEach((p,i)=>{const phase=now*.009+(i%2)*Math.PI;p.rotation.x=action==="walk"?Math.sin(phase)*.38:action==="jump"?-.12:action==="sit"?(i<2?-.18:0):Math.sin(now*.002+i)*.012;p.rotation.z=action==="sit"&&i<2?(i%2===0?-.4:.4):0;});
+   if(action==="walk"){cat.position.x=Math.sin(now*.0025)*.48;cat.rotation.y=Math.sin(now*.0025)*.12;}
+   else if(action==="spin"){spin+=dt*5.3;cat.rotation.y=spin;if(spin>=Math.PI*2){action="idle";cat.rotation.y=0;}}
+   else if(action==="jump"){jump+=dt*7;cat.position.y=idleY+Math.max(0,Math.sin(jump))*.72;body.rotation.z=Math.sin(jump)*.035;if(jump>Math.PI){action="idle";cat.position.y=idleY;body.rotation.z=0;}}
+   else if(action==="sit"||action==="loaf"){body.scale.y=action==="loaf"?.72:1;body.position.y=action==="sit"?-.1:0;cat.rotation.y=0;}
+   else{body.scale.y=1;body.position.y=0;cat.position.x+=(0-cat.position.x)*.12;cat.rotation.y+=(faceUserY-cat.rotation.y)*.12;body.rotation.z+=(0-body.rotation.z)*.12;}
    renderer.render(scene,camera);
   }requestAnimationFrame(animate);
  }catch(e){console.warn("3D kitty unavailable",e);if(loading)loading.textContent="Your kitty's 3D world couldn't load in this browser. Try refreshing! 🐱";}
