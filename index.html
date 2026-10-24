@@ -1130,9 +1130,20 @@ async function viewMember(id){
   try{
    const transfer=await supabaseClient.rpc("gift_clickrfun_item",{p_item_id:giftSelect.value,p_recipient_id:id});
    if(transfer.error)throw transfer.error;
-   const notice=await supabaseClient.from("private_messages").insert({sender_id:currentUser.id,receiver_id:id,recipient_id:id,content:"🎁 "+(currentUsername||"A friend")+" sent you a gift! 💗"});
-   if(notice.error)throw notice.error;
    giftStatus.textContent="Gift sent! 🎁💗";giftSelect.selectedIndex=0;
+   const selectedOption=giftSelect.options[giftSelect.selectedIndex];
+   const notice=await supabaseClient.from("private_messages").insert({sender_id:currentUser.id,receiver_id:id,recipient_id:id,content:"🎁 "+(currentUsername||"A friend")+" sent you a gift! 💗"});
+   if(notice.error)giftStatus.textContent="Gift transferred! The notification couldn't be sent: "+notice.error.message;
+   const remaining=await supabaseClient.from("inventory").select("item_id").eq("user_id",currentUser.id);
+   if(!remaining.error){
+    const counts={};(remaining.data||[]).forEach(row=>{const key=String(row.item_id);counts[key]=(counts[key]||0)+1;});
+    Array.from(giftSelect.options).slice(1).forEach(option=>{
+     const count=counts[option.value]||0;
+     const item=shopCache.find(entry=>String(entry.id)===option.value);
+     if(!count){option.remove();}else if(item){option.textContent=(item.emoji||"🎁")+" "+item.name+" × "+count;}
+    });
+    giftButton.disabled=giftSelect.options.length<2;
+   }
   }catch(giftError){giftStatus.textContent="Couldn't send gift: "+giftError.message;giftButton.disabled=false;}
  });
  social.append(giftTitle,giftHelp,giftSelect,giftButton,giftStatus);
