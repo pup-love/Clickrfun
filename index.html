@@ -20,7 +20,7 @@ main{width:min(950px,94%);margin:25px auto;min-height:45vh}
 .card{background:#29183b;border:1px solid #704276;border-radius:18px;padding:22px;margin-bottom:20px;box-shadow:0 8px 25px #09041055}
 h2{margin-top:0}
 input,textarea,select{display:block;width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit}
-textarea{resize:vertical;min-height:80px} select{width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit}
+textarea{resize:vertical;min-height:80px} select{width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit} select{width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit}
 .small{color:#d7b9df;font-size:.9rem}
 .hidden{display:none!important}
 #status,#rewardStatus,#shopStatus,#profileStatus,#inventoryStatus{white-space:pre-wrap;color:#ffd0ed}
@@ -73,6 +73,13 @@ hr{border-color:#704276;margin:24px 0}
 .member-action-card{width:min(100%,360px);background:#29143d;border:2px solid #f28bd4;border-radius:18px;padding:20px;box-shadow:0 12px 45px #000b}
 .member-action-card h3{margin-top:0}.member-action-card button{width:100%;margin:6px 0}.member-action-card .secondary-action{background:#50305e}
 
+
+body[data-theme="ocean"]{background:#081e32;color:#e8f7ff} body[data-theme="ocean"] header{background:#103650;border-color:#6ee7f9} body[data-theme="ocean"] nav{background:#0c2a40} body[data-theme="ocean"] h1,body[data-theme="ocean"] h2{color:#7cecff} body[data-theme="ocean"] .card,body[data-theme="ocean"] .games-panel,body[data-theme="ocean"] .member-action-card{background:#12344a;border-color:#347b96} body[data-theme="ocean"] button{background:#75d8eb;color:#082438} body[data-theme="ocean"] input,body[data-theme="ocean"] textarea,body[data-theme="ocean"] select,body[data-theme="ocean"] #chatMessages,body[data-theme="ocean"] #dmMessages,body[data-theme="ocean"] #profileLook,body[data-theme="ocean"] #treatLeaderboard{background:#081e32;color:#e8f7ff;border-color:#347b96} body[data-theme="ocean"] .item,body[data-theme="ocean"] .member,body[data-theme="ocean"] .message{background:#1b4961}
+body[data-theme="meadow"]{background:#10251b;color:#efffee} body[data-theme="meadow"] header{background:#1d402c;border-color:#a9e6a3} body[data-theme="meadow"] nav{background:#173323} body[data-theme="meadow"] h1,body[data-theme="meadow"] h2{color:#b8f5a9} body[data-theme="meadow"] .card,body[data-theme="meadow"] .games-panel,body[data-theme="meadow"] .member-action-card{background:#23452f;border-color:#679c66} body[data-theme="meadow"] button{background:#b6e8a6;color:#18321d} body[data-theme="meadow"] input,body[data-theme="meadow"] textarea,body[data-theme="meadow"] select,body[data-theme="meadow"] #chatMessages,body[data-theme="meadow"] #dmMessages,body[data-theme="meadow"] #profileLook,body[data-theme="meadow"] #treatLeaderboard{background:#10251b;color:#efffee;border-color:#679c66} body[data-theme="meadow"] .item,body[data-theme="meadow"] .member,body[data-theme="meadow"] .message{background:#31573c}
+body[data-theme="sunset"]{background:#301526;color:#fff0e7} body[data-theme="sunset"] header{background:#51213a;border-color:#ffb07a} body[data-theme="sunset"] nav{background:#401a30} body[data-theme="sunset"] h1,body[data-theme="sunset"] h2{color:#ffc08c} body[data-theme="sunset"] .card,body[data-theme="sunset"] .games-panel,body[data-theme="sunset"] .member-action-card{background:#512840;border-color:#b85f76} body[data-theme="sunset"] button{background:#ffb07a;color:#401a30} body[data-theme="sunset"] input,body[data-theme="sunset"] textarea,body[data-theme="sunset"] select,body[data-theme="sunset"] #chatMessages,body[data-theme="sunset"] #dmMessages,body[data-theme="sunset"] #profileLook,body[data-theme="sunset"] #treatLeaderboard{background:#301526;color:#fff0e7;border-color:#b85f76} body[data-theme="sunset"] .item,body[data-theme="sunset"] .member,body[data-theme="sunset"] .message{background:#633149}
+body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="light"] header{background:#ffd8ef;border-color:#d85aa8} body[data-theme="light"] header p,body[data-theme="light"] .home-subtitle,body[data-theme="light"] .explore-intro,body[data-theme="light"] .explore-card p{color:#67476c} body[data-theme="light"] nav{background:#f7dff0} body[data-theme="light"] h1,body[data-theme="light"] h2{color:#a72b78} body[data-theme="light"] .card,body[data-theme="light"] .games-panel,body[data-theme="light"] .member-action-card{background:#fff;border-color:#e6a7d0;color:#39213e} body[data-theme="light"] button{background:#e879c4;color:#28132f} body[data-theme="light"] input,body[data-theme="light"] textarea,body[data-theme="light"] select,body[data-theme="light"] #chatMessages,body[data-theme="light"] #dmMessages,body[data-theme="light"] #profileLook,body[data-theme="light"] #treatLeaderboard{background:#fff7fc;color:#39213e;border-color:#d99bc4} body[data-theme="light"] .item,body[data-theme="light"] .member,body[data-theme="light"] .message{background:#fbe8f5;color:#39213e}
+.theme-choice{padding:14px;border:1px solid #704276;border-radius:14px;text-align:center}.theme-swatch{height:34px;border-radius:9px;margin-bottom:8px;border:1px solid #ffffff55}
+
 </style>
 </head>
 <body>
@@ -104,6 +111,7 @@ hr{border-color:#704276;margin:24px 0}
 <button onclick="showSection('shop')">🛍️ Shop</button>
 <button onclick="showSection('inventory')">🎒 Inventory</button>
 <button onclick="showSection('myprofile')">🐶 My Profile</button>
+<button onclick="showSection('displayThemes')">🎨 Display Themes</button>
 <button onclick="showSection('members')">🔎 Find Pups</button>
 <button onclick="showSection('privateDMs')">💌 Private DMs</button>
 <button onclick="openRoom('puppy-lounge','🐾 Puppy Lounge')">🐾 Puppy Lounge</button>
@@ -191,6 +199,18 @@ hr{border-color:#704276;margin:24px 0}
 <p class="small">Items you own appear here. Equip or remove them whenever you like!</p>
 <p id="inventoryStatus" role="status"></p><div id="inventoryItems" class="grid"></div>
 </section>
+
+<section id="displayThemes" class="card hidden">
+<h2>🎨 Display Themes</h2><p class="small">Pick the colors that feel like you! Your choice is saved on this device.</p>
+<label for="displayThemeSelect">Choose your theme</label>
+<select id="displayThemeSelect"><option value="default">💜 Classic Purple &amp; Pink</option><option value="ocean">🌊 Ocean Blue</option><option value="meadow">🌿 Meadow Green</option><option value="sunset">🌅 Sunset Peach</option><option value="light">🌸 Soft Light</option></select>
+<div class="grid">
+<div class="theme-choice"><div class="theme-swatch" style="background:linear-gradient(90deg,#180d27 50%,#e879c4 50%)"></div><strong>Classic</strong><p class="small">Purple and pink</p></div>
+<div class="theme-choice"><div class="theme-swatch" style="background:linear-gradient(90deg,#081e32 50%,#75d8eb 50%)"></div><strong>Ocean</strong><p class="small">Cool blues</p></div>
+<div class="theme-choice"><div class="theme-swatch" style="background:linear-gradient(90deg,#10251b 50%,#b6e8a6 50%)"></div><strong>Meadow</strong><p class="small">Fresh greens</p></div>
+<div class="theme-choice"><div class="theme-swatch" style="background:linear-gradient(90deg,#301526 50%,#ffb07a 50%)"></div><strong>Sunset</strong><p class="small">Warm peach</p></div>
+<div class="theme-choice"><div class="theme-swatch" style="background:linear-gradient(90deg,#fff4fb 50%,#e879c4 50%)"></div><strong>Soft Light</strong><p class="small">Bright and gentle</p></div></div>
+<p id="themeStatus" class="small" role="status" aria-live="polite">Choose a theme to preview it.</p><button type="button" id="resetThemeButton">Reset to Classic 💜</button></section>
 
 <section id="myprofile" class="card hidden">
 <h2 id="myProfileHeading">🐶 My Puppy Profile</h2>
@@ -1085,6 +1105,19 @@ $("soundToggle").addEventListener("click",()=>{
  $("soundToggle").textContent=puppySoundsOn?"🔊 Sounds: ON":"🔇 Sounds: OFF";
  if(puppySoundsOn)playPuppySound("yip");
 });
+
+/* DISPLAY THEMES */
+const availableDisplayThemes=["default","ocean","meadow","sunset","light"];
+function applyDisplayTheme(theme,save=true){
+ const selected=availableDisplayThemes.includes(theme)?theme:"default";
+ if(selected==="default")document.body.removeAttribute("data-theme");else document.body.dataset.theme=selected;
+ $("displayThemeSelect").value=selected;
+ if(save){try{localStorage.setItem("clickrfun-display-theme",selected);}catch(error){console.warn("Theme preference could not be saved.",error);}}
+ $("themeStatus").textContent="Theme applied: "+({default:"Classic Purple & Pink",ocean:"Ocean Blue",meadow:"Meadow Green",sunset:"Sunset Peach",light:"Soft Light"}[selected])+" 💗";
+}
+$("displayThemeSelect").addEventListener("change",()=>applyDisplayTheme($("displayThemeSelect").value));
+$("resetThemeButton").addEventListener("click",()=>applyDisplayTheme("default"));
+try{applyDisplayTheme(localStorage.getItem("clickrfun-display-theme")||"default",false);}catch(error){applyDisplayTheme("default",false);}
 
 /* CONNECT TO SUPABASE */
 if(!window.supabase){
