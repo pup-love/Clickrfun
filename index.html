@@ -1387,6 +1387,7 @@ function playPuppySound(type="bark"){
    return;
   }
   const notes={
+   gift:[{f:660,d:.09},{f:990,d:.12},{f:1320,d:.18}],
    bark:[{f:420,d:.09},{f:260,d:.13}],
    yip:[{f:650,d:.07},{f:820,d:.08}],
    click:[{f:1050,d:.035},{f:720,d:.045}],
@@ -1457,13 +1458,13 @@ $("bounceToy").addEventListener("click",()=>{
  $("ballMessage").textContent=["BOING BOING! 🎾","A perfect bounce!","Fetch! ...just kidding, click again! 🐶"][Math.floor(Math.random()*3)];
 });
 $("surpriseToy").addEventListener("click",()=>{
- playPuppySound("win");
- const surprises=[["🦴","A yummy pretend bone!"],["🌈","A teeny rainbow!"],["💎","A shiny pretend gem!"],["🐣","A tiny new friend!"],["🎀","A fancy bow!"],["🍪","A pretend cookie!"],["💗","A pocket full of love!"]];
+ playPuppySound("gift");
+ const surprises=[["🦴","A yummy pretend bone!"],["🌈","A teeny rainbow!"],["💎","A shiny pretend gem!"],["🐣","A tiny new friend!"],["🎀","A fancy bow!"],["🍪","A pretend cookie!"],["🍩","A frosted donut!"],["🧁","A teeny cupcake!"],["🍰","A slice of cake!"],["🍭","A swirly lollipop!"],["🍬","A sweet candy!"],["🍫","A chocolate treat!"],["🍓","A juicy strawberry!"],["🍉","A watermelon snack!"],["🍕","A pizza slice!"],["🍿","A popcorn party!"],["🥨","A twisty pretzel!"],["🧋","A bubble tea!"],["🍪","A chocolate-chip cookie!"],["💗","A pocket full of love!"]];
  const prize=surprises[Math.floor(Math.random()*surprises.length)];
  $("fortuneEmoji").textContent=prize[0];$("surpriseMessage").textContent=prize[1]+" 🎉";
 });
 $("moodToy").addEventListener("click",()=>{
- const moods=[["🥰","Extra cuddly!"],["😎","Cool pup energy!"],["🤪","Silly zoomies!"],["😴","Sleepy little bean!"],["🤩","SUPER EXCITED!"],["🥹","Just a lil baby!"]];
+ const moods=[["🥰","Extra cuddly!"],["😎","Cool pup energy!"],["🤪","Silly zoomies!"],["😴","Sleepy little bean!"],["🤩","SUPER EXCITED!"],["🥹","Just a lil baby!"],["🍩","Donut-powered happiness!"],["🍓","Berry sweet mood!"],["🧁","Cupcake cutie!"],["🍬","Sugar-rush sillies!"],["🍕","Pizza party mood!"],["🧋","Boba break time!"]];
  const mood=moods[Math.floor(Math.random()*moods.length)];
  $("moodEmoji").textContent=mood[0];$("moodMessage").textContent=mood[1];playPuppySound("yip");
 });
