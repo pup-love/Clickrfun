@@ -1716,7 +1716,7 @@ function ensurePetGrave(stageId,pet,label){
  grave.style.display=pet.dead?"block":"none";
 }
 function petCareTick(){
- const now=Date.now(),FOOD_RATE=30*60*1000,HAPPY_RATE=45*60*1000;
+ const now=Date.now(),FOOD_RATE=5*60*1000,HAPPY_RATE=10*60*1000;
  [[virtualPet,"puppy3dStage","puppy"],[virtualKitty,"virtualKitty3dStage","kitty"]].forEach(([pet,stage,label])=>{
   if(!pet.adopted){ensurePetGrave(stage,pet,label);return;}
   if(!pet.lastFoodAt)pet.lastFoodAt=now;
