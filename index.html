@@ -153,7 +153,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 .virtual-pet-actions button:hover{filter:brightness(1.05);transform:translateY(-1px)}
 #virtualPetMessage{min-height:1.5em;font-weight:700}
 .puppy-xp-track{height:12px;max-width:420px;margin:8px auto 18px;background:#fff;border-radius:99px;overflow:hidden;border:1px solid #d8b9f2}.puppy-xp-track span{display:block;width:0;height:100%;background:linear-gradient(90deg,#ff92cf,#a78bfa);transition:width .25s}
-.puppy-room-options{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px auto}.puppy-room-options button{border:2px solid #fff;border-radius:14px;padding:9px 12px;background:#fff5ff;color:#56366e;font-weight:800;cursor:pointer}
+.puppy-room-options{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:12px auto}.puppy-room-options button{border:2px solid #fff;border-radius:17px;padding:11px 15px;background:linear-gradient(135deg,#fff,#fff1fb);color:#56366e;font-weight:900;cursor:pointer;box-shadow:0 4px 0 #d8b9f2,0 6px 12px #56366e12;transition:transform .18s,box-shadow .18s,background .18s}.puppy-room-options button:hover{transform:translateY(-3px);box-shadow:0 7px 0 #d8b9f2,0 10px 15px #56366e18}.puppy-room-options button.selected{background:linear-gradient(135deg,#ffd8ef,#e7d7ff);border-color:#b990e8;box-shadow:0 3px 0 #a77bd4,0 0 0 3px #d9c3f5}
 .virtual-pet-card[data-room="bed"]{background:linear-gradient(135deg,#f3e8ff,#eadbff 55%,#ffe9f5)}.virtual-pet-card[data-room="garden"]{background:linear-gradient(135deg,#dcfce7,#bbf7d0 55%,#fef9c3)}.virtual-pet-card[data-room="space"]{background:linear-gradient(135deg,#1e1b4b,#4338ca 55%,#a78bfa);color:#fff}.virtual-pet-card[data-room="space"] h3,.virtual-pet-card[data-room="space"] p{color:#fff}.virtual-pet-card[data-room="candy"]{background:linear-gradient(135deg,#fbcfe8,#f5d0fe 55%,#fecdd3)}
 .puppy-minigame{max-width:540px;margin:20px auto;padding:14px;border:2px dashed #c4a5e8;border-radius:20px;background:#fff9ff;color:#56366e}.puppy-minigame h3,.puppy-minigame p{color:#56366e}.fetch-playfield{position:relative;height:160px;overflow:hidden;border-radius:16px;background:linear-gradient(#dbeafe 0 62%,#bbf7d0 62%);border:2px solid white}.fetch-playfield:after{content:"";position:absolute;left:0;right:0;bottom:0;height:18px;background:#86efac}.fetch-playfield button{position:absolute;z-index:1;left:15%;top:35%;border:0;background:transparent;font-size:36px;cursor:pointer;transition:left .12s,top .12s;filter:drop-shadow(0 3px 2px #0002)}#fetchStart{border:0;border-radius:12px;padding:10px 16px;background:#b990e8;color:#2e1940;font-weight:900;cursor:pointer}
 .puppy-action-pop{animation:puppyHappyHop .5s ease-in-out 2!important}@keyframes puppyHappyHop{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-17px) rotate(-4deg)}70%{transform:translateY(0) rotate(4deg)}}
@@ -1687,6 +1687,9 @@ function renderVirtualPet(message){
  const toys={ball:"Ball",duck:"Squeaky duck",bone:"Chew bone",rope:"Tug rope"};
  $("virtualPetRoomLabel").textContent="Room: "+(rooms[virtualPet.room]||rooms.bed);
  $("virtualPetToyLabel").textContent="Favorite toy: "+(toys[virtualPet.toy]||toys.ball);
+ document.querySelectorAll("[data-puppy-room]").forEach(b=>b.classList.toggle("selected",b.dataset.puppyRoom===(virtualPet.room||"bed")));
+ document.querySelectorAll("[data-puppy-toy]").forEach(b=>b.classList.toggle("selected",b.dataset.puppyToy===(virtualPet.toy||"ball")));
+ if(window.clickrPuppySetRoom)window.clickrPuppySetRoom(virtualPet.room||"bed");if(window.clickrPuppySetToy)window.clickrPuppySetToy(virtualPet.toy||"ball");
  $("virtualPetNameInput").value=virtualPet.adopted?virtualPet.name:$("virtualPetNameInput").value;
  mood.textContent=!virtualPet.adopted?"Your puppy can't wait to meet you! ✨":virtualPet.happiness>=8?"So happy! "+virtualPet.name+" is doing happy wiggles! 💖":virtualPet.fullness<=2?"Rumble, rumble... "+virtualPet.name+" could use a treat! 🦴":"You're doing great together! 🐾";
  $("virtualPetMessage").textContent=message||(virtualPet.adopted?"Your bestie is saved on this device. Come back for more cuddles! 💗":"Adopt your puppy to start your little adventure!");
@@ -1727,10 +1730,10 @@ $("virtualPetSleep").addEventListener("click",()=>{
  virtualPet.happiness=Math.min(10,virtualPet.happiness+1);const leveled=addVirtualPetXP(2);playPuppySound("yip");puppyPhotoReact("sleep");renderVirtualPet("Zzz... "+virtualPet.name+" is having the sweetest puppy dreams. 💤"+(leveled?" LEVEL UP! ⭐":""));
 });
 document.querySelectorAll("[data-puppy-room]").forEach(button=>button.addEventListener("click",()=>{
- virtualPet.room=button.dataset.puppyRoom;saveVirtualPet();renderVirtualPet("Room makeover! "+button.textContent+" looks adorable! ✨");playPuppySound("gift");
+ virtualPet.room=button.dataset.puppyRoom;saveVirtualPet();if(window.clickrPuppySetRoom)window.clickrPuppySetRoom(virtualPet.room);renderVirtualPet("Room makeover! The whole 3D world changed! "+button.textContent+" ✨");playPuppySound("gift");
 }));
 document.querySelectorAll("[data-puppy-toy]").forEach(button=>button.addEventListener("click",()=>{
- virtualPet.toy=button.dataset.puppyToy;saveVirtualPet();renderVirtualPet(button.textContent+" selected! "+(virtualPet.name||"Your puppy")+" is ready to play! 🎾");playPuppySound("squeak");
+ virtualPet.toy=button.dataset.puppyToy;saveVirtualPet();if(window.clickrPuppySetToy)window.clickrPuppySetToy(virtualPet.toy);if(window.clickrPuppyAction)window.clickrPuppyAction("follow");renderVirtualPet("New toy unlocked in the 3D world! "+button.textContent+" 🧸");playPuppySound("squeak");
 }));
 let fetchRunning=false,fetchSeconds=15,fetchTimerId=null,fetchScore=0;
 function moveFetchBall(){
@@ -1932,7 +1935,8 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(200,200),groundMat);ground.rotation.x=-Math.PI/2;ground.position.y=-.05;ground.receiveShadow=true;scene.add(ground);
   const floorCircle=new THREE.Mesh(new THREE.CircleGeometry(2.5,48),mat("#b6e7a8"));floorCircle.rotation.x=-Math.PI/2;floorCircle.position.y=-.035;scene.add(floorCircle);
   // Little flowers in the yard
-  for(let i=0;i<18;i++){const a=i*2.399,r=2.15+(i%3)*.4;const x=Math.cos(a)*r,z=Math.sin(a)*r;const stem=new THREE.Mesh(new THREE.CylinderGeometry(.018,.025,.22,6),mat("#4d9b5c"));stem.position.set(x,.1,z);scene.add(stem);for(let j=0;j<5;j++){const p=ball(scene,mat(i%2?"#ffcae2":"#fff5a5"),[x+Math.cos(j*1.256)*.07,.23,z+Math.sin(j*1.256)*.07],[.055,.035,.055]);}ball(scene,mat("#f6b94a"),[x,.24,z],[.04,.035,.04]);}
+  const gardenFlowers=new THREE.Group();scene.add(gardenFlowers);
+  for(let i=0;i<18;i++){const a=i*2.399,r=2.15+(i%3)*.4;const x=Math.cos(a)*r,z=Math.sin(a)*r;const stem=new THREE.Mesh(new THREE.CylinderGeometry(.018,.025,.22,6),mat("#4d9b5c"));stem.position.set(x,.1,z);gardenFlowers.add(stem);for(let j=0;j<5;j++){ball(gardenFlowers,mat(i%2?"#ffcae2":"#fff5a5"),[x+Math.cos(j*1.256)*.07,.23,z+Math.sin(j*1.256)*.07],[.055,.035,.055]);}ball(gardenFlowers,mat("#f6b94a"),[x,.24,z],[.04,.035,.04]);}
   const puppy=new THREE.Group();scene.add(puppy);
   const body=new THREE.Group();puppy.add(body);
   ball(body,gold,[0,.95,0],[.78,.48,.43]);
@@ -1957,8 +1961,28 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   // collar + little heart tag
   const collar=new THREE.Mesh(new THREE.TorusGeometry(.31,.055,8,28),mat("#f16eae"));collar.position.set(.39,1.13,0);collar.rotation.y=Math.PI/2;body.add(collar);
   const tag=ball(body,mat("#ffd64f"),[.58,.98,.32],[.1,.12,.045]);
-  // ball prop that follows puppy's play animation
-  const toy=new THREE.Group();scene.add(toy);ball(toy,mat("#ff7fb7"),[0,0,0],[.19,.19,.19]);for(let i=0;i<3;i++){const stripe=new THREE.Mesh(new THREE.TorusGeometry(.192,.018,6,20),mat("#fff4f8"));stripe.rotation.y=i*Math.PI/3;toy.add(stripe);}toy.position.set(1.3,.2,.2);
+  // Real 3D toys and room scenery that update when selected.
+  const toy=new THREE.Group();scene.add(toy);toy.position.set(1.3,.2,.2);
+  function clearToy(){while(toy.children.length)toy.remove(toy.children[toy.children.length-1]);}
+  function makeToy(type){
+   clearToy();
+   if(type==="duck"){ball(toy,mat("#ffd83d"),[0,.02,0],[.22,.19,.17]);ball(toy,mat("#ffe66b"),[-.04,.18,0],[.15,.17,.14]);ball(toy,mat("#ff9b35"),[.105,.15,.12],[.12,.055,.07]);ball(toy,mat("#25202b"),[.01,.23,.115],[.025,.03,.018]);}
+   else if(type==="bone"){const bm=mat("#fff0d5");ball(toy,bm,[-.2,0,0],[.12,.12,.12]);ball(toy,bm,[.2,0,0],[.12,.12,.12]);ball(toy,bm,[-.2,.1,0],[.1,.1,.1]);ball(toy,bm,[.2,.1,0],[.1,.1,.1]);const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.34,16),bm);shaft.rotation.z=Math.PI/2;shaft.position.y=.05;toy.add(shaft);}
+   else if(type==="rope"){for(let i=0;i<5;i++){const strand=new THREE.Mesh(new THREE.TorusGeometry(.13,.035,8,18),mat(["#ff7fb7","#ffd85e","#8cbbff"][i%3]));strand.position.x=(i-2)*.07;strand.rotation.y=i*.35;toy.add(strand);}ball(toy,mat("#ff7fb7"),[-.32,.03,0],[.1,.1,.1]);ball(toy,mat("#8cbbff"),[.32,.03,0],[.1,.1,.1]);}
+   else{ball(toy,mat("#ff7fb7"),[0,0,0],[.19,.19,.19]);for(let i=0;i<3;i++){const stripe=new THREE.Mesh(new THREE.TorusGeometry(.192,.018,6,20),mat("#fff4f8"));stripe.rotation.y=i*Math.PI/3;toy.add(stripe);}}
+  }
+  makeToy("ball");
+  const roomDecor=new THREE.Group();scene.add(roomDecor);
+  function clearRoomDecor(){while(roomDecor.children.length)roomDecor.remove(roomDecor.children[roomDecor.children.length-1]);}
+  function setRoom(room){
+   const presets={bed:{sky:"#d9c7ff",floor:"#b58bd8",circle:"#f4d6ed"},garden:{sky:"#b9e9ff",floor:"#68c87e",circle:"#b7ed9d"},space:{sky:"#11143e",floor:"#29275d",circle:"#5552a4"},candy:{sky:"#ffc4e3",floor:"#f49acb",circle:"#ffd8ef"}};
+   const p=presets[room]||presets.bed;scene.background.set(p.sky);scene.fog.color.set(p.sky);renderer.setClearColor(p.sky);groundMat.color.set(p.floor);floorCircle.material.color.set(p.circle);gardenFlowers.visible=room==="garden";clearRoomDecor();
+   if(room==="bed"){const base=new THREE.Mesh(new THREE.BoxGeometry(2.2,.24,1.15),mat("#f2a7d2"));base.position.set(-1.35,.08,-.35);roomDecor.add(base);const pillow=new THREE.Mesh(new THREE.BoxGeometry(.72,.16,.62),mat("#fff0fa"));pillow.position.set(-1.35,.24,-.35);roomDecor.add(pillow);ball(roomDecor,mat("#ffd86b"),[1.9,1.15,-.6],[.16,.28,.16]);const pole=new THREE.Mesh(new THREE.CylinderGeometry(.035,.05,.7,10),mat("#b990e8"));pole.position.set(1.9,.45,-.6);roomDecor.add(pole);for(let i=0;i<10;i++)ball(roomDecor,mat("#fff5c2"),[-2.7+(i%5)*.35,1.45+Math.floor(i/5)*.35,-1.5],[.045,.045,.025]);}
+   else if(room==="garden"){for(let i=0;i<5;i++){const x=-2.5+i*1.15;const stem=new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,.45,7),mat("#378b4e"));stem.position.set(x,.22,-.9);roomDecor.add(stem);for(let j=0;j<6;j++)ball(roomDecor,mat(i%2?"#ff78bb":"#fff07c"),[x+Math.cos(j*Math.PI/3)*.12,.48+Math.sin(j*Math.PI/3)*.1,-.9],[.09,.07,.07]);}for(let i=0;i<7;i++)ball(roomDecor,mat("#ffffff"),[-2.6+i*.85,2.2+(i%2)*.2,-2],[.22,.09,.08]);}
+   else if(room==="space"){for(let i=0;i<45;i++)ball(roomDecor,mat(i%4?"#fff5a8":"#b9e6ff"),[(Math.random()-.5)*7,1.3+Math.random()*2.3,-2-Math.random()*2],[.025,.025,.025]);const planet=ball(roomDecor,mat("#bb8cff"),[-2.35,1.8,-1.6],[.62,.62,.2]);const ring=new THREE.Mesh(new THREE.TorusGeometry(.82,.035,8,48),mat("#8ed9ff"));ring.position.copy(planet.position);ring.rotation.x=.5;roomDecor.add(ring);ball(roomDecor,mat("#f4c4f4"),[2.35,1.8,-1.8],[.34,.34,.2]);}
+   else{for(let i=0;i<6;i++){const x=-2.6+i*1.05;const lollipop=ball(roomDecor,mat(["#ff7fb7","#a78bfa","#ffcf5a"][i%3]),[x,.9+(i%2)*.25,-1.2],[.18,.18,.12]);const stick=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,.48,8),mat("#fff7ef"));stick.position.set(x,.48+(i%2)*.25,-1.2);roomDecor.add(stick);}for(let i=0;i<8;i++)ball(roomDecor,mat("#fff5fb"),[-2.6+i*.75,.15,-.65],[.07,.07,.07]);}
+  }
+  window.clickrPuppySetRoom=setRoom;window.clickrPuppySetToy=makeToy;setRoom("bed");
   const state={action:"idle",until:0,walkPhase:0,spin:0,roll:0,jump:0,tailMode:1,baseX:0,blink:0};let last=performance.now();
   window.clickrPuppyAction=(action)=>{
    const now=performance.now();state.action=action;state.until=now+({follow:2500,sit:2600,wag:2500,jump:1000,spin:1300,roll:1900,boop:900}[action]||1600);
@@ -1983,7 +2007,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
    else if(action==="jump"){state.jump+=dt*7;puppy.position.y=Math.max(0,Math.sin(state.jump)*.8);body.rotation.z=Math.sin(state.jump)*.08;}
    else {puppy.position.y+=(0-puppy.position.y)*.12;puppy.position.x+=(0-puppy.position.x)*.06;puppy.rotation.y+=(0-puppy.rotation.y)*.06;body.rotation.z+=(0-body.rotation.z)*.08;}
    if(action==="sit"){body.position.y=-.17;headPivot.rotation.z=-.1;}else if(action!=="roll"){body.position.y=.035+Math.sin(now*.004)*.035;}
-   toy.visible=action==="follow"||action==="jump"||action==="spin";toy.position.x=puppy.position.x+.9+Math.sin(now*.006)*.55;toy.position.y=.18+Math.abs(Math.sin(now*.01))*.28;toy.position.z=.5;
+   toy.visible=true;toy.position.x=puppy.position.x+.9+Math.sin(now*.006)*.55;toy.position.y=.18+Math.abs(Math.sin(now*.01))*.28;toy.position.z=.5;toy.rotation.y+=dt*(action==="follow"||action==="spin"?4:1.1);
    renderer.render(scene,camera);
   }
   requestAnimationFrame(animate);
