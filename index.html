@@ -117,6 +117,19 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 .sticker-art{font-size:30px;line-height:1.2}.sticker-name{font-size:12px;font-weight:800}.sticker-hint{font-size:10px;line-height:1.3}
 @keyframes stickerPop{0%{transform:scale(.75) rotate(-5deg)}70%{transform:scale(1.08) rotate(3deg)}100%{transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.sticker-badge.unlocked{animation:none}#badgeProgressFill{transition:none}}
+
+.rare-sticker-floaters{position:relative;height:34px;overflow:visible;pointer-events:none}
+.rare-sticker-floaters span{position:absolute;left:8%;top:2px;font-size:22px;animation:rareStickerDrift 4.8s ease-in-out infinite alternate}
+.rare-sticker-floaters span:nth-child(2){left:28%;animation-delay:-1.4s;animation-duration:5.6s}
+.rare-sticker-floaters span:nth-child(3){left:51%;animation-delay:-2.2s;animation-duration:4.3s}
+.rare-sticker-floaters span:nth-child(4){left:73%;animation-delay:-.8s;animation-duration:5.1s}
+.rare-sticker-floaters span:nth-child(5){left:91%;animation-delay:-3s;animation-duration:4.6s}
+@keyframes rareStickerDrift{0%{transform:translate3d(-5px,5px,0) rotate(-12deg) scale(.92)}50%{transform:translate3d(8px,-10px,0) rotate(12deg) scale(1.12)}100%{transform:translate3d(-2px,3px,0) rotate(-4deg) scale(1)}}
+.sticker-badge.rare.unlocked{background:linear-gradient(145deg,#fff9d9,#ffe9f7,#eee8ff);border:2px solid #d6b7ff;box-shadow:0 0 0 2px rgba(255,255,255,.8),0 4px 14px rgba(190,139,255,.3)}
+.sticker-badge.rare.unlocked .sticker-art{animation:rareStickerDrift 3.6s ease-in-out infinite alternate}
+.sticker-badge.legendary.unlocked{background:linear-gradient(145deg,#e9fbff,#f4eaff,#fff5d6);border:2px solid #9bd9e9;box-shadow:0 0 14px rgba(122,210,238,.35)}
+@media(prefers-reduced-motion:reduce){.rare-sticker-floaters span,.sticker-badge.rare.unlocked .sticker-art{animation:none}}
+
 </style>
 </head>
 <body>
@@ -228,9 +241,9 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
     <div><h3 id="stickerCollectionTitle">🎀 My Sticker & Badge Book</h3><p class="small">Click buttons, collect cute treasures, and fill your page with happy little badges!</p></div>
     <div class="sticker-progress"><strong id="badgeProgress">0 / 8</strong><span>badges</span></div>
   </div>
-  <div class="sticker-progress-track" role="progressbar" aria-label="Badges collected" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" id="badgeProgressBar"><span id="badgeProgressFill"></span></div>
+  <div class="sticker-progress-track" role="progressbar" aria-label="Badges collected" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" id="badgeProgressBar"><span id="badgeProgressFill"></span></div>
   <p id="badgeUnlockMessage" class="badge-unlock-message" aria-live="polite">Your first sticker is waiting for you. Tap a button to begin! 💗</p>
-  <div class="sticker-grid" id="stickerGrid"></div>
+  <div class="rare-sticker-floaters" aria-hidden="true"><span>✨</span><span>💖</span><span>🌙</span><span>⭐</span><span>🫧</span></div>\n  <div class="sticker-grid" id="stickerGrid"></div>
 </section>
 <div class="click-button-wall">
   <button class="clicktoy color-pink" type="button">💗 Click Me!</button>
@@ -1493,7 +1506,11 @@ const stickerBadges=[
  {id:"fifty-clicks",emoji:"🎀",name:"Bow Bestie",hint:"Reach 50 clicks",goal:50},
  {id:"hundred-clicks",emoji:"🦴",name:"Treat Collector",hint:"Reach 100 clicks",goal:100},
  {id:"two-hundred",emoji:"✨",name:"Sparkle Expert",hint:"Reach 200 clicks",goal:200},
- {id:"five-hundred",emoji:"👑",name:"Click Royalty",hint:"Reach 500 clicks",goal:500}
+ {id:"five-hundred",emoji:"👑",name:"Click Royalty",hint:"Reach 500 clicks",goal:500},
+ {id:"rare-cloud",emoji:"☁️",name:"Dreamy Cloud",hint:"Rare sticker at 75 clicks",goal:75,rare:true},
+ {id:"rare-comet",emoji:"☄️",name:"Zoomy Comet",hint:"Rare sticker at 150 clicks",goal:150,rare:true},
+ {id:"rare-moon",emoji:"🌙",name:"Moonbeam Magic",hint:"Rare sticker at 300 clicks",goal:300,rare:true},
+ {id:"thousand-clicks",emoji:"💎",name:"Diamond Clicker",hint:"Reach 1,000 clicks",goal:1000}
 ];
 const badgeStorageKey="clickrfun-sticker-badges-v1";
 let unlockedBadgeIds=[];
@@ -1503,7 +1520,7 @@ function renderStickerCollection(newlyUnlocked=[]){
  grid.innerHTML="";
  stickerBadges.forEach(badge=>{
   const unlocked=unlockedBadgeIds.includes(badge.id);
-  const tile=document.createElement("div");tile.className="sticker-badge "+(unlocked?"unlocked":"locked");
+  const tile=document.createElement("div");tile.className="sticker-badge "+(unlocked?"unlocked":"locked")+(badge.rare?" rare":"")+(badge.goal===1000?" legendary":"");
   tile.innerHTML='<span class="sticker-art" aria-hidden="true">'+(unlocked?badge.emoji:"🔒")+'</span><span class="sticker-name"></span><span class="sticker-hint"></span>';
   tile.querySelector(".sticker-name").textContent=unlocked?badge.name:"Mystery sticker";
   tile.querySelector(".sticker-hint").textContent=unlocked?"Collected! 💖":badge.hint;
