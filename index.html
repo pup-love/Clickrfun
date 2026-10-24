@@ -97,6 +97,7 @@ style="position:fixed;bottom:18px;right:18px;z-index:1002;border:2px solid #ff9c
 <button onclick="showSection('inventory')">🎒 Inventory</button>
 <button onclick="showSection('myprofile')">🐶 My Profile</button>
 <button onclick="showSection('members')">🔎 Find Pups</button>
+ <button onclick="showSection('privateDMs')">💌 Private DMs</button>
 <button onclick="openRoom('puppy-lounge','🐾 Puppy Lounge')">🐾 Puppy Lounge</button>
 <button onclick="openRoom('new-pups','🎀 New Pups')">🎀 New Pups</button>
 <button onclick="openRoom('secret-den','🌙 Secret Den')">🌙 Secret Den</button>
@@ -238,6 +239,33 @@ style="position:fixed;bottom:18px;right:18px;z-index:1002;border:2px solid #ff9c
 <button type="button" onclick="showSection('members')">← Back to Find Pups</button>
 </section>
 
+<!-- PRIVATE DMS -->
+<section id="privateDMs" class="card hidden">
+  <h2>💌 Private Puppy DMs</h2>
+  <p class="small">Choose a pup to have a private conversation with. Only you and that pup should be able to read your messages.</p>
+
+  <div id="dmStatus" class="small" role="status" aria-live="polite">
+    Log in to use private messages.
+  </div>
+
+  <h3>🐾 Your Conversations</h3>
+  <div id="dmInbox"></div>
+
+  <hr>
+
+  <h3 id="dmChatTitle">💗 Choose a pup</h3>
+  <div id="dmMessages" aria-live="polite"></div>
+
+  <form id="dmForm">
+    <textarea id="dmInput" maxlength="1000"
+      placeholder="Write a private message..."
+      required></textarea>
+    <button id="dmSendButton" type="submit" disabled>
+      Send Private Message 💌
+    </button>
+  </form>
+</section>
+
 <!-- CHAT -->
 <section id="chat" class="card hidden">
 <h2 id="roomTitle">🐾 Puppy Lounge</h2>
@@ -270,6 +298,185 @@ let messageSubscription=null;
 let loadVersion=0;
 let authVersion=0;
 let shopCache=[];
+ 
+/* PRIVATE PUPPY DMS */
+let activeDmUserId = null;
+let activeDmUsername = null;
+
+async function openPrivateDM(userId, username) {
+  if (!requireLogin()) return;
+
+  if (userId === currentUser.id) {
+    $("dmStatus").textContent = "You can't send a DM to yourself! 🐾";
+    showSection("privateDMs");
+    return;
+  }
+
+  activeDmUserId = userId;
+  activeDmUsername = username;
+
+  $("dmChatTitle").textContent = "💌 Chat with " + username;
+  $("dmStatus").textContent = "Loading your private conversation...";
+  $("dmSendButton").disabled = false;
+
+  showSection("privateDMs");
+  await loadPrivateMessages();
+}
+
+async function loadPrivateInbox() {
+  const inbox = $("dmInbox");
+  inbox.replaceChildren();
+
+  if (!currentUser) {
+    $("dmStatus").textContent = "Log in to use private messages.";
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("private_messages")
+    .select("sender_id,recipient_id,content,created_at")
+    .or("sender_id.eq." + currentUser.id +
+        ",recipient_id.eq." + currentUser.id)
+    .order("created_at", { ascending: false })
+    .limit(200);
+
+  if (error) {
+    $("dmStatus").textContent =
+      "Couldn't load private messages: " + error.message;
+    return;
+  }
+
+  const conversations = new Map();
+
+  for (const message of (data || [])) {
+    const otherId = message.sender_id === currentUser.id
+      ? message.recipient_id
+      : message.sender_id;
+
+    if (!conversations.has(otherId)) {
+      conversations.set(otherId, message);
+    }
+  }
+
+  if (!conversations.size) {
+    inbox.textContent = "No private conversations yet. Find a pup to say hi! 💗";
+    return;
+  }
+
+  const ids = [...conversations.keys()];
+  const { data: profiles, error: profileError } = await supabaseClient
+    .from("profiles")
+    .select("id,username")
+    .in("id", ids);
+
+  if (profileError) {
+    $("dmStatus").textContent =
+      "Couldn't load pup names: " + profileError.message;
+    return;
+  }
+
+  for (const profile of (profiles || [])) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = "💌 " + profile.username;
+    button.addEventListener("click", () =>
+      openPrivateDM(profile.id, profile.username)
+    );
+    inbox.appendChild(button);
+  }
+}
+
+async function loadPrivateMessages() {
+  const container = $("dmMessages");
+  container.replaceChildren();
+
+  if (!currentUser || !activeDmUserId) {
+    container.textContent = "Choose a pup to start chatting. 🐾";
+    return;
+  }
+
+  const { data, error } = await supabaseClient
+    .from("private_messages")
+    .select("id,sender_id,recipient_id,content,created_at")
+    .or(
+      "and(sender_id.eq." + currentUser.id +
+      ",recipient_id.eq." + activeDmUserId +
+      "),and(sender_id.eq." + activeDmUserId +
+      ",recipient_id.eq." + currentUser.id + ")"
+    )
+    .order("created_at", { ascending: true })
+    .limit(200);
+
+  if (error) {
+    $("dmStatus").textContent =
+      "Couldn't load conversation: " + error.message;
+    return;
+  }
+
+  if (!data || !data.length) {
+    container.textContent = "No messages yet. Send the first hello! 💗";
+    $("dmStatus").textContent =
+      "Private conversation with " + activeDmUsername;
+    return;
+  }
+
+  for (const message of data) {
+    const box = document.createElement("div");
+    box.className = "message";
+
+    const heading = document.createElement("strong");
+    heading.textContent = message.sender_id === currentUser.id
+      ? "You"
+      : activeDmUsername;
+
+    const body = document.createElement("p");
+    body.textContent = message.content;
+    body.style.margin = "6px 0";
+
+    const time = document.createElement("time");
+    time.textContent = new Date(message.created_at).toLocaleString();
+
+    box.append(heading, body, time);
+    container.appendChild(box);
+  }
+
+  $("dmStatus").textContent =
+    "Private conversation with " + activeDmUsername;
+}
+
+$("dmForm").addEventListener("submit", async event => {
+  event.preventDefault();
+
+  if (!requireLogin() || !activeDmUserId) return;
+
+  const input = $("dmInput");
+  const content = input.value.trim();
+
+  if (!content || content.length > 1000) return;
+
+  const button = $("dmSendButton");
+  button.disabled = true;
+
+  const { error } = await supabaseClient
+    .from("private_messages")
+    .insert({
+      sender_id: currentUser.id,
+      recipient_id: activeDmUserId,
+      content: content
+    });
+
+  if (error) {
+    $("dmStatus").textContent =
+      "Couldn't send message: " + error.message;
+  } else {
+    input.value = "";
+    await loadPrivateMessages();
+    await loadPrivateInbox();
+  }
+
+  button.disabled = !currentUser || !activeDmUserId;
+});
+
 
 const $=id=>document.getElementById(id);
 
@@ -286,6 +493,7 @@ function showSection(id){
  else $("exploreClickrfun").classList.add("hidden");
 
  if(id==="chat")loadMessages();
+ if(id==="privateDMs")loadPrivateInbox();
  if(id==="treats")refreshTreats();
  if(id==="shop")loadShop();
  if(id==="inventory")loadInventory();
@@ -997,7 +1205,14 @@ async function viewMember(id){
  const bio=document.createElement("p");
  bio.textContent=data.bio||"This pup hasn't written a bio yet. 💗";
 
- container.append(look,name,pid,bio);
+const dmButton = document.createElement("button");
+dmButton.type = "button";
+dmButton.textContent = "💌 Send Private Message";
+dmButton.addEventListener("click", () =>
+  openPrivateDM(id, data.username)
+);
+
+container.append(look,name,pid,bio,dmButton);
 }
 
 /* CLAIM DAILY TREATS */
