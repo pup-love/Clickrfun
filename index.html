@@ -101,6 +101,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <p class="small">Take a little break and catch some treats! 💗</p>
 <button type="button" onclick="startCatchTreats()">🍪 Catch the Treats!</button>
 <button type="button" onclick="startPawMemory()">🧠 Paw Memory Match!</button>
+<button type="button" onclick="startPawDash()">🐾 Paw Dash!</button>
 <button type="button" onclick="closeGames()">✖ Close</button>
 <div id="gameArea"></div>
 <hr>
@@ -587,7 +588,7 @@ function startCatchTreats(){
  heading.textContent="🍪 Catch the Treats!";
  const instructions=document.createElement("p");
  instructions.className="small";
- instructions.textContent="Tap falling treats for points, but avoid 💣 bombs! A bomb costs 2 points. You have 30 seconds. 🐾";
+ instructions.textContent="Tap falling treats for points, grab ✨ power-ups for bonus points, but avoid 💣 bombs! A bomb costs 2 points. You have 30 seconds. 🐾";
 
  const stats=document.createElement("div");
  stats.className="treat-game-stats";
@@ -648,10 +649,13 @@ function startCatchTreats(){
   const treat=document.createElement("button");
   treat.type="button";
   treat.className="treat-game-item";
-  const isBomb=Math.random()<0.22;
-  treat.textContent=isBomb?"💣":["🍪","🦴","🧁","🍖"][Math.floor(Math.random()*4)];
-  treat.setAttribute("aria-label",isBomb?"Avoid bomb":"Catch treat");
+  const roll=Math.random();
+  const isBomb=roll<0.20;
+  const isPower=!isBomb&&roll>0.82;
+  treat.textContent=isBomb?"💣":isPower?["✨","🌟","🛡️"][Math.floor(Math.random()*3)]:["🍪","🦴","🧁","🍖"][Math.floor(Math.random()*4)];
+  treat.setAttribute("aria-label",isBomb?"Avoid bomb":isPower?"Catch power-up":"Catch treat");
   if(isBomb){treat.style.background="#7a243d";treat.style.borderColor="#ff7070";}
+  if(isPower){treat.style.background="#8a5a12";treat.style.borderColor="#ffe680";}
   const maxLeft=Math.max(0,board.clientWidth-48);
   treat.style.left=Math.floor(Math.random()*maxLeft)+"px";
   treat.style.top="-45px";
@@ -681,6 +685,11 @@ function startCatchTreats(){
    if(treat.textContent==="💣"){
     score=Math.max(0,score-2);
     message.textContent="💥 Oops! Bomb! -2 points — watch out!";
+   }else if(["✨","🌟","🛡️"].includes(treat.textContent)){
+    const power=treat.textContent;
+    score+=power==="🌟"?5:3;
+    message.textContent=power==="🛡️"?"🛡️ Shield power-up! +3 points!":power==="🌟"?"🌟 Super star! +5 points!":"✨ Sparkle boost! +3 points!";
+    playPuppySound("win");
    }else{
     score++;
     playPuppySound("treat");
@@ -752,6 +761,25 @@ function startPawMemory(){
   });
   board.appendChild(card);
  });
+}
+
+function startPawDash(){
+ stopCatchGame();
+ const area=$("gameArea");area.replaceChildren();
+ const game=document.createElement("div");
+ const heading=document.createElement("h3");heading.textContent="🐾 Paw Dash!";
+ const info=document.createElement("p");info.className="small";info.textContent="Tap the paw as many times as you can in 15 seconds. Watch out for sneaky bombs!";
+ const stats=document.createElement("p");stats.className="treat-game-stats";stats.textContent="Paws: 0 · Time: 15s";
+ const board=document.createElement("div");board.className="treat-game-board";board.style.height="230px";
+ const target=document.createElement("button");target.type="button";target.textContent="🐾";target.style.cssText="position:absolute;left:40%;top:40%;font-size:36px;border-radius:50%;";
+ const msg=document.createElement("p");msg.setAttribute("aria-live","polite");msg.textContent="Ready? Go!";
+ const start=document.createElement("button");start.className="treat-game-start";start.textContent="▶️ Start Paw Dash";
+ game.append(heading,info,stats,board,start,msg);area.appendChild(game);
+ let score=0,seconds=15,timer=null,running=false;
+ function move(){target.style.left=Math.floor(Math.random()*Math.max(1,board.clientWidth-55))+"px";target.style.top=Math.floor(Math.random()*Math.max(1,board.clientHeight-55))+"px";}
+ target.addEventListener("click",()=>{if(!running)return;score++;stats.textContent="Paws: "+score+" · Time: "+seconds+"s";move();playPuppySound("treat");});
+ board.appendChild(target);
+ start.addEventListener("click",()=>{if(running)return;score=0;seconds=15;running=true;start.disabled=true;move();msg.textContent="Dash dash dash! 🐾";stats.textContent="Paws: 0 · Time: 15s";timer=setInterval(()=>{seconds--;stats.textContent="Paws: "+score+" · Time: "+seconds+"s";if(seconds<=0){clearInterval(timer);running=false;start.disabled=false;start.textContent="🔄 Play Again";msg.textContent="🎉 You tapped "+score+" paws! Great running!";playPuppySound("win");}},1000);});
 }
 
 /* HELPERS AND LOGIN STATE */
@@ -1053,6 +1081,26 @@ async function viewMember(id){
   const owned=document.createElement("p");owned.textContent="🐾 Puppies I own: "+(data.owned_puppies||"Not listed yet.");container.appendChild(owned);
  }
  container.appendChild(dmButton);
+ const social=document.createElement("div");social.className="card";social.style.marginTop="14px";
+ const socialTitle=document.createElement("h3");socialTitle.textContent="💞 Send some paw love!";
+ const socialHelp=document.createElement("p");socialHelp.className="small";socialHelp.textContent="Boop or nuzzle them, or send a little toy/snack surprise!";
+ const actions=document.createElement("div");actions.style.cssText="display:flex;flex-wrap:wrap;gap:6px;";
+ [["👉","Boop","booped you! 👉💗"],["🐾","Nuzzle","gave you a cozy nuzzle! 🐾💕"],["🧸","Gift a toy","sent you a toy! 🧸"],["🍪","Gift a snack","sent you a yummy snack! 🍪"]].forEach(([emoji,label,content])=>{
+  const action=document.createElement("button");action.type="button";action.textContent=emoji+" "+label;
+  action.addEventListener("click",async()=>{
+   if(!requireLogin())return;
+   if(id===currentUser.id){setStatus("You can't send paw love to yourself! 💗");return;}
+   action.disabled=true;
+   try{
+    const result=await supabaseClient.from("private_messages").insert({sender_id:currentUser.id,receiver_id:id,recipient_id:id,content:"💌 "+(currentUsername||"A friend")+" "+content});
+    if(result.error)throw result.error;
+    setStatus(label==="Boop"?"Boop sent! 👉💗":label==="Nuzzle"?"Cozy nuzzle sent! 🐾💕":label+" sent! 🎁");
+   }catch(error){setStatus("Couldn't send that right now: "+error.message);}
+   finally{action.disabled=false;}
+  });
+  actions.appendChild(action);
+ });
+ social.append(socialTitle,socialHelp,actions);container.appendChild(social);
 }
 
 /* DAILY TREATS */
