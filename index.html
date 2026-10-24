@@ -2111,13 +2111,11 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   const head=new THREE.Group();head.position.set(.34,1.28,0);body.add(head);ball(head,fur,[0,.1,0],[.48,.45,.42]);
   const earL=ball(head,fur,[-.29,.48,.18],[.18,.3,.14]);earL.rotation.z=-.25;const earR=ball(head,fur,[-.29,.48,-.18],[.18,.3,.14]);earR.rotation.z=-.25;
   ball(head,inner,[-.27,.49,.205],[.09,.19,.035]);ball(head,inner,[-.27,.49,-.205],[.09,.19,.035]);ball(head,patch,[.08,.4,.12],[.19,.12,.22]);
-  // Big glossy kitten eyes, with pupils and tiny catchlights.
+  // Small, soft kitten eyes that sit naturally in the face.
   for(const side of [-1,1]){
-   ball(head,white,[.382,.2,side*.177],[.092,.115,.048]);
-   ball(head,eye,[.414,.2,side*.192],[.061,.083,.034]);
-   ball(head,dark,[.438,.2,side*.201],[.029,.052,.018]);
-   ball(head,white,[.451,.237,side*.211],[.019,.024,.012]);
-   ball(head,white,[.447,.174,side*.211],[.009,.011,.008]);
+   ball(head,eye,[.405,.18,side*.176],[.046,.061,.033]);
+   ball(head,dark,[.426,.18,side*.19],[.022,.043,.017]);
+   ball(head,white,[.439,.204,side*.198],[.010,.013,.008]);
   }
   // Two small muzzle puffs keep the snout soft and proportionate.
   ball(head,white,[.405,-.045,.075],[.105,.085,.105]);
