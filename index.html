@@ -2007,21 +2007,21 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   for(let i=0;i<18;i++){const a=i*2.399,r=2.15+(i%3)*.4;const x=Math.cos(a)*r,z=Math.sin(a)*r;const stem=new THREE.Mesh(new THREE.CylinderGeometry(.018,.025,.22,6),mat("#4d9b5c"));stem.position.set(x,.1,z);gardenFlowers.add(stem);for(let j=0;j<5;j++){ball(gardenFlowers,mat(i%2?"#ffcae2":"#fff5a5"),[x+Math.cos(j*1.256)*.07,.23,z+Math.sin(j*1.256)*.07],[.055,.035,.055]);}ball(gardenFlowers,mat("#f6b94a"),[x,.24,z],[.04,.035,.04]);}
   const puppy=new THREE.Group();scene.add(puppy);puppy.position.y=.95;puppy.rotation.y=-Math.PI/2;
   const body=new THREE.Group();body.position.y=-.95;puppy.add(body);
-  ball(body,gold,[0,.95,0],[.78,.48,.43]);
-  ball(body,cream,[.18,.72,.07],[.46,.25,.36]);
+  ball(body,gold,[0,.95,0],[.66,.39,.36]);
+  ball(body,cream,[.15,.74,.055],[.37,.19,.29]);
   const headPivot=new THREE.Group();headPivot.position.set(.48,1.35,0);body.add(headPivot);
-  ball(headPivot,gold,[0,.12,0],[.41,.42,.39]);
-  ball(headPivot,cream,[.205,-.075,.015],[.255,.18,.255]);
-  ball(headPivot,white,[.405,-.025,.02],[.115,.09,.135]);
-  ball(headPivot,dark,[.505,.005,.025],[.075,.055,.085]);
+  ball(headPivot,gold,[0,.12,0],[.35,.36,.33]);
+  ball(headPivot,cream,[.19,-.07,.012],[.205,.135,.205]);
+  ball(headPivot,white,[.355,-.025,.02],[.085,.065,.105]);
+  ball(headPivot,dark,[.43,-.005,.025],[.058,.043,.067]);
   // Eyes on the camera-facing side and far side.
-  ball(headPivot,eyeMat,[.345,.19,.16],[.055,.066,.04]);
-  ball(headPivot,eyeMat,[.345,.19,-.16],[.055,.066,.04]);
-  ball(headPivot,white,[.375,.215,.173],[.018,.02,.012]);
-  ball(headPivot,white,[.375,.215,-.173],[.018,.02,.012]);
-  const ear1=ball(headPivot,earMat,[-.2,.43,.28],[.18,.32,.12]);ear1.rotation.z=-.42;
-  const ear2=ball(headPivot,earMat,[-.2,.43,-.28],[.18,.32,.12]);ear2.rotation.z=-.42;
-  ball(headPivot,pink,[.36,-.22,.12],[.12,.055,.035]);
+  ball(headPivot,eyeMat,[.29,.18,.14],[.045,.055,.032]);
+  ball(headPivot,eyeMat,[.29,.18,-.14],[.045,.055,.032]);
+  ball(headPivot,white,[.312,.20,.151],[.014,.016,.01]);
+  ball(headPivot,white,[.312,.20,-.151],[.014,.016,.01]);
+  const ear1=ball(headPivot,earMat,[-.16,.405,.245],[.15,.27,.10]);ear1.rotation.z=-.42;
+  const ear2=ball(headPivot,earMat,[-.16,.405,-.245],[.15,.27,.10]);ear2.rotation.z=-.42;
+  ball(headPivot,pink,[.31,-.18,.11],[.085,.04,.025]);
   const tailPivot=new THREE.Group();tailPivot.position.set(-.69,1.12,0);body.add(tailPivot);
   const tail=ball(tailPivot,gold,[-.34,.18,0],[.48,.13,.13]);tail.rotation.z=-.32;
   ball(tailPivot,cream,[-.73,.34,0],[.14,.11,.11]);
@@ -2108,18 +2108,17 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   const cat=new THREE.Group();scene.add(cat);cat.position.y=.95;const body=new THREE.Group();cat.add(body);
   const fur=mat("#f28a2e"),patch=mat("#9b3514"),inner=mat("#f5a0b8"),dark=mat("#34283d",.3),eye=mat("#65b9a0",.25),nose=mat("#e97891",.3),white=mat("#fff0d2");
   ball(body,fur,[0,.78,0],[.72,.37,.34]);ball(body,white,[.13,.65,.075],[.37,.17,.27]);
-  // Tabby markings are thin curved tubes that follow the body's ellipsoid surface,
-  // rather than floating spheres sticking out beyond the fur.
+  // Fine, inset-looking tabby lines: very narrow and almost flush with the body surface.
   for(const side of [-1,1]){
    for(const [x0,lean] of [[-.42,-.10],[-.19,-.045],[.08,.045],[.34,.10]]){
     const pts=[];
-    for(let k=0;k<=12;k++){
-     const t=k/12, y=.77+t*.43, x=x0+lean*(t-.5);
+    for(let k=0;k<=16;k++){
+     const t=k/16,y=.77+t*.43,x=x0+lean*(t-.5);
      const q=Math.max(.04,1-(x/.72)**2-((y-.78)/.37)**2);
-     pts.push(new THREE.Vector3(x,y,side*(.34*Math.sqrt(q)+.006)));
+     pts.push(new THREE.Vector3(x,y,side*(.34*Math.sqrt(q)+.0008)));
     }
     const curve=new THREE.CatmullRomCurve3(pts);
-    const stripe=new THREE.Mesh(new THREE.TubeGeometry(curve,20,.022,6,false),patch);
+    const stripe=new THREE.Mesh(new THREE.TubeGeometry(curve,24,.008,5,false),patch);
     stripe.castShadow=false;stripe.receiveShadow=false;body.add(stripe);
    }
   }
