@@ -385,7 +385,17 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 
 <audio id="backgroundMusic" src="mixkit-keep-smiling-15.mp3" loop preload="none"></audio>
 <audio id="heartbeatSound" src="mixkit-human-single-heart-beat-490.wav" preload="auto"></audio>
-<audio id="waterSound" src="mixkit-fish-flapping-2457.wav" preload="auto"></audio>
+<audio id="waterSound" src="mixkit-fish-flapping-2457.wav" preload="auto">
+<audio id="starSound" src="mixkit-fairy-glitter-867.wav" preload="auto">
+<audio id="leavesSound" src="mixkit-dry-leaves-sound-2428.wav" preload="auto">
+<audio id="purpleHeartSound" src="mixkit-fairy-bell-bless-864.wav" preload="auto">
+<audio id="orangeHeartSound" src="mixkit-multiple-fireworks-explosions-1689.wav" preload="auto">
+<audio id="pawSound" src="mixkit-medium-size-angry-dog-bark-54.wav" preload="auto">
+<audio id="boneSound" src="mixkit-rubber-duck-squeak-1014.wav" preload="auto">
+<audio id="sparkleSound" src="mixkit-fairy-teleport-868.wav" preload="auto">
+<audio id="frogSound" src="freesound_community-frog-85649.mp3" preload="auto">
+<audio id="rainbowSound" src="magiaz-ix27m-gay-416973.mp3" preload="auto">
+<audio id="bowSound" src="u_2c8g87fmmx-bow-sound-596323.mp3" preload="auto"></audio>
 <footer><p>Made with luv 🐾</p><p class="small">Be sweet, be kind, and spread the love 💗</p><p class="small">Credit to AyeshaIcon for giving me the idea 💗</p><p class="small">Credit to John19151 for the name &lt;3</p></footer>
 
 <script>
@@ -1459,7 +1469,16 @@ document.querySelectorAll("#buttonPlayroom .clicktoy").forEach(button=>{
    const heartbeat=$("heartbeatSound");
    if(puppySoundsOn&&heartbeat){heartbeat.currentTime=0;heartbeat.play().catch(()=>{});}
   }else{
-   playPuppySound(button.dataset.drum==="low"?"drumLow":button.dataset.drum==="high"?"drumHigh":"click");
+   const emoji=button.textContent.trim();
+   const customSounds=[
+    ["⭐","starSound"],["🌿","leavesSound"],["💜","purpleHeartSound"],["🧡","orangeHeartSound"],
+    ["🐾","pawSound"],["🦴","boneSound"],["✨","sparkleSound"],["🐸","frogSound"],
+    ["🌈","rainbowSound"],["🎀","bowSound"]
+   ];
+   const match=customSounds.find(([symbol])=>emoji.startsWith(symbol));
+   const customSound=match?$(match[1]):null;
+   if(puppySoundsOn&&customSound){customSound.currentTime=0;customSound.play().catch(()=>{});}
+   else if(!match){playPuppySound(button.dataset.drum==="low"?"drumLow":button.dataset.drum==="high"?"drumHigh":"click");}
   }
   button.classList.add("just-clicked");
   setTimeout(()=>button.classList.remove("just-clicked"),140);
