@@ -1717,6 +1717,7 @@ function ensurePetGrave(stageId,pet,label){
 }
 function petCareTick(){
  const now=Date.now(),FOOD_RATE=5*60*1000,HAPPY_RATE=10*60*1000;
+ markPetPlayerActive();
  [[virtualPet,"puppy3dStage","puppy"],[virtualKitty,"virtualKitty3dStage","kitty"]].forEach(([pet,stage,label])=>{
   if(!pet.adopted){ensurePetGrave(stage,pet,label);return;}
   if(!pet.lastFoodAt)pet.lastFoodAt=now;
@@ -1783,6 +1784,24 @@ const defaultVirtualKitty={adopted:false,name:"",adoptedAt:0,happiness:3,fullnes
 let virtualKitty={...defaultVirtualKitty};
 try{const savedKitty=JSON.parse(localStorage.getItem(virtualKittyKey)||"null");if(savedKitty&&typeof savedKitty==="object")virtualKitty={...defaultVirtualKitty,...savedKitty};}catch(e){}
 function saveVirtualKitty(){try{localStorage.setItem(virtualKittyKey,JSON.stringify(virtualKitty));}catch(e){}}
+
+// Pause pet-care clocks while the player is away, so offline time never drains needs.
+const petLastActiveKey="clickrfun_pet_last_active_v1";
+let petAwayMs=0;
+try{const lastActive=Number(localStorage.getItem(petLastActiveKey)||0);if(lastActive>0)petAwayMs=Math.max(0,Date.now()-lastActive);}catch(e){}
+if(petAwayMs>0){
+ [virtualPet,virtualKitty].forEach(pet=>{
+  ["lastFoodAt","lastHappyAt","zeroSince"].forEach(key=>{
+   if(Number(pet[key])>0)pet[key]=Number(pet[key])+petAwayMs;
+  });
+ });
+ saveVirtualPet();saveVirtualKitty();
+}
+function markPetPlayerActive(){try{localStorage.setItem(petLastActiveKey,String(Date.now()));}catch(e){}}
+markPetPlayerActive();
+window.addEventListener("pagehide",markPetPlayerActive);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)markPetPlayerActive();});
+
 function renderVirtualKitty(message){
  const name=$("virtualKittyName"),mood=$("virtualKittyMood"),avatar=$("virtualKittyAvatar");
  if(!name||!mood||!avatar)return;
