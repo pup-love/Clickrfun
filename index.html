@@ -478,7 +478,7 @@ $("dmForm").addEventListener("submit",async event=>{
  const button=$("dmSendButton");
  button.disabled=true;
  const {error}=await supabaseClient.from("private_messages").insert({
-  sender_id:currentUser.id,recipient_id:activeDmUserId,content
+  sender_id:currentUser.id,receiver_id:activeDmUserId,recipient_id:activeDmUserId,content
  });
 
  if(error){
