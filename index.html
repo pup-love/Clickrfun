@@ -1947,10 +1947,10 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   ball(headPivot,white,[.43,-.03,.02],[.15,.12,.17]);
   ball(headPivot,dark,[.54,.015,.025],[.095,.07,.11]);
   // Eyes on the camera-facing side and far side.
-  ball(headPivot,eyeMat,[.25,.2,.19],[.062,.075,.035]);
-  ball(headPivot,eyeMat,[.25,.2,-.19],[.062,.075,.035]);
-  ball(headPivot,white,[.27,.225,.215],[.018,.022,.012]);
-  ball(headPivot,white,[.27,.225,-.215],[.018,.022,.012]);
+  ball(headPivot,eyeMat,[.385,.2,.17],[.065,.078,.045]);
+  ball(headPivot,eyeMat,[.385,.2,-.17],[.065,.078,.045]);
+  ball(headPivot,white,[.421,.23,.185],[.021,.024,.014]);
+  ball(headPivot,white,[.421,.23,-.155],[.021,.024,.014]);
   const ear1=ball(headPivot,earMat,[-.2,.43,.28],[.18,.32,.12]);ear1.rotation.z=-.42;
   const ear2=ball(headPivot,earMat,[-.2,.43,-.28],[.18,.32,.12]);ear2.rotation.z=-.42;
   ball(headPivot,pink,[.36,-.22,.12],[.12,.055,.035]);
@@ -2001,8 +2001,8 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
    body.position.y=-.95+.025+Math.sin(now*.004)*.025;headPivot.rotation.z=Math.sin(now*.002)*.018;
    tailPivot.rotation.z=Math.sin(now*.018)*(action==="wag"?1.25:.62);
    tailPivot.rotation.x=Math.sin(now*.021)*.35;
-   legs.forEach((leg,i)=>{const phase=now*.009+(i%2)*Math.PI;leg.rotation.x=action==="follow"?Math.sin(phase)*.55:action==="jump"?(i<2?.28:-.22):action==="sit"&&i>=2?-.48:action==="sit"&&i<2?-.08:Math.sin(now*.002+i)*.012;});
-   if(action==="follow"){puppy.position.x=state.baseX+Math.sin(now*.002)*.45;body.rotation.y=Math.sin(now*.002)*.12;}
+   legs.forEach((leg,i)=>{const phase=now*.009+(i%2)*Math.PI;leg.rotation.x=action==="follow"?Math.sin(phase)*.38:action==="jump"?(i<2?.22:-.18):action==="sit"&&i>=2?-.48:action==="sit"&&i<2?-.08:Math.sin(now*.002+i)*.012;});
+   if(action==="follow"){puppy.position.x+=(0-puppy.position.x)*.12;puppy.rotation.y=-Math.PI/2+Math.sin(now*.0025)*.48;body.rotation.y=0;}
    else if(action==="spin"){state.spin+=dt*5.3;puppy.rotation.y=-Math.PI/2+state.spin;}
    else if(action==="roll"){
     state.roll+=dt*3.3;
