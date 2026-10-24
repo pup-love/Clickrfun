@@ -95,7 +95,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </div>
 
 <div id="gamesPanel" class="games-panel hidden">
-<h2>🎮 Puppy Arcade</h2>
+<h2>🎮 Paw Arcade</h2>
 <p class="small">Take a little break and catch some treats! 💗</p>
 <button type="button" onclick="startCatchTreats()">🍪 Catch the Treats!</button>
 <button type="button" onclick="closeGames()">✖ Close</button>
@@ -115,9 +115,10 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <button onclick="showSection('inventory')">🎒 Inventory</button>
 <button onclick="showSection('myprofile')">🐶 My Profile</button>
 <button onclick="showSection('displayThemes')">🎨 Display Themes</button>
-<button onclick="showSection('members')">🔎 Find Pups</button>
+<button onclick="showSection('members')">🔎 Find Paws</button>
 <button onclick="showSection('privateDMs')">💌 Private DMs</button>
-<button onclick="openRoom('puppy-lounge','🐾 Puppy Lounge')">🐾 Puppy Lounge</button>
+<button onclick="openRoom('puppy-lounge','🐾 Puppy Lounge')">🐶 Puppy Lounge</button>
+<button onclick="openRoom('kitty-lounge','🐱 Kitty Lounge')">🐱 Kitty Lounge</button>
 <button onclick="openRoom('new-pups','🎀 New Pups')">🎀 New Pups</button>
 <button onclick="openRoom('secret-den','🌙 Secret Den')">🌙 Secret Den</button>
 </nav>
@@ -125,8 +126,8 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <main>
 <section id="welcome" class="card home-hero">
 <div class="home-paws">🐾 💗 🐾</div>
-<h2>Welcome to Clickrfun! 🐶</h2>
-<p class="home-subtitle">Find your pack, make friends, collect treats, and dress up your puppy!</p>
+<h2 id="welcomeHeading">Welcome to Clickrfun! 🐾</h2>
+<p class="home-subtitle">Find your friends, collect treats, and dress up your puppy or kitty!</p>
 <button onclick="showSection('account')">Join The Pack 💕</button>
 <button onclick="showSection('shop')">Visit The Shop 🛍️</button>
 </section>
@@ -137,13 +138,13 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <div class="grid">
 <div class="item explore-card">
 <div class="explore-icon">🎮</div><h3>Play &amp; Have Fun</h3>
-<p>Take a break and catch some yummy treats in the Puppy Arcade!</p>
+<p>Take a break and catch some yummy treats in the Paw Arcade!</p>
 <button type="button" onclick="openGames()">Play Games 💗</button>
 </div>
 <div class="item explore-card">
 <div class="explore-icon">🐶</div><h3>Meet Your Pack</h3>
-<p>Find other pups, explore profiles, and make new friends!</p>
-<button type="button" onclick="showSection('members')">Find Pups 🐾</button>
+<p>Find puppies and kitties, explore profiles, and make new friends!</p>
+<button type="button" onclick="showSection('members')">Find Pups & Kitties 🐾</button>
 </div>
 <div class="item explore-card">
 <div class="explore-icon">🦴</div><h3>Collect Treats</h3>
@@ -166,7 +167,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <form id="signupForm">
 <h3>Create an account</h3>
 <label for="signupAccountType">I am joining as a...</label>
-<select id="signupAccountType"><option value="puppy">🐶 Puppy</option><option value="owner">💗 Owner</option></select>
+<select id="signupAccountType"><option value="puppy">🐶 Puppy</option><option value="kitty">🐱 Kitty</option><option value="owner">💗 Owner</option></select>
 <input id="signupUsername" maxlength="24" autocomplete="username" placeholder="Username (3–24 letters, numbers, _ or -)" required>
 <input id="signupEmail" type="email" autocomplete="email" placeholder="Email address" required>
 <input id="signupPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Password (at least 6 characters)" required>
@@ -192,7 +193,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </section>
 
 <section id="shop" class="card hidden">
-<h2>🛍️ Puppy Shop</h2>
+<h2>🛍️ Paw Shop</h2>
 <p class="small">Buy cute accessories with your treats. Then equip them from your inventory!</p>
 <p id="shopStatus" role="status"></p><div id="shopItems" class="grid">Loading shop... 🐾</div>
 </section>
@@ -216,7 +217,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <p id="themeStatus" class="small" role="status" aria-live="polite">Choose a theme to preview it.</p><button type="button" id="resetThemeButton">Reset to Classic 💜</button></section>
 
 <section id="myprofile" class="card hidden">
-<h2 id="myProfileHeading">🐶 My Puppy Profile</h2>
+<h2 id="myProfileHeading">🐾 My Profile</h2>
 <div id="profileLook">🐶</div><p id="myProfileId" class="profile-id"></p>
 <form id="profileForm">
 <label for="profileAccountType">Account type</label>
@@ -230,10 +231,10 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </section>
 
 <section id="members" class="card hidden">
-<h2>🔎 Find Pups & Owners</h2>
+<h2>🔎 Find Pups, Kitties & Owners</h2>
 <p class="small">Meet puppies or find their owners. Owners can list the puppies they own on their own profile.</p>
 <label for="memberTypeFilter">Who are you looking for?</label>
-<select id="memberTypeFilter"><option value="puppy">🐶 Puppies</option><option value="owner">💗 Owners</option><option value="all">🐾 Everyone</option></select>
+<select id="memberTypeFilter"><option value="puppy">🐶 Puppies</option><option value="kitty">🐱 Kitties</option><option value="owner">💗 Owners</option><option value="all">🐾 Everyone</option></select>
 <form id="searchForm"><input id="memberSearch" maxlength="40" placeholder="Username or member ID" required><button type="submit">Search 🐾</button></form>
 <div id="memberResults"></div>
 </section>
@@ -279,6 +280,7 @@ const SUPABASE_PUBLISHABLE_KEY="sb_publishable_uDxX8PVStNcE56hQx0ShpQ_XUxx9Z1g";
 const $=id=>document.getElementById(id);
 let supabaseClient=null;
 let currentUser=null;
+let currentAccountType="puppy";
 let currentUsername=null;
 let currentRoom="puppy-lounge";
 let messageSubscription=null;
@@ -588,7 +590,7 @@ function startCatchTreats(){
 
  const message=document.createElement("p");
  message.setAttribute("aria-live","polite");
- message.textContent="Ready, puppy? 🐶";
+ message.textContent="Ready, "+(currentAccountType==="kitty"?"kitty? 🐱":"puppy? 🐶");
 
  game.append(heading,instructions,stats,board,startButton,message);
  area.appendChild(game);
@@ -706,6 +708,7 @@ function requireLogin(){
 }
 function setLoggedIn(user,username){
  currentUser=user;
+ currentAccountType=accountTypeOf(null,user);
  currentUsername=username;
  $("logoutButton").classList.toggle("hidden",!user);
  $("sendButton").disabled=!user||!username;
@@ -763,13 +766,15 @@ function addMessage(message){
 }
 function accountTypeOf(profile,user){
  const type=(profile&&profile.account_type)||(user&&user.user_metadata&&user.user_metadata.account_type);
- return type==="owner"?"owner":"puppy";
+ return ["owner","kitty"].includes(type)?type:"puppy";
 }
 function syncOwnerProfileFields(){
- const owner=$("profileAccountType").value==="owner";
+ const selectedType=$("profileAccountType").value;
+ const owner=selectedType==="owner";
+ const kitty=selectedType==="kitty";
  $("ownerPuppiesWrap").classList.toggle("hidden",!owner);
- $("myProfileHeading").textContent=owner?"💗 My Owner Profile":"🐶 My Puppy Profile";
- $("profileLook").textContent=owner?"💗 Owner":"🐶 Puppy";
+ $("myProfileHeading").textContent=owner?"💗 My Owner Profile":kitty?"🐱 My Kitty Profile":"🐶 My Puppy Profile";
+ $("profileLook").textContent=owner?"💗 Owner":kitty?"🐱 Kitty":"🐶 Puppy";
 }
 $("profileAccountType").addEventListener("change",syncOwnerProfileFields);
 
@@ -960,7 +965,7 @@ $("searchForm").addEventListener("submit",async event=>{
  if(!results.length){container.textContent="No other pups found. Try another username or ID!";return;}
  results.forEach(profile=>{
   const box=document.createElement("div");box.className="member";
-  const name=document.createElement("strong");name.textContent=(accountTypeOf(profile,null)==="owner"?"💗 Owner · ":"🐶 Puppy · ")+profile.username;
+  const name=document.createElement("strong");name.textContent=(accountTypeOf(profile,null)==="owner"?"💗 Owner · ":accountTypeOf(profile,null)==="kitty"?"🐱 Kitty · ":"🐶 Puppy · ")+profile.username;
   makeMemberNameClickable(name,profile.id,profile.username);
   const id=document.createElement("p");id.className="profile-id";id.textContent=profile.profile_id||"";
   const button=document.createElement("button");button.textContent="Visit Profile";button.addEventListener("click",()=>viewMember(profile.id));
@@ -979,7 +984,7 @@ async function viewMember(id){
  }
  container.replaceChildren();
  const look=document.createElement("div");look.id="profileLook";look.textContent=lookFor(data.equipped_items||[]);
- const name=document.createElement("h3");name.textContent=(accountTypeOf(data,null)==="owner"?"💗 Owner · ":"🐶 Puppy · ")+data.username;
+ const name=document.createElement("h3");name.textContent=(accountTypeOf(data,null)==="owner"?"💗 Owner · ":accountTypeOf(data,null)==="kitty"?"🐱 Kitty · ":"🐶 Puppy · ")+data.username;
  const pid=document.createElement("p");pid.className="profile-id";pid.textContent=data.profile_id||"";
  const bio=document.createElement("p");bio.textContent=data.bio||"This pup hasn't written a bio yet. 💗";
  const dmButton=document.createElement("button");dmButton.type="button";dmButton.textContent="💌 Send Private Message";
