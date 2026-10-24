@@ -169,6 +169,10 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 #stickerCollection .sticker-badge .sticker-name{color:#352047;}
 #stickerCollection .sticker-badge .sticker-hint{color:#5d4775;}
 #stickerCollection .sticker-badge.locked{background:#e6d9f6;border-color:#fff;}
+
+/* Virtual-pet memorials */
+.pet-grave{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);z-index:5;display:none;text-align:center;color:#493557;background:rgba(255,246,255,.92);border:2px solid #fff;border-radius:14px;padding:8px 15px;box-shadow:0 4px 12px #56345b44;min-width:110px;font-size:12px;pointer-events:none}.pet-grave .grave-stone{font-size:28px;line-height:1.1}.pet-grave .grave-name{font-weight:700;overflow-wrap:anywhere}.pet-grave .grave-heart{color:#e66aab}
+.puppy3d-stage,.kitty3d-stage{position:relative}
 </style>
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js"></script>
 </head>
@@ -1697,10 +1701,39 @@ $("soundToggle").addEventListener("click",()=>{
 
 /* VIRTUAL PUPPY PET */
 const virtualPetKey="clickrfun-virtual-puppy-v1";
-const defaultVirtualPet={adopted:false,name:"",adoptedAt:0,happiness:3,fullness:5,emoji:"🐶",xp:0,level:1,room:"bed",toy:"ball",catches:0,bestCatches:0};
+const defaultVirtualPet={adopted:false,name:"",adoptedAt:0,happiness:3,fullness:5,emoji:"🐶",xp:0,level:1,room:"bed",toy:"ball",catches:0,bestCatches:0,dead:false,zeroSince:0};
 let virtualPet={...defaultVirtualPet};
 try{const savedPet=JSON.parse(localStorage.getItem(virtualPetKey)||"null");if(savedPet&&typeof savedPet==="object")virtualPet={...defaultVirtualPet,...savedPet};}catch(e){}
 function saveVirtualPet(){try{localStorage.setItem(virtualPetKey,JSON.stringify(virtualPet));}catch(e){}}
+
+// Tamagotchi-style care timer: either stat at zero for 10 continuous minutes
+// marks that pet as passed away. The timestamp/death state persists on this device.
+function ensurePetGrave(stageId,pet,label){
+ const stage=$(stageId);if(!stage)return;
+ let grave=stage.querySelector(".pet-grave");
+ if(!grave){grave=document.createElement("div");grave.className="pet-grave";grave.innerHTML='<div class="grave-stone">🪦</div><div class="grave-name"></div><div class="grave-heart">♡</div>';stage.appendChild(grave);}
+ grave.querySelector(".grave-name").textContent=pet.name||label;
+ grave.style.display=pet.dead?"block":"none";
+}
+function petCareTick(){
+ const now=Date.now();
+ [[virtualPet,"puppy3dStage","puppy"],[virtualKitty,"virtualKitty3dStage","kitty"]].forEach(([pet,stage,label])=>{
+  if(!pet.adopted||pet.dead)return;
+  if(Number(pet.happiness)<=0||Number(pet.fullness)<=0){
+   if(!pet.zeroSince)pet.zeroSince=now;
+   if(now-pet.zeroSince>=10*60*1000){
+    pet.dead=true;
+    const msg="Rest peacefully, "+pet.name+". You will always be loved. 💗";
+    if(label==="puppy")$("virtualPetMessage").textContent=msg;else $("virtualKittyMood").textContent=msg;
+    if(label==="puppy")saveVirtualPet();else saveVirtualKitty();
+   }
+  }else pet.zeroSince=0;
+  if(label==="puppy")saveVirtualPet();else saveVirtualKitty();
+  ensurePetGrave(stage,pet,label);
+ });
+}
+setInterval(petCareTick,5000);
+
 function renderVirtualPet(message){
  const puppyPhoto=$("virtualPetEmoji"),name=$("virtualPetName"),mood=$("virtualPetMood");
  if(!puppyPhoto||!name||!mood)return;
@@ -1733,7 +1766,7 @@ $("virtualPetAdopt").addEventListener("click",()=>{
  virtualPet.adopted=true;virtualPet.name=name.slice(0,20);virtualPet.adoptedAt=virtualPet.adoptedAt||Date.now();virtualPet.happiness=Math.max(virtualPet.happiness,3);virtualPet.fullness=Math.max(virtualPet.fullness,5);saveVirtualPet();playPuppySound("win");renderVirtualPet("YAY! "+virtualPet.name+" is officially part of your pack! 🎉🐶");
 });
 const virtualKittyKey="clickrfun_virtual_kitty_v1";
-const defaultVirtualKitty={adopted:false,name:"",adoptedAt:0,happiness:3,fullness:5};
+const defaultVirtualKitty={adopted:false,name:"",adoptedAt:0,happiness:3,fullness:5,dead:false,zeroSince:0};
 let virtualKitty={...defaultVirtualKitty};
 try{const savedKitty=JSON.parse(localStorage.getItem(virtualKittyKey)||"null");if(savedKitty&&typeof savedKitty==="object")virtualKitty={...defaultVirtualKitty,...savedKitty};}catch(e){}
 function saveVirtualKitty(){try{localStorage.setItem(virtualKittyKey,JSON.stringify(virtualKitty));}catch(e){}}
