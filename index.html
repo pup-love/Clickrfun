@@ -2073,11 +2073,12 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
    if(action==="follow"){puppy.position.x+=(0-puppy.position.x)*.12;puppy.rotation.y=-Math.PI/2+Math.sin(now*.0025)*.48;body.rotation.y=0;}
    else if(action==="spin"){state.spin+=dt*5.3;puppy.rotation.y=-Math.PI/2+state.spin;}
    else if(action==="roll"){
+    // Gentle side-flop; don't rotate the puppy through the floor.
     state.roll+=dt*3.3;
-    const rollProgress=Math.min(1,state.roll/(Math.PI*2));
-    body.rotation.x=rollProgress*Math.PI*2;
-    puppy.position.y=.95;
-    body.rotation.z=0;
+    const rollProgress=Math.min(1,state.roll/1.9);
+    body.rotation.x=0;
+    body.rotation.z=Math.sin(rollProgress*Math.PI)*.52;
+    puppy.position.y=.95+Math.sin(rollProgress*Math.PI)*.10;
    }
    else if(action==="jump"){state.jump+=dt*7;puppy.position.y=.95+Math.max(0,Math.sin(state.jump))*.72;body.rotation.z=Math.sin(state.jump)*.035;}
    else {puppy.position.y+=(.95-puppy.position.y)*.12;puppy.position.x+=(0-puppy.position.x)*.06;puppy.rotation.y+=(-Math.PI/2-puppy.rotation.y)*.12;puppy.rotation.x+=(0-puppy.rotation.x)*.12;puppy.rotation.z+=(0-puppy.rotation.z)*.12;body.rotation.x+=(0-body.rotation.x)*.12;body.rotation.z+=(0-body.rotation.z)*.08;}
@@ -2107,28 +2108,24 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   for(let i=0;i<14;i++){const a=i*2.4,r=2.3+(i%3)*.28,x=Math.cos(a)*r,z=Math.sin(a)*r;for(let j=0;j<5;j++)ball(scene,mat(i%2?"#ffb6dc":"#fff3a8"),[x+Math.cos(j*1.256)*.07,.05,z+Math.sin(j*1.256)*.07],[.055,.035,.055]);ball(scene,mat("#ffcf67"),[x,.07,z],[.04,.035,.04]);}
   const cat=new THREE.Group();scene.add(cat);cat.position.y=.95;const body=new THREE.Group();cat.add(body);
   const fur=mat("#f28a2e"),patch=mat("#9b3514"),inner=mat("#f5a0b8"),dark=mat("#34283d",.3),eye=mat("#65b9a0",.25),nose=mat("#e97891",.3),white=mat("#fff0d2");
-  ball(body,fur,[0,.78,0],[.72,.37,.34]);ball(body,white,[.13,.65,.075],[.37,.17,.27]);
-  // Fine, inset-looking tabby lines: very narrow and almost flush with the body surface.
-  for(const side of [-1,1]){
-   for(const [x0,lean] of [[-.42,-.10],[-.19,-.045],[.08,.045],[.34,.10]]){
-    const pts=[];
-    for(let k=0;k<=16;k++){
-     const t=k/16,y=.77+t*.43,x=x0+lean*(t-.5);
-     const q=Math.max(.04,1-(x/.72)**2-((y-.78)/.37)**2);
-     pts.push(new THREE.Vector3(x,y,side*(.34*Math.sqrt(q)+.0008)));
-    }
-    const curve=new THREE.CatmullRomCurve3(pts);
-    const stripe=new THREE.Mesh(new THREE.TubeGeometry(curve,24,.008,5,false),patch);
-    stripe.castShadow=false;stripe.receiveShadow=false;body.add(stripe);
-   }
+  // Tabby stripes are painted into the body coat instead of raised 3D tubes.
+  const coatCanvas=document.createElement("canvas");coatCanvas.width=512;coatCanvas.height=256;
+  const coatCtx=coatCanvas.getContext("2d");coatCtx.fillStyle="#f28a2e";coatCtx.fillRect(0,0,512,256);
+  coatCtx.strokeStyle="#b94d19";coatCtx.lineWidth=13;coatCtx.lineCap="round";
+  for(let i=0;i<10;i++){
+   const x=22+i*52;
+   coatCtx.beginPath();coatCtx.moveTo(x+14,18);coatCtx.bezierCurveTo(x-8,72,x+32,112,x+7,160);coatCtx.stroke();
+   coatCtx.beginPath();coatCtx.moveTo(x+32,170);coatCtx.bezierCurveTo(x+14,196,x+27,222,x+9,246);coatCtx.stroke();
   }
+  const coatTexture=new THREE.CanvasTexture(coatCanvas);coatTexture.colorSpace=THREE.SRGBColorSpace;
+  const bodyFur=new THREE.MeshStandardMaterial({map:coatTexture,roughness:.82});
+  ball(body,bodyFur,[0,.78,0],[.72,.37,.34]);ball(body,white,[.13,.65,.075],[.37,.17,.27]);
   const head=new THREE.Group();head.position.set(.34,1.28,0);body.add(head);ball(head,fur,[0,.1,0],[.46,.39,.38]);
   const earL=ball(head,fur,[-.27,.405,.18],[.145,.19,.105]);earL.rotation.z=-.22;const earR=ball(head,fur,[-.27,.405,-.18],[.145,.19,.105]);earR.rotation.z=-.22;
   ball(head,inner,[-.255,.415,.205],[.068,.105,.022]);ball(head,inner,[-.255,.415,-.205],[.068,.105,.022]);
   // Clearly visible dark-orange tabby stripes across the forehead and both cheeks.
   for(const side of [-1,1]){
-   for(const [x,y,z,rx,ry] of [[-.21,.34,.185,.065,.17],[-.08,.37,.205,.06,.19],[.055,.33,.195,.055,.16]]){const stripe=ball(head,patch,[x,y,side*z],[rx,ry,.026]);stripe.rotation.z=-.24;}
-   const cheekStripe=ball(head,patch,[.18,-.035,side*.255],[.06,.105,.025]);cheekStripe.rotation.z=.45;
+   for(const [x,y,z,rx,ry] of [[-.21,.34,.185,.028,.105],[-.08,.37,.205,.026,.12],[.055,.33,.195,.024,.095]]){const stripe=ball(head,patch,[x,y,side*z],[rx,ry,.008]);stripe.rotation.z=-.24;}
   }
   // Small, soft kitten eyes that sit naturally in the face.
   for(const side of [-1,1]){
