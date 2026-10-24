@@ -2106,13 +2106,22 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   const rug=new THREE.Mesh(new THREE.CircleGeometry(2.45,48),mat("#f8cde8"));rug.rotation.x=-Math.PI/2;rug.position.y=-.04;scene.add(rug);
   for(let i=0;i<14;i++){const a=i*2.4,r=2.3+(i%3)*.28,x=Math.cos(a)*r,z=Math.sin(a)*r;for(let j=0;j<5;j++)ball(scene,mat(i%2?"#ffb6dc":"#fff3a8"),[x+Math.cos(j*1.256)*.07,.05,z+Math.sin(j*1.256)*.07],[.055,.035,.055]);ball(scene,mat("#ffcf67"),[x,.07,z],[.04,.035,.04]);}
   const cat=new THREE.Group();scene.add(cat);cat.position.y=.95;const body=new THREE.Group();cat.add(body);
-  const fur=mat("#f28a2e"),patch=mat("#bd541c"),inner=mat("#f5a0b8"),dark=mat("#34283d",.3),eye=mat("#65b9a0",.25),nose=mat("#e97891",.3),white=mat("#fff0d2");
+  const fur=mat("#f28a2e"),patch=mat("#9b3514"),inner=mat("#f5a0b8"),dark=mat("#34283d",.3),eye=mat("#65b9a0",.25),nose=mat("#e97891",.3),white=mat("#fff0d2");
   ball(body,fur,[0,.78,0],[.72,.37,.34]);ball(body,white,[.13,.65,.075],[.37,.17,.27]);
+  // Bold, curved ginger-tabby stripes on both sides of her body, raised just above the fur so they stay visible.
+  for(const side of [-1,1]){
+   for(const [x,y,rx,ry,rz,tilt] of [[-.43,.91,.075,.22,.025,-.28],[-.16,.99,.065,.23,.025,-.12],[.12,.99,.065,.22,.025,.12],[.39,.91,.075,.20,.025,.28]]){
+    const bodyStripe=ball(body,patch,[x,y,side*.321],[rx,ry,rz]);bodyStripe.rotation.z=tilt;
+   }
+  }
   const head=new THREE.Group();head.position.set(.34,1.28,0);body.add(head);ball(head,fur,[0,.1,0],[.46,.39,.38]);
   const earL=ball(head,fur,[-.27,.405,.18],[.145,.19,.105]);earL.rotation.z=-.22;const earR=ball(head,fur,[-.27,.405,-.18],[.145,.19,.105]);earR.rotation.z=-.22;
   ball(head,inner,[-.255,.415,.205],[.068,.105,.022]);ball(head,inner,[-.255,.415,-.205],[.068,.105,.022]);
-  // Tiny ginger tabby markings for her Garfield-inspired look.
-  for(const side of [-1,1]){for(const [x,y,z,rx,ry] of [[-.18,.34,.19,.045,.15],[-.08,.35,.205,.045,.16],[.02,.33,.19,.04,.13]]){const stripe=ball(head,patch,[x,y,side*z],[rx,ry,.018]);stripe.rotation.z=-.24;}const cheekStripe=ball(head,patch,[.18,-.035,side*.25],[.04,.085,.018]);cheekStripe.rotation.z=.45;}
+  // Clearly visible dark-orange tabby stripes across the forehead and both cheeks.
+  for(const side of [-1,1]){
+   for(const [x,y,z,rx,ry] of [[-.21,.34,.185,.065,.17],[-.08,.37,.205,.06,.19],[.055,.33,.195,.055,.16]]){const stripe=ball(head,patch,[x,y,side*z],[rx,ry,.026]);stripe.rotation.z=-.24;}
+   const cheekStripe=ball(head,patch,[.18,-.035,side*.255],[.06,.105,.025]);cheekStripe.rotation.z=.45;
+  }
   // Small, soft kitten eyes that sit naturally in the face.
   for(const side of [-1,1]){
    ball(head,eye,[.405,.18,side*.176],[.046,.061,.033]);
