@@ -604,11 +604,11 @@ function startCatchTreats(){
   board.replaceChildren();
   startButton.disabled=false;
   startButton.textContent="🔄 Play Again!";
-  message.textContent="🎉 You caught "+score+" treats! Saving your score... 💗";
+  message.textContent="🎉 Good job, "+(currentAccountType==="kitty"?"kitty":"puppy")+"! You caught "+score+" treats! Saving your score... 💗";
   playPuppySound("win");
 
   if(!currentUser){
-   message.textContent="🎉 You caught "+score+" treats! Sign in to save your score. 💗";
+   message.textContent="🎉 Good job! You caught "+score+" treats! Sign in to save your score. 💗";
    return;
   }
 
@@ -937,6 +937,7 @@ $("profileForm").addEventListener("submit",async event=>{
  const {error}=await supabaseClient.from("profiles").update({username,bio,account_type,owned_puppies}).eq("id",currentUser.id);
  if(error){$("profileStatus").textContent="Couldn't save: "+error.message;return;}
  currentUsername=username;
+ currentAccountType=account_type;
  const {error:authError}=await supabaseClient.auth.updateUser({data:{username,account_type}});
  if(authError){$("profileStatus").textContent="Profile saved, but account metadata couldn't update: "+authError.message;return;}
  $("accountStatus").textContent="Logged in as "+username+" 🐾";
