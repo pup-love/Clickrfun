@@ -89,7 +89,10 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </header>
 
 <button id="gamesToggle" class="games-float" type="button">🎮 Games</button>
-<button id="soundToggle" type="button" style="position:fixed;bottom:18px;right:18px;z-index:1002;border:2px solid #ff9cde;border-radius:50px;padding:14px;background:#e879c4;color:#28132f;font-weight:bold;cursor:pointer">🔊 Sounds: ON</button>
+<div id="quickSettings" style="position:fixed;bottom:18px;right:18px;z-index:1002;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+<button id="themeQuickToggle" type="button" style="border:2px solid #ff9cde;border-radius:50px;padding:12px 14px;background:#e879c4;color:#28132f;font-weight:bold;cursor:pointer">🎨 Themes</button>
+<button id="soundToggle" type="button" style="border:2px solid #ff9cde;border-radius:50px;padding:12px 14px;background:#e879c4;color:#28132f;font-weight:bold;cursor:pointer">🔊 Sounds: ON</button>
+</div>
 
 <div id="gamesPanel" class="games-panel hidden">
 <h2>🎮 Puppy Arcade</h2>
@@ -1115,6 +1118,7 @@ function applyDisplayTheme(theme,save=true){
  if(save){try{localStorage.setItem("clickrfun-display-theme",selected);}catch(error){console.warn("Theme preference could not be saved.",error);}}
  $("themeStatus").textContent="Theme applied: "+({default:"Classic Purple & Pink",ocean:"Ocean Blue",meadow:"Meadow Green",sunset:"Sunset Peach",light:"Soft Light"}[selected])+" 💗";
 }
+$("themeQuickToggle").addEventListener("click",()=>showSection("displayThemes"));
 $("displayThemeSelect").addEventListener("change",()=>applyDisplayTheme($("displayThemeSelect").value));
 $("resetThemeButton").addEventListener("click",()=>applyDisplayTheme("default"));
 try{applyDisplayTheme(localStorage.getItem("clickrfun-display-theme")||"default",false);}catch(error){applyDisplayTheme("default",false);}
