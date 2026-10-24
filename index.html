@@ -2110,9 +2110,9 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   ball(body,fur,[0,.78,0],[.72,.37,.34]);ball(body,white,[.13,.65,.075],[.37,.17,.27]);
   const head=new THREE.Group();head.position.set(.34,1.28,0);body.add(head);ball(head,fur,[0,.1,0],[.46,.39,.38]);
   const earL=ball(head,fur,[-.27,.405,.18],[.145,.19,.105]);earL.rotation.z=-.22;const earR=ball(head,fur,[-.27,.405,-.18],[.145,.19,.105]);earR.rotation.z=-.22;
-  ball(head,inner,[-.255,.415,.205],[.068,.105,.022]);ball(head,inner,[-.255,.415,-.205],[.068,.105,.022]);ball(head,patch,[.08,.4,.12],[.19,.12,.22]);
+  ball(head,inner,[-.255,.415,.205],[.068,.105,.022]);ball(head,inner,[-.255,.415,-.205],[.068,.105,.022]);
   // Tiny ginger tabby markings for her Garfield-inspired look.
-  for(const side of [-1,1]){const stripe=ball(head,patch,[-.12,.34,side*.205],[.055,.16,.025]);stripe.rotation.z=-.28;const cheekStripe=ball(head,patch,[.18,-.035,side*.255],[.045,.09,.02]);cheekStripe.rotation.z=.45;}
+  for(const side of [-1,1]){const stripe=ball(head,patch,[-.12,.34,side*.196],[.035,.12,.012]);stripe.rotation.z=-.28;const cheekStripe=ball(head,patch,[.18,-.035,side*.246],[.028,.07,.01]);cheekStripe.rotation.z=.45;}
   // Small, soft kitten eyes that sit naturally in the face.
   for(const side of [-1,1]){
    ball(head,eye,[.405,.18,side*.176],[.046,.061,.033]);
@@ -2141,7 +2141,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
     faceLine([[.445,y0,z0],[.47,y0+(j-1)*.018,side*.23],[.445-(j-1)*.025,y1,z1]],.0045,whiskerMat);
    }
   }
-  const tailPivot=new THREE.Group();tailPivot.position.set(-.58,.95,0);body.add(tailPivot);const tail=ball(tailPivot,fur,[-.31,.24,0],[.4,.14,.14]);tail.rotation.z=-.35;ball(tailPivot,patch,[-.59,.42,0],[.13,.12,.12]);
+  const tailPivot=new THREE.Group();tailPivot.position.set(-.58,.83,0);body.add(tailPivot);const tail=ball(tailPivot,fur,[-.32,-.12,0],[.39,.13,.13]);tail.rotation.z=-.48;ball(tailPivot,patch,[-.62,-.29,0],[.12,.11,.11]);
   const legs=[];for(const x of [-.4,.4])for(const z of [-.25,.25]){const p=new THREE.Group();p.position.set(x,.55,z);body.add(p);ball(p,fur,[0,-.19,0],[.14,.29,.14]);ball(p,white,[.025,-.36,.02],[.16,.09,.15]);legs.push(p);}
   const collar=new THREE.Mesh(new THREE.TorusGeometry(.25,.045,8,28),mat("#f16eae"));collar.position.set(.3,1.08,0);collar.rotation.x=Math.PI/2;body.add(collar);ball(body,mat("#ffd66f"),[.52,.98,.03],[.065,.075,.045]);
   const idleY=-.04,faceUserY=-Math.PI/2;let action="idle",spin=0,jump=0,last=0,actionUntil=0,walkOrigin=0,currentRoom="bed",currentToy="ball",toyMesh=null,roomBits=[];
@@ -2157,7 +2157,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   host.addEventListener("pointerdown",()=>window.setKitty3DAction("purr"));
   document.querySelectorAll("[data-kitty-action]").forEach(b=>b.addEventListener("click",()=>window.setKitty3DAction(b.dataset.kittyAction)));
   function animate(now){requestAnimationFrame(animate);const dt=Math.min(.05,(now-last)/1000||0);last=now;if(action!=="idle"&&now>actionUntil&&action!=="spin"&&action!=="jump")action="idle";
-   cat.position.y=idleY+Math.sin(now*.004)*.025;head.rotation.z=Math.sin(now*.002)*.018;tailPivot.rotation.z=Math.sin(now*.018)*(action==="purr"?1.25:.62);
+   cat.position.y=idleY+Math.sin(now*.004)*.025;head.rotation.z=Math.sin(now*.002)*.018;tailPivot.rotation.z=-.12+Math.sin(now*.018)*(action==="purr"?.28:.16);
    legs.forEach((p,i)=>{const phase=now*.009+(i%2)*Math.PI;p.rotation.x=action==="walk"?Math.sin(phase)*.38:action==="jump"?-.12:action==="sit"?(i<2?-.18:0):Math.sin(now*.002+i)*.012;p.rotation.z=action==="sit"&&i<2?(i%2===0?-.4:.4):0;});
    if(action==="walk"){cat.position.x=Math.sin(now*.0025)*.48;cat.rotation.y=faceUserY+Math.sin(now*.0025)*.12;}
    else if(action==="spin"){spin+=dt*5.3;cat.rotation.y=faceUserY+spin;if(spin>=Math.PI*2){action="idle";cat.rotation.y=faceUserY;}}
