@@ -19,8 +19,8 @@ button:disabled{opacity:.5;cursor:wait}
 main{width:min(950px,94%);margin:25px auto;min-height:45vh}
 .card{background:#29183b;border:1px solid #704276;border-radius:18px;padding:22px;margin-bottom:20px;box-shadow:0 8px 25px #09041055}
 h2{margin-top:0}
-input,textarea{display:block;width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit}
-textarea{resize:vertical;min-height:80px}
+input,textarea,select{display:block;width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit}
+textarea{resize:vertical;min-height:80px} select{width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit}
 .small{color:#d7b9df;font-size:.9rem}
 .hidden{display:none!important}
 #status,#rewardStatus,#shopStatus,#profileStatus,#inventoryStatus{white-space:pre-wrap;color:#ffd0ed}
@@ -154,6 +154,8 @@ hr{border-color:#704276;margin:24px 0}
 <p class="small">Create an account or log in to your existing account.</p>
 <form id="signupForm">
 <h3>Create an account</h3>
+<label for="signupAccountType">I am joining as a...</label>
+<select id="signupAccountType"><option value="puppy">🐶 Puppy</option><option value="owner">💗 Owner</option></select>
 <input id="signupUsername" maxlength="24" autocomplete="username" placeholder="Username (3–24 letters, numbers, _ or -)" required>
 <input id="signupEmail" type="email" autocomplete="email" placeholder="Email address" required>
 <input id="signupPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Password (at least 6 characters)" required>
@@ -191,20 +193,25 @@ hr{border-color:#704276;margin:24px 0}
 </section>
 
 <section id="myprofile" class="card hidden">
-<h2>🐶 My Puppy Profile</h2>
+<h2 id="myProfileHeading">🐶 My Puppy Profile</h2>
 <div id="profileLook">🐶</div><p id="myProfileId" class="profile-id"></p>
 <form id="profileForm">
+<label for="profileAccountType">Account type</label>
+<select id="profileAccountType"><option value="puppy">🐶 Puppy</option><option value="owner">💗 Owner</option></select>
 <label for="profileUsername">Username</label><input id="profileUsername" maxlength="24" required>
-<label for="profileBio">About your pup</label><textarea id="profileBio" maxlength="300" placeholder="Tell the pack about yourself! 💗"></textarea>
+<label for="profileBio">About me</label><textarea id="profileBio" maxlength="300" placeholder="Tell the pack about yourself! 💗"></textarea>
+<div id="ownerPuppiesWrap" class="hidden"><label for="ownerPuppies">Puppies I own</label><textarea id="ownerPuppies" maxlength="500" placeholder="List your puppies' usernames, separated by commas"></textarea><p class="small">This is a list on your profile; it doesn't create separate puppy accounts.</p></div>
 <button type="submit">Save Profile 💕</button>
 </form>
 <p id="profileStatus" role="status"></p>
 </section>
 
 <section id="members" class="card hidden">
-<h2>🔎 Find Pups</h2>
-<p class="small">Search by username or puppy ID to visit another member's profile.</p>
-<form id="searchForm"><input id="memberSearch" maxlength="40" placeholder="Username or PUP-XXXXXXXXXXXX" required><button type="submit">Search 🐾</button></form>
+<h2>🔎 Find Pups & Owners</h2>
+<p class="small">Meet puppies or find their owners. Owners can list the puppies they own on their own profile.</p>
+<label for="memberTypeFilter">Who are you looking for?</label>
+<select id="memberTypeFilter"><option value="puppy">🐶 Puppies</option><option value="owner">💗 Owners</option><option value="all">🐾 Everyone</option></select>
+<form id="searchForm"><input id="memberSearch" maxlength="40" placeholder="Username or member ID" required><button type="submit">Search 🐾</button></form>
 <div id="memberResults"></div>
 </section>
 
@@ -731,13 +738,25 @@ function addMessage(message){
  container.appendChild(box);
  container.scrollTop=container.scrollHeight;
 }
+function accountTypeOf(profile,user){
+ const type=(profile&&profile.account_type)||(user&&user.user_metadata&&user.user_metadata.account_type);
+ return type==="owner"?"owner":"puppy";
+}
+function syncOwnerProfileFields(){
+ const owner=$("profileAccountType").value==="owner";
+ $("ownerPuppiesWrap").classList.toggle("hidden",!owner);
+ $("myProfileHeading").textContent=owner?"💗 My Owner Profile":"🐶 My Puppy Profile";
+ $("profileLook").textContent=owner?"💗 Owner":"🐶 Puppy";
+}
+$("profileAccountType").addEventListener("change",syncOwnerProfileFields);
+
 async function ensureProfile(user){
- const {data,error}=await supabaseClient.from("profiles").select("username").eq("id",user.id).maybeSingle();
+ const {data,error}=await supabaseClient.from("profiles").select("username,account_type").eq("id",user.id).maybeSingle();
  if(error)throw error;
  const username=(user.user_metadata&&user.user_metadata.username)||"";
  if(data&&data.username)return data.username;
  if(!username)throw new Error("No username is saved to this account.");
- const {error:upsertError}=await supabaseClient.from("profiles").upsert({id:user.id,username},{onConflict:"id"});
+ const {error:upsertError}=await supabaseClient.from("profiles").upsert({id:user.id,username,account_type:accountTypeOf(null,user),owned_puppies:""},{onConflict:"id"});
  if(upsertError)throw upsertError;
  return username;
 }
@@ -860,10 +879,13 @@ async function toggleItem(itemId,isEquipped){
 async function loadMyProfile(){
  if(!requireLogin())return;
  $("profileStatus").textContent="Loading your profile...";
- const {data,error}=await supabaseClient.from("profiles").select("username,profile_id,bio,equipped_items").eq("id",currentUser.id).maybeSingle();
+ const {data,error}=await supabaseClient.from("profiles").select("username,profile_id,bio,equipped_items,account_type,owned_puppies").eq("id",currentUser.id).maybeSingle();
  if(error||!data){$("profileStatus").textContent="Couldn't load profile: "+(error?.message||"profile not found");return;}
  $("profileUsername").value=data.username||currentUsername||"";
  $("profileBio").value=data.bio||"";
+ $("profileAccountType").value=accountTypeOf(data,currentUser);
+ $("ownerPuppies").value=data.owned_puppies||"";
+ syncOwnerProfileFields();
  $("myProfileId").textContent=data.profile_id||"Puppy ID is being created...";
  $("profileLook").textContent=lookFor(data.equipped_items||[]);
  $("profileStatus").textContent="Your profile is ready! 🐾";
@@ -876,14 +898,16 @@ $("profileForm").addEventListener("submit",async event=>{
  event.preventDefault();if(!requireLogin())return;
  const username=$("profileUsername").value.trim();
  const bio=$("profileBio").value.trim();
+ const account_type=$("profileAccountType").value;
+ const owned_puppies=account_type==="owner"?$("ownerPuppies").value.trim():"";
  if(!/^[a-zA-Z0-9_-]{3,24}$/.test(username)){
   $("profileStatus").textContent="Username must be 3–24 characters using letters, numbers, _ or -.";return;
  }
  $("profileStatus").textContent="Saving profile...";
- const {error}=await supabaseClient.from("profiles").update({username,bio}).eq("id",currentUser.id);
+ const {error}=await supabaseClient.from("profiles").update({username,bio,account_type,owned_puppies}).eq("id",currentUser.id);
  if(error){$("profileStatus").textContent="Couldn't save: "+error.message;return;}
  currentUsername=username;
- const {error:authError}=await supabaseClient.auth.updateUser({data:{username}});
+ const {error:authError}=await supabaseClient.auth.updateUser({data:{username,account_type}});
  if(authError){$("profileStatus").textContent="Profile saved, but account metadata couldn't update: "+authError.message;return;}
  $("accountStatus").textContent="Logged in as "+username+" 🐾";
  $("profileStatus").textContent="Profile saved! 💗";
@@ -893,18 +917,19 @@ $("profileForm").addEventListener("submit",async event=>{
 $("searchForm").addEventListener("submit",async event=>{
  event.preventDefault();if(!requireLogin())return;
  const term=$("memberSearch").value.trim();
+ const memberType=$("memberTypeFilter").value;
  const container=$("memberResults");container.replaceChildren();
  const message=document.createElement("p");message.className="small";message.textContent="Searching...";container.appendChild(message);
- let query=supabaseClient.from("profiles").select("id,username,profile_id,bio,equipped_items");
+ let query=supabaseClient.from("profiles").select("id,username,profile_id,bio,equipped_items,account_type,owned_puppies");
  if(/^PUP-/i.test(term))query=query.ilike("profile_id",term);
  else{const safeTerm=term.replace(/[%_]/g,"");query=query.ilike("username","%"+safeTerm+"%");}
  const {data,error}=await query.limit(20);container.replaceChildren();
  if(error){container.textContent="Search failed: "+error.message;return;}
- const results=(data||[]).filter(profile=>profile.id!==currentUser.id);
+ const results=(data||[]).filter(profile=>profile.id!==currentUser.id&&(memberType==="all"||accountTypeOf(profile,null)===memberType));
  if(!results.length){container.textContent="No other pups found. Try another username or ID!";return;}
  results.forEach(profile=>{
   const box=document.createElement("div");box.className="member";
-  const name=document.createElement("strong");name.textContent="🐾 "+profile.username;
+  const name=document.createElement("strong");name.textContent=(accountTypeOf(profile,null)==="owner"?"💗 Owner · ":"🐶 Puppy · ")+profile.username;
   makeMemberNameClickable(name,profile.id,profile.username);
   const id=document.createElement("p");id.className="profile-id";id.textContent=profile.profile_id||"";
   const button=document.createElement("button");button.textContent="Visit Profile";button.addEventListener("click",()=>viewMember(profile.id));
@@ -915,7 +940,7 @@ async function viewMember(id){
  if(!requireLogin())return;
  showSection("otherprofile");
  const container=$("otherProfileContent");container.textContent="Loading puppy profile... 🐾";
- const {data,error}=await supabaseClient.from("profiles").select("username,profile_id,bio,equipped_items").eq("id",id).maybeSingle();
+ const {data,error}=await supabaseClient.from("profiles").select("username,profile_id,bio,equipped_items,account_type,owned_puppies").eq("id",id).maybeSingle();
  if(error||!data){container.textContent="Couldn't load profile: "+(error?.message||"not found");return;}
  if(!shopCache.length){
   const result=await supabaseClient.from("shop_items").select("id,name,emoji");
@@ -923,12 +948,16 @@ async function viewMember(id){
  }
  container.replaceChildren();
  const look=document.createElement("div");look.id="profileLook";look.textContent=lookFor(data.equipped_items||[]);
- const name=document.createElement("h3");name.textContent="🐶 "+data.username;
+ const name=document.createElement("h3");name.textContent=(accountTypeOf(data,null)==="owner"?"💗 Owner · ":"🐶 Puppy · ")+data.username;
  const pid=document.createElement("p");pid.className="profile-id";pid.textContent=data.profile_id||"";
  const bio=document.createElement("p");bio.textContent=data.bio||"This pup hasn't written a bio yet. 💗";
  const dmButton=document.createElement("button");dmButton.type="button";dmButton.textContent="💌 Send Private Message";
  dmButton.addEventListener("click",()=>openPrivateDM(id,data.username));
- container.append(look,name,pid,bio,dmButton);
+ container.append(look,name,pid,bio);
+ if(accountTypeOf(data,null)==="owner"){
+  const owned=document.createElement("p");owned.textContent="🐾 Puppies I own: "+(data.owned_puppies||"Not listed yet.");container.appendChild(owned);
+ }
+ container.appendChild(dmButton);
 }
 
 /* DAILY TREATS */
@@ -957,7 +986,7 @@ $("signupForm").addEventListener("submit",async event=>{
  if(!/^[a-zA-Z0-9_-]{3,24}$/.test(username)){setStatus("Username must be 3–24 characters using letters, numbers, _ or -.");return;}
  button.disabled=true;setStatus("Creating your account... 💗");
  try{
-  const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{username}}});
+  const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{username,account_type:$("signupAccountType").value}}});
   if(error)throw error;
   if(!data.user)throw new Error("No account was returned.");
   if(!data.session){setStatus("Account created! Confirm your email if required, then log in.");return;}
