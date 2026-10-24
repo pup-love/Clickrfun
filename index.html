@@ -368,6 +368,8 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <div class="virtual-pet-card" id="virtualPetCard">
   <h3>🐶 Adopt Your Very Own Puppy! 💗</h3>
   <p class="small">Give your little buddy a name, feed them treats, and give them lots of love!</p>
+  <h3 id="virtualPetDisplayName" style="margin:8px 0 0">Your new bestie</h3>
+  <p id="virtualPetAge" class="small" style="margin:2px 0 10px">Age: not adopted yet</p>
   <div class="puppy3d-wrap">
   <div class="puppy3d-stage" id="puppy3dStage" aria-label="Interactive 3D puppy play area">
     <div class="puppy3d-loading" id="puppy3dLoading">🐾 Waking up your puppy's 3D world…</div>
@@ -386,7 +388,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </div>
   <h3 id="virtualPetName">Your new bestie</h3>
   <p id="virtualPetMood">Your puppy can't wait to meet you! ✨</p>
-  <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
+  <div id="virtualPetAdoptionRow" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
     <label for="virtualPetNameInput">Name your puppy</label>
     <input id="virtualPetNameInput" maxlength="20" placeholder="e.g. Mochi" aria-label="Puppy's name">
     <button type="button" id="virtualPetAdopt">Adopt puppy 💕</button>
@@ -434,10 +436,12 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <div class="virtual-pet-card" id="virtualKittyCard" style="margin-top:24px;background:linear-gradient(135deg,#fff0f8,#f1e8ff,#e4f7ff)">
   <h3>🐱 Meet Your Virtual Kitty! 💗</h3>
   <p class="small">Adopt a little kitty too! Name her or him, give cuddles, offer snacks, and play.</p>
+  <h3 id="virtualKittyDisplayName" style="margin:8px 0 0">Your new kitty</h3>
+  <p id="virtualKittyAge" class="small" style="margin:2px 0 10px">Age: not adopted yet</p>
   <div id="virtualKittyAvatar" role="img" aria-label="Cute virtual kitty" style="font-size:112px;line-height:1.5;filter:drop-shadow(0 8px 5px #6b4b7b22);transition:transform .2s">🐱</div>
   <h3 id="virtualKittyName">Your new kitty</h3>
   <p id="virtualKittyMood" role="status" aria-live="polite">A tiny kitty is waiting to meet you! ✨</p>
-  <div style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
+  <div id="virtualKittyAdoptionRow" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap;align-items:center">
     <label for="virtualKittyNameInput">Name your kitty</label>
     <input id="virtualKittyNameInput" maxlength="20" placeholder="e.g. Mochi" aria-label="Kitty's name">
     <button type="button" id="virtualKittyAdopt">Adopt kitty 💕</button>
@@ -1688,7 +1692,7 @@ $("soundToggle").addEventListener("click",()=>{
 
 /* VIRTUAL PUPPY PET */
 const virtualPetKey="clickrfun-virtual-puppy-v1";
-const defaultVirtualPet={adopted:false,name:"",happiness:3,fullness:5,emoji:"🐶",xp:0,level:1,room:"bed",toy:"ball",catches:0,bestCatches:0};
+const defaultVirtualPet={adopted:false,name:"",adoptedAt:0,happiness:3,fullness:5,emoji:"🐶",xp:0,level:1,room:"bed",toy:"ball",catches:0,bestCatches:0};
 let virtualPet={...defaultVirtualPet};
 try{const savedPet=JSON.parse(localStorage.getItem(virtualPetKey)||"null");if(savedPet&&typeof savedPet==="object")virtualPet={...defaultVirtualPet,...savedPet};}catch(e){}
 function saveVirtualPet(){try{localStorage.setItem(virtualPetKey,JSON.stringify(virtualPet));}catch(e){}}
@@ -1697,6 +1701,8 @@ function renderVirtualPet(message){
  if(!puppyPhoto||!name||!mood)return;
  puppyPhoto.alt=virtualPet.adopted?"Your puppy "+virtualPet.name:"A fluffy golden retriever puppy";
  name.textContent=virtualPet.adopted?virtualPet.name:"Your new bestie";
+ const petDisplay=$("virtualPetDisplayName"),petAge=$("virtualPetAge");if(petDisplay)petDisplay.textContent=virtualPet.adopted?virtualPet.name:"Your new bestie";if(petAge)petAge.textContent=virtualPet.adopted?"Age: "+Math.floor(Math.max(0,Date.now()-(virtualPet.adoptedAt||Date.now()))/86400000)+" day(s) old":"Age: not adopted yet";
+ const adoptionRow=$("virtualPetAdoptionRow");if(adoptionRow)adoptionRow.style.display=virtualPet.adopted?"none":"flex";
  $("virtualPetHappiness").textContent=String(virtualPet.happiness);
  $("virtualPetFullness").textContent=String(virtualPet.fullness);
  const nextXP=virtualPet.level*20;
@@ -1719,10 +1725,10 @@ function renderVirtualPet(message){
 $("virtualPetAdopt").addEventListener("click",()=>{
  const input=$("virtualPetNameInput"),name=input.value.trim();
  if(!name){$("virtualPetMessage").textContent="Pick a cute name for your puppy first! 💕";input.focus();return;}
- virtualPet.adopted=true;virtualPet.name=name.slice(0,20);virtualPet.happiness=Math.max(virtualPet.happiness,3);virtualPet.fullness=Math.max(virtualPet.fullness,5);saveVirtualPet();playPuppySound("win");renderVirtualPet("YAY! "+virtualPet.name+" is officially part of your pack! 🎉🐶");
+ virtualPet.adopted=true;virtualPet.name=name.slice(0,20);virtualPet.adoptedAt=virtualPet.adoptedAt||Date.now();virtualPet.happiness=Math.max(virtualPet.happiness,3);virtualPet.fullness=Math.max(virtualPet.fullness,5);saveVirtualPet();playPuppySound("win");renderVirtualPet("YAY! "+virtualPet.name+" is officially part of your pack! 🎉🐶");
 });
 const virtualKittyKey="clickrfun_virtual_kitty_v1";
-const defaultVirtualKitty={adopted:false,name:"",happiness:3,fullness:5};
+const defaultVirtualKitty={adopted:false,name:"",adoptedAt:0,happiness:3,fullness:5};
 let virtualKitty={...defaultVirtualKitty};
 try{const savedKitty=JSON.parse(localStorage.getItem(virtualKittyKey)||"null");if(savedKitty&&typeof savedKitty==="object")virtualKitty={...defaultVirtualKitty,...savedKitty};}catch(e){}
 function saveVirtualKitty(){try{localStorage.setItem(virtualKittyKey,JSON.stringify(virtualKitty));}catch(e){}}
@@ -1730,6 +1736,7 @@ function renderVirtualKitty(message){
  const name=$("virtualKittyName"),mood=$("virtualKittyMood"),avatar=$("virtualKittyAvatar");
  if(!name||!mood||!avatar)return;
  name.textContent=virtualKitty.adopted?virtualKitty.name:"Your new kitty";
+ const kittyDisplay=$("virtualKittyDisplayName"),kittyAge=$("virtualKittyAge");if(kittyDisplay)kittyDisplay.textContent=virtualKitty.adopted?virtualKitty.name:"Your new kitty";if(kittyAge)kittyAge.textContent=virtualKitty.adopted?"Age: "+Math.floor(Math.max(0,Date.now()-(virtualKitty.adoptedAt||Date.now()))/86400000)+" day(s) old":"Age: not adopted yet";const kittyAdoptionRow=$("virtualKittyAdoptionRow");if(kittyAdoptionRow)kittyAdoptionRow.style.display=virtualKitty.adopted?"none":"flex";
  mood.textContent=message||(!virtualKitty.adopted?"A tiny kitty is waiting to meet you! ✨":virtualKitty.happiness>=8?virtualKitty.name+" is purring up a storm! 😻":"Mew! "+virtualKitty.name+" would love some attention. 🐾");
  $("virtualKittyHappiness").textContent=String(virtualKitty.happiness);
  $("virtualKittyFullness").textContent=String(virtualKitty.fullness);
@@ -1739,7 +1746,7 @@ function renderVirtualKitty(message){
 $("virtualKittyAdopt").addEventListener("click",()=>{
  const input=$("virtualKittyNameInput"),name=input.value.trim();
  if(!name){$("virtualKittyMood").textContent="Choose a cute name for your kitty first! 💗";input.focus();return;}
- virtualKitty.adopted=true;virtualKitty.name=name.slice(0,20);saveVirtualKitty();playPuppySound("win");renderVirtualKitty("Purr-fect! "+virtualKitty.name+" is officially part of your family! 🎉🐱");
+ virtualKitty.adopted=true;virtualKitty.name=name.slice(0,20);virtualKitty.adoptedAt=virtualKitty.adoptedAt||Date.now();saveVirtualKitty();playPuppySound("win");renderVirtualKitty("Purr-fect! "+virtualKitty.name+" is officially part of your family! 🎉🐱");
 });
 function virtualKittyAction(action){
  if(!virtualKitty.adopted){$("virtualKittyMood").textContent="Name and adopt your kitty first! 💗";return;}
