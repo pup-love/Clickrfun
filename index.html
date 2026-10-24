@@ -79,7 +79,8 @@ input, textarea {
 
 textarea { resize: vertical; min-height: 70px; }
 .small { color: #d7b9df; font-size: .9rem; }
-#status { white-space: pre-wrap; color: #ffd0ed; }
+#status, #rewardStatus { white-space: pre-wrap; color: #ffd0ed; }
+#treatBalance { color: #ff9cde; font-size: 2rem; font-weight: bold; }
 
 #chatMessages {
   height: 300px;
@@ -119,6 +120,7 @@ footer {
 <nav>
   <button type="button" onclick="showSection('welcome')">Home</button>
   <button type="button" onclick="showSection('account')">Sign Up / Login</button>
+  <button type="button" onclick="showSection('treats')">🦴 My Treats</button>
   <button type="button" onclick="openRoom('puppy-lounge','🐾 Puppy Lounge')">🐾 Puppy Lounge</button>
   <button type="button" onclick="openRoom('new-pups','🎀 New Pups')">🎀 New Pups</button>
   <button type="button" onclick="openRoom('secret-den','🌙 Secret Den')">🌙 Secret Den</button>
@@ -130,6 +132,7 @@ footer {
     <p>Find your pack, make friends, and chat with the community.</p>
     <p class="small">Create a free account to join the chatroom.</p>
     <button type="button" onclick="showSection('account')">Join The Chat 💕</button>
+    <button type="button" onclick="showSection('treats')">Get Your Daily Treats 🎁</button>
   </section>
 
   <section id="account" class="card hidden">
@@ -162,6 +165,20 @@ footer {
     <button id="logoutButton" type="button" class="hidden">Log Out</button>
   </section>
 
+  <section id="treats" class="card hidden">
+    <h2>🦴 Your Treats</h2>
+    <p class="small">Welcome to your little treat jar!</p>
+    <p>Current balance:</p>
+    <p id="treatBalance">🦴 --</p>
+    <p class="small">Come back every 24 hours to claim 20 free treats.</p>
+    <button id="claimTreatsButton" type="button" disabled>
+      🎁 Claim Daily Treats (+20)
+    </button>
+    <p id="rewardStatus" role="status" aria-live="polite">
+      Log in to claim your daily treats!
+    </p>
+  </section>
+
   <section id="chat" class="card hidden">
     <h2 id="roomTitle">🐾 Puppy Lounge</h2>
     <p id="accountStatus" class="small">Log in to join the conversation.</p>
@@ -185,7 +202,6 @@ footer {
 <script>
 "use strict";
 
-// Your Supabase project settings
 const SUPABASE_URL = "https://fbrecutmmotwnsqzxaxv.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_uDxX8PVStNcE56hQx0ShpQ_XUxx9Z1g";
 
@@ -203,6 +219,10 @@ function setStatus(message) {
   $("status").textContent = message;
 }
 
+function setRewardStatus(message) {
+  $("rewardStatus").textContent = message;
+}
+
 function showSection(sectionId) {
   const target = $(sectionId);
   if (!target) return;
@@ -213,9 +233,8 @@ function showSection(sectionId) {
 
   target.classList.remove("hidden");
 
-  if (sectionId === "chat") {
-    loadMessages();
-  }
+  if (sectionId === "chat") loadMessages();
+  if (sectionId === "treats") refreshTreats();
 }
 
 function openRoom(roomId, roomName) {
@@ -230,10 +249,47 @@ function setLoggedIn(user, username) {
 
   $("logoutButton").classList.toggle("hidden", !user);
   $("sendButton").disabled = !user || !username;
+  $("claimTreatsButton").disabled = !user;
 
   $("accountStatus").textContent = user
     ? "Logged in as " + (username || user.email || "member") + " 🐾"
     : "Log in to join the conversation.";
+
+  if (user) {
+    refreshTreats();
+  } else {
+    $("treatBalance").textContent = "🦴 --";
+    setRewardStatus("Log in to claim your daily treats!");
+  }
+}
+
+async function refreshTreats() {
+  if (!supabaseClient || !currentUser) {
+    $("treatBalance").textContent = "🦴 --";
+    return;
+  }
+
+  const userId = currentUser.id;
+
+  const { data, error } = await supabaseClient
+    .from("profiles")
+    .select("treats")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (!currentUser || currentUser.id !== userId) return;
+
+  if (error) {
+    setRewardStatus("Couldn't load your treats: " + error.message);
+    return;
+  }
+
+  if (!data) {
+    setRewardStatus("Your profile wasn't found. Please log out and log in again.");
+    return;
+  }
+
+  $("treatBalance").textContent = "🦴 " + data.treats;
 }
 
 function showEmptyChat(message) {
@@ -278,7 +334,6 @@ function addMessage(message) {
   container.scrollTop = container.scrollHeight;
 }
 
-// Load the signed-in member's profile
 async function ensureProfile(user) {
   const { data, error } = await supabaseClient
     .from("profiles")
@@ -302,7 +357,6 @@ async function ensureProfile(user) {
   return username;
 }
 
-// Restore session once at startup
 async function restoreSession() {
   if (!supabaseClient) return;
 
@@ -332,7 +386,6 @@ async function restoreSession() {
   }
 }
 
-// Live updates subscription
 function startRealtime() {
   if (!supabaseClient || messageSubscription) return;
 
@@ -348,7 +401,6 @@ function startRealtime() {
         if (payload.eventType === "INSERT") {
           addMessage(row);
         } else {
-          // Keep the room in sync after edits/deletions too.
           loadMessages();
         }
       }
@@ -384,7 +436,6 @@ async function loadMessages() {
     .order("created_at", { ascending: true })
     .limit(100);
 
-  // Ignore stale results if another room was selected meanwhile.
   if (version !== loadVersion || room !== currentRoom) return;
 
   if (error) {
@@ -403,6 +454,39 @@ async function loadMessages() {
 
   startRealtime();
 }
+
+// Claim daily login treats
+$("claimTreatsButton").addEventListener("click", async () => {
+  if (!supabaseClient || !currentUser) {
+    setRewardStatus("Please log in first! 🐾");
+    return;
+  }
+
+  const button = $("claimTreatsButton");
+  button.disabled = true;
+  setRewardStatus("Claiming your treats... 🎁");
+
+  try {
+    const { data, error } = await supabaseClient.rpc("claim_daily_login");
+
+    if (error) throw error;
+
+    setRewardStatus(data || "Success! You earned 20 treats! 🦴");
+    await refreshTreats();
+  } catch (err) {
+    const message = err.message || "Something went wrong.";
+
+    if (message.toLowerCase().includes("already claimed")) {
+      setRewardStatus("You've already claimed your daily treats! Come back in 24 hours. 💗");
+    } else if (message.toLowerCase().includes("log in")) {
+      setRewardStatus("Please log in to claim your treats! 🐾");
+    } else {
+      setRewardStatus("Couldn't claim treats: " + message);
+    }
+  } finally {
+    button.disabled = !currentUser;
+  }
+});
 
 // Sign up
 $("signupForm").addEventListener("submit", async event => {
@@ -542,7 +626,6 @@ $("messageForm").addEventListener("submit", async event => {
     if (error) throw error;
 
     input.value = "";
-    // Realtime normally adds the new message. Reload as a fallback.
     await loadMessages();
   } catch (err) {
     setStatus("Message could not be sent: " + err.message);
@@ -572,10 +655,8 @@ if (!window.supabase) {
     }
   );
 
-  // Restore the session on page load.
   restoreSession();
 
-  // React to explicit sign-outs; successful login/signup handlers set the user.
   supabaseClient.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT" || !session) {
       setLoggedIn(null, null);
