@@ -6,663 +6,487 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Clickrfun 🐾</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  color: #fff0fb;
-  background: #180d27;
-}
-
-header {
-  padding: 24px 16px;
-  text-align: center;
-  background: #29143d;
-  border-bottom: 2px solid #f28bd4;
-}
-
-h1 { color: #ff9cde; margin: 0 0 8px; }
-header p { margin: 0; color: #e9c8ee; }
-
-nav {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding: 14px;
-  background: #211131;
-}
-
-button {
-  border: 0;
-  border-radius: 12px;
-  padding: 11px 16px;
-  background: #e879c4;
-  color: #28132f;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:hover { background: #ffa4df; }
-button:disabled { opacity: .5; cursor: wait; }
-
-main {
-  width: min(760px, 92%);
-  margin: 28px auto;
-}
-
-.card {
-  background: #29183b;
-  border: 1px solid #704276;
-  border-radius: 18px;
-  padding: 22px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 25px #09041055;
-}
-
-h2 { color: #ff9cde; margin-top: 0; }
-
-input, textarea {
-  display: block;
-  width: 100%;
-  margin: 10px 0;
-  padding: 12px;
-  border: 1px solid #a56da9;
-  border-radius: 10px;
-  background: #180d27;
-  color: white;
-  font: inherit;
-}
-
-textarea { resize: vertical; min-height: 70px; }
-.small { color: #d7b9df; font-size: .9rem; }
-#status, #rewardStatus { white-space: pre-wrap; color: #ffd0ed; }
-#treatBalance { color: #ff9cde; font-size: 2rem; font-weight: bold; }
-
-#chatMessages {
-  height: 300px;
-  overflow-y: auto;
-  background: #180d27;
-  border-radius: 12px;
-  padding: 12px;
-  margin: 12px 0;
-}
-
-.message {
-  padding: 10px;
-  margin-bottom: 9px;
-  border-radius: 10px;
-  background: #392149;
-  overflow-wrap: anywhere;
-}
-
-.message strong { color: #ff9cde; }
-.message time { color: #c5a9d0; font-size: .75rem; }
-.hidden { display: none !important; }
-
-footer {
-  text-align: center;
-  padding: 25px;
-  color: #c5a9d0;
-}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;color:#fff0fb;background:#180d27}
+header{text-align:center;padding:24px 16px;background:#29143d;border-bottom:2px solid #f28bd4}
+h1,h2{color:#ff9cde}h1{margin:0 0 8px}header p{margin:0;color:#e9c8ee}
+nav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:14px;background:#211131}
+button{border:0;border-radius:12px;padding:11px 15px;background:#e879c4;color:#28132f;font-weight:bold;cursor:pointer;margin:3px}
+button:hover{background:#ffa4df}button:disabled{opacity:.5;cursor:wait}
+main{width:min(900px,94%);margin:25px auto}
+.card{background:#29183b;border:1px solid #704276;border-radius:18px;padding:22px;margin-bottom:20px;box-shadow:0 8px 25px #09041055}
+h2{margin-top:0}input,textarea{display:block;width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit}
+textarea{resize:vertical;min-height:80px}.small{color:#d7b9df;font-size:.9rem}
+.hidden{display:none!important}#status,#rewardStatus,#shopStatus,#profileStatus{white-space:pre-wrap;color:#ffd0ed}
+#treatBalance{color:#ff9cde;font-size:2rem;font-weight:bold}
+#chatMessages{height:300px;overflow-y:auto;background:#180d27;border-radius:12px;padding:12px;margin:12px 0}
+.message,.item,.member{padding:12px;margin:9px 0;border-radius:12px;background:#392149;overflow-wrap:anywhere}
+.message strong{color:#ff9cde}.message time{color:#c5a9d0;font-size:.75rem}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.item{text-align:center;border:1px solid #704276}
+.emoji{font-size:2.5rem}.profile-id{color:#ff9cde;font-weight:bold}
+#profileLook{font-size:2rem;min-height:55px;padding:12px;background:#180d27;border-radius:12px}
+footer{text-align:center;padding:25px;color:#c5a9d0}
 </style>
 </head>
-
 <body>
 <header>
-  <h1>🐾 Clickrfun 🐾</h1>
-  <p>Your little corner of the internet to meet your pack 💗</p>
+<h1>🐾 Clickrfun 🐾</h1>
+<p>Your little corner of the internet to meet your pack 💗</p>
 </header>
 
 <nav>
-  <button type="button" onclick="showSection('welcome')">Home</button>
-  <button type="button" onclick="showSection('account')">Sign Up / Login</button>
-  <button type="button" onclick="showSection('treats')">🦴 My Treats</button>
-  <button type="button" onclick="openRoom('puppy-lounge','🐾 Puppy Lounge')">🐾 Puppy Lounge</button>
-  <button type="button" onclick="openRoom('new-pups','🎀 New Pups')">🎀 New Pups</button>
-  <button type="button" onclick="openRoom('secret-den','🌙 Secret Den')">🌙 Secret Den</button>
+<button onclick="showSection('welcome')">🏠 Home</button>
+<button onclick="showSection('account')">🔐 Login</button>
+<button onclick="showSection('treats')">🦴 My Treats</button>
+<button onclick="showSection('shop')">🛍️ Shop</button>
+<button onclick="showSection('inventory')">🎒 Inventory</button>
+<button onclick="showSection('myprofile')">🐶 My Profile</button>
+<button onclick="showSection('members')">🔎 Find Pups</button>
+<button onclick="openRoom('puppy-lounge','🐾 Puppy Lounge')">🐾 Puppy Lounge</button>
+<button onclick="openRoom('new-pups','🎀 New Pups')">🎀 New Pups</button>
+<button onclick="openRoom('secret-den','🌙 Secret Den')">🌙 Secret Den</button>
 </nav>
 
 <main>
-  <section id="welcome" class="card">
-    <h2>Welcome to Clickrfun! 🐶</h2>
-    <p>Find your pack, make friends, and chat with the community.</p>
-    <p class="small">Create a free account to join the chatroom.</p>
-    <button type="button" onclick="showSection('account')">Join The Chat 💕</button>
-    <button type="button" onclick="showSection('treats')">Get Your Daily Treats 🎁</button>
-  </section>
+<section id="welcome" class="card">
+<h2>Welcome to Clickrfun! 🐶</h2>
+<p>Find your pack, make friends, collect treats, and dress up your puppy!</p>
+<button onclick="showSection('account')">Join The Pack 💕</button>
+<button onclick="showSection('shop')">Visit The Shop 🛍️</button>
+</section>
 
-  <section id="account" class="card hidden">
-    <h2>🐾 Join The Chat</h2>
-    <p class="small">New here? Sign up. Already a member? Log in below.</p>
+<section id="account" class="card hidden">
+<h2>🐾 Join The Chat</h2>
+<p class="small">Create an account or log in to your existing account.</p>
+<form id="signupForm">
+<h3>Create an account</h3>
+<input id="signupUsername" maxlength="24" autocomplete="username" placeholder="Username (3–24 letters, numbers, _ or -)" required>
+<input id="signupEmail" type="email" autocomplete="email" placeholder="Email address" required>
+<input id="signupPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Password (at least 6 characters)" required>
+<button type="submit">Sign Up 💗</button>
+</form>
+<hr style="border-color:#704276;margin:24px 0">
+<form id="loginForm">
+<h3>Welcome back!</h3>
+<input id="loginEmail" type="email" autocomplete="email" placeholder="Email address" required>
+<input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required>
+<button type="submit">Log In 🐾</button>
+</form>
+<p id="status" role="status" aria-live="polite"></p>
+<button id="logoutButton" class="hidden">Log Out</button>
+</section>
 
-    <form id="signupForm">
-      <h3>Create an account</h3>
-      <input id="signupUsername" maxlength="24" autocomplete="username"
-        placeholder="Username (3–24 letters, numbers, _ or -)" required>
-      <input id="signupEmail" type="email" autocomplete="email"
-        placeholder="Email address" required>
-      <input id="signupPassword" type="password" minlength="6"
-        autocomplete="new-password" placeholder="Password (at least 6 characters)" required>
-      <button type="submit">Sign Up 💗</button>
-    </form>
+<section id="treats" class="card hidden">
+<h2>🦴 Your Treat Jar</h2>
+<p>Current balance:</p><p id="treatBalance">🦴 --</p>
+<p class="small">Claim 20 free treats every 24 hours!</p>
+<button id="claimTreatsButton" disabled>🎁 Claim Daily Treats (+20)</button>
+<p id="rewardStatus" role="status">Log in to claim your daily treats!</p>
+</section>
 
-    <hr style="border-color:#704276; margin:24px 0">
+<section id="shop" class="card hidden">
+<h2>🛍️ Puppy Shop</h2>
+<p class="small">Buy cute accessories with your treats. Then equip them from your inventory!</p>
+<p id="shopStatus" role="status"></p>
+<div id="shopItems" class="grid">Loading shop... 🐾</div>
+</section>
 
-    <form id="loginForm">
-      <h3>Welcome back!</h3>
-      <input id="loginEmail" type="email" autocomplete="email"
-        placeholder="Email address" required>
-      <input id="loginPassword" type="password" autocomplete="current-password"
-        placeholder="Password" required>
-      <button type="submit">Log In 🐾</button>
-    </form>
+<section id="inventory" class="card hidden">
+<h2>🎒 My Inventory</h2>
+<p class="small">Items you own appear here. Equip or remove them whenever you like!</p>
+<p id="inventoryStatus" role="status"></p>
+<div id="inventoryItems" class="grid"></div>
+</section>
 
-    <p id="status" role="status" aria-live="polite"></p>
-    <button id="logoutButton" type="button" class="hidden">Log Out</button>
-  </section>
+<section id="myprofile" class="card hidden">
+<h2>🐶 My Puppy Profile</h2>
+<div id="profileLook">🐶</div>
+<p id="myProfileId" class="profile-id"></p>
+<form id="profileForm">
+<label for="profileUsername">Username</label>
+<input id="profileUsername" maxlength="24" required>
+<label for="profileBio">About your pup</label>
+<textarea id="profileBio" maxlength="300" placeholder="Tell the pack about yourself! 💗"></textarea>
+<button type="submit">Save Profile 💕</button>
+</form>
+<p id="profileStatus" role="status"></p>
+</section>
 
-  <section id="treats" class="card hidden">
-    <h2>🦴 Your Treats</h2>
-    <p class="small">Welcome to your little treat jar!</p>
-    <p>Current balance:</p>
-    <p id="treatBalance">🦴 --</p>
-    <p class="small">Come back every 24 hours to claim 20 free treats.</p>
-    <button id="claimTreatsButton" type="button" disabled>
-      🎁 Claim Daily Treats (+20)
-    </button>
-    <p id="rewardStatus" role="status" aria-live="polite">
-      Log in to claim your daily treats!
-    </p>
-  </section>
+<section id="members" class="card hidden">
+<h2>🔎 Find Pups</h2>
+<p class="small">Search by username or puppy ID to visit another member's profile.</p>
+<form id="searchForm">
+<input id="memberSearch" maxlength="40" placeholder="Username or PUP-XXXXXXXXXXXX" required>
+<button type="submit">Search 🐾</button>
+</form>
+<div id="memberResults"></div>
+</section>
 
-  <section id="chat" class="card hidden">
-    <h2 id="roomTitle">🐾 Puppy Lounge</h2>
-    <p id="accountStatus" class="small">Log in to join the conversation.</p>
+<section id="otherprofile" class="card hidden">
+<h2>🐾 Puppy Profile</h2>
+<div id="otherProfileContent"></div>
+<button onclick="showSection('members')">← Back to Find Pups</button>
+</section>
 
-    <div id="chatMessages" aria-live="polite">
-      <p class="small">Log in to see the chat.</p>
-    </div>
-
-    <form id="messageForm">
-      <textarea id="messageInput" maxlength="1000"
-        placeholder="Say something nice to your pack..." required></textarea>
-      <button id="sendButton" type="submit" disabled>Send Message 💌</button>
-    </form>
-
-    <p class="small">Please be kind to other members. Messages are visible to signed-in users.</p>
-  </section>
+<section id="chat" class="card hidden">
+<h2 id="roomTitle">🐾 Puppy Lounge</h2>
+<p id="accountStatus" class="small">Log in to join the conversation.</p>
+<div id="chatMessages" aria-live="polite"><p class="small empty-chat">Log in to see the chat.</p></div>
+<form id="messageForm">
+<textarea id="messageInput" maxlength="1000" placeholder="Say something nice to your pack..." required></textarea>
+<button id="sendButton" type="submit" disabled>Send Message 💌</button>
+</form>
+<p class="small">Please be kind to other members. Messages are visible to signed-in users.</p>
+</section>
 </main>
-
 <footer>Made with luv 🐾</footer>
 
 <script>
 "use strict";
+const SUPABASE_URL="https://fbrecutmmotwnsqzxaxv.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_uDxX8PVStNcE56hQx0ShpQ_XUxx9Z1g";
+let supabaseClient=null,currentUser=null,currentUsername=null,currentRoom="puppy-lounge";
+let messageSubscription=null,loadVersion=0,authVersion=0,shopCache=[];
+const $=id=>document.getElementById(id);
 
-const SUPABASE_URL = "https://fbrecutmmotwnsqzxaxv.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_uDxX8PVStNcE56hQx0ShpQ_XUxx9Z1g";
-
-let supabaseClient = null;
-let currentUser = null;
-let currentUsername = null;
-let currentRoom = "puppy-lounge";
-let messageSubscription = null;
-let loadVersion = 0;
-let authVersion = 0;
-
-const $ = id => document.getElementById(id);
-
-function setStatus(message) {
-  $("status").textContent = message;
+function setStatus(m){$("status").textContent=m}
+function setRewardStatus(m){$("rewardStatus").textContent=m}
+function escapeText(s){return String(s??"")}
+function showSection(id){
+ const target=$(id);if(!target)return;
+ document.querySelectorAll("main section").forEach(s=>s.classList.add("hidden"));
+ target.classList.remove("hidden");
+ if(id==="chat")loadMessages();
+ if(id==="treats")refreshTreats();
+ if(id==="shop")loadShop();
+ if(id==="inventory")loadInventory();
+ if(id==="myprofile")loadMyProfile();
+ if(id==="members")$("memberSearch").focus();
+}
+function openRoom(id,name){currentRoom=id;$("roomTitle").textContent=name;showSection("chat")}
+function requireLogin(){
+ if(!currentUser){setStatus("Please log in first! 🐾");showSection("account");return false}
+ return true;
+}
+function setLoggedIn(user,username){
+ currentUser=user;currentUsername=username;
+ $("logoutButton").classList.toggle("hidden",!user);
+ $("sendButton").disabled=!user||!username;
+ $("claimTreatsButton").disabled=!user;
+ $("accountStatus").textContent=user?"Logged in as "+(username||"member")+" 🐾":"Log in to join the conversation.";
+ if(user){refreshTreats()}else{
+  $("treatBalance").textContent="🦴 --";
+  setRewardStatus("Log in to claim your daily treats!");
+ }
+}
+async function refreshTreats(){
+ if(!supabaseClient||!currentUser){$("treatBalance").textContent="🦴 --";return}
+ const uid=currentUser.id;
+ const {data,error}=await supabaseClient.from("profiles").select("treats").eq("id",uid).maybeSingle();
+ if(!currentUser||currentUser.id!==uid)return;
+ if(error){setRewardStatus("Couldn't load treats: "+error.message);return}
+ if(!data){setRewardStatus("Profile not found. Please log in again.");return}
+ $("treatBalance").textContent="🦴 "+data.treats;
+}
+function showEmptyChat(m){
+ const c=$("chatMessages");c.replaceChildren();
+ const p=document.createElement("p");p.className="small empty-chat";p.textContent=m;c.appendChild(p);
+}
+function addMessage(m){
+ const c=$("chatMessages");
+ if(m.id&&c.querySelector('[data-message-id="'+m.id+'"]'))return;
+ const empty=c.querySelector(".empty-chat");if(empty)empty.remove();
+ const box=document.createElement("div");box.className="message";
+ if(m.id)box.dataset.messageId=m.id;
+ const name=document.createElement("strong");name.textContent=m.username||"Pack member";
+ const body=document.createElement("p");body.textContent=m.content||"";body.style.margin="6px 0";
+ const time=document.createElement("time");time.textContent=m.created_at?new Date(m.created_at).toLocaleString():"";
+ box.append(name,body,time);c.appendChild(box);c.scrollTop=c.scrollHeight;
+}
+async function ensureProfile(user){
+ const {data,error}=await supabaseClient.from("profiles").select("username").eq("id",user.id).maybeSingle();
+ if(error)throw error;
+ const username=(user.user_metadata&&user.user_metadata.username)||"";
+ if(data&&data.username)return data.username;
+ if(!username)throw new Error("No username is saved to this account.");
+ const {error:upsertError}=await supabaseClient.from("profiles").upsert({id:user.id,username},{onConflict:"id"});
+ if(upsertError)throw upsertError;
+ return username;
+}
+async function restoreSession(){
+ if(!supabaseClient)return;
+ const version=++authVersion;
+ const {data,error}=await supabaseClient.auth.getSession();
+ if(version!==authVersion)return;
+ if(error){setStatus("Couldn't restore login: "+error.message);return}
+ if(!data.session){setLoggedIn(null,null);return}
+ try{
+  const username=await ensureProfile(data.session.user);
+  if(version!==authVersion)return;
+  setLoggedIn(data.session.user,username);
+  if(!$("chat").classList.contains("hidden"))loadMessages();
+ }catch(e){setStatus("Login restored, but profile couldn't load: "+e.message)}
+}
+function startRealtime(){
+ if(!supabaseClient||messageSubscription)return;
+ messageSubscription=supabaseClient.channel("clickrfun-live-messages")
+ .on("postgres_changes",{event:"*",schema:"public",table:"messages"},payload=>{
+  const row=payload.new;if(!row||row.room!==currentRoom||!currentUser)return;
+  if(payload.eventType==="INSERT")addMessage(row);else loadMessages();
+ }).subscribe(s=>{
+  if(s==="CHANNEL_ERROR"||s==="TIMED_OUT")setStatus("Live chat connection trouble. Check Supabase Realtime settings.");
+ });
+}
+async function loadMessages(){
+ const version=++loadVersion;
+ if(!supabaseClient){showEmptyChat("Supabase isn't configured.");return}
+ if(!currentUser){showEmptyChat("Please log in to see the chat.");return}
+ const room=currentRoom;showEmptyChat("Loading messages... 🐾");
+ const {data,error}=await supabaseClient.from("messages")
+ .select("id,username,content,created_at,room").eq("room",room)
+ .order("created_at",{ascending:true}).limit(100);
+ if(version!==loadVersion||room!==currentRoom)return;
+ if(error){showEmptyChat("Couldn't load messages: "+error.message);return}
+ const c=$("chatMessages");c.replaceChildren();
+ if(!data||!data.length)showEmptyChat("No messages yet. Be the first to say hi! 🐾");
+ else data.forEach(addMessage);
+ startRealtime();
 }
 
-function setRewardStatus(message) {
-  $("rewardStatus").textContent = message;
+// Shop
+async function loadShop(){
+ const c=$("shopItems");c.replaceChildren();
+ if(!supabaseClient){c.textContent="Shop unavailable.";return}
+ c.textContent="Loading shop... 🐾";
+ const {data,error}=await supabaseClient.from("shop_items")
+ .select("id,name,description,price,emoji").order("price");
+ c.replaceChildren();
+ if(error){$("shopStatus").textContent="Couldn't load shop: "+error.message;return}
+ shopCache=data||[];
+ if(!shopCache.length){c.textContent="No items in the shop yet.";return}
+ shopCache.forEach(item=>{
+  const box=document.createElement("div");box.className="item";
+  const emoji=document.createElement("div");emoji.className="emoji";emoji.textContent=item.emoji||"🐾";
+  const title=document.createElement("h3");title.textContent=item.name;
+  const desc=document.createElement("p");desc.textContent=item.description||"A cute item!";
+  const price=document.createElement("p");price.textContent="🦴 "+item.price+" treats";
+  const btn=document.createElement("button");btn.textContent="Buy item";
+  btn.addEventListener("click",()=>buyItem(item));
+  box.append(emoji,title,desc,price,btn);c.appendChild(box);
+ });
+}
+async function buyItem(item){
+ if(!requireLogin())return;
+ $("shopStatus").textContent="Buying "+item.name+"... 🛍️";
+ const {data,error}=await supabaseClient.rpc("buy_clickrfun_item",{p_item_id:item.id});
+ if(error){$("shopStatus").textContent="Purchase failed: "+error.message;return}
+ $("shopStatus").textContent=data||"Purchase successful! 🎉";
+ await refreshTreats();await loadInventory();
+}
+async function loadInventory(){
+ const c=$("inventoryItems");c.replaceChildren();
+ if(!requireLogin()){ $("inventoryStatus").textContent="Log in to see your inventory.";return}
+ $("inventoryStatus").textContent="Loading your items... 🎒";
+ const {data,error}=await supabaseClient.from("inventory").select("item_id").eq("user_id",currentUser.id);
+ if(error){$("inventoryStatus").textContent="Couldn't load inventory: "+error.message;return}
+ const owned=(data||[]).map(x=>x.item_id);
+ if(!owned.length){$("inventoryStatus").textContent="Your inventory is empty. Visit the shop to adopt some accessories! 💗";return}
+ if(!shopCache.length){
+  const result=await supabaseClient.from("shop_items").select("id,name,description,price,emoji");
+  if(result.error){$("inventoryStatus").textContent="Couldn't load item details: "+result.error.message;return}
+  shopCache=result.data||[];
+ }
+ const items=shopCache.filter(x=>owned.includes(x.id));
+ const {data:profile,error:profileError}=await supabaseClient.from("profiles").select("equipped_items").eq("id",currentUser.id).maybeSingle();
+ if(profileError){$("inventoryStatus").textContent="Couldn't check equipped items: "+profileError.message;return}
+ const equipped=profile?.equipped_items||[];
+ $("inventoryStatus").textContent="You own "+items.length+" item(s). Equipped items show on your profile! ✨";
+ items.forEach(item=>{
+  const box=document.createElement("div");box.className="item";
+  const emoji=document.createElement("div");emoji.className="emoji";emoji.textContent=item.emoji||"🐾";
+  const title=document.createElement("h3");title.textContent=item.name;
+  const state=document.createElement("p");state.textContent=equipped.includes(item.id)?"✨ Equipped!":"In your bag";
+  const btn=document.createElement("button");
+  btn.textContent=equipped.includes(item.id)?"Unequip":"Equip ✨";
+  btn.addEventListener("click",()=>toggleItem(item.id,equipped.includes(item.id)));
+  box.append(emoji,title,state,btn);c.appendChild(box);
+ });
+}
+async function toggleItem(itemId,isEquipped){
+ if(!requireLogin())return;
+ const {data:profile,error}=await supabaseClient.from("profiles").select("equipped_items").eq("id",currentUser.id).maybeSingle();
+ if(error||!profile){$("inventoryStatus").textContent="Couldn't load your profile: "+(error?.message||"profile missing");return}
+ let items=profile.equipped_items||[];
+ items=isEquipped?items.filter(id=>id!==itemId):[...new Set([...items,itemId])];
+ const {error:updateError}=await supabaseClient.from("profiles").update({equipped_items:items}).eq("id",currentUser.id);
+ if(updateError){$("inventoryStatus").textContent="Couldn't save outfit: "+updateError.message;return}
+ $("inventoryStatus").textContent=isEquipped?"Item unequipped!":"Item equipped! Looking adorable! 💗";
+ await loadInventory();await loadMyProfile();
 }
 
-function showSection(sectionId) {
-  const target = $(sectionId);
-  if (!target) return;
+// Own profile
+async function loadMyProfile(){
+ if(!requireLogin())return;
+ $("profileStatus").textContent="Loading your profile...";
+ const {data,error}=await supabaseClient.from("profiles")
+ .select("username,profile_id,bio,equipped_items").eq("id",currentUser.id).maybeSingle();
+ if(error||!data){$("profileStatus").textContent="Couldn't load profile: "+(error?.message||"profile not found");return}
+ $("profileUsername").value=data.username||currentUsername||"";
+ $("profileBio").value=data.bio||"";
+ $("myProfileId").textContent=data.profile_id||"Puppy ID is being created...";
+ $("profileLook").textContent=lookFor(data.equipped_items||[]);
+ $("profileStatus").textContent="Your profile is ready! 🐾";
+}
+function lookFor(ids){
+ const found=(ids||[]).map(id=>shopCache.find(x=>x.id===id)).filter(Boolean);
+ return found.length? "🐶 "+found.map(x=>x.emoji||"🐾").join(" "):"🐶 No accessories equipped yet!";
+}
+$("profileForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!requireLogin())return;
+ const username=$("profileUsername").value.trim(),bio=$("profileBio").value.trim();
+ if(!/^[a-zA-Z0-9_-]{3,24}$/.test(username)){
+  $("profileStatus").textContent="Username must be 3–24 characters using letters, numbers, _ or -.";return;
+ }
+ $("profileStatus").textContent="Saving profile...";
+ const {error}=await supabaseClient.from("profiles").update({username,bio}).eq("id",currentUser.id);
+ if(error){$("profileStatus").textContent="Couldn't save: "+error.message;return}
+ currentUsername=username;
+ await supabaseClient.auth.updateUser({data:{username}});
+ $("accountStatus").textContent="Logged in as "+username+" 🐾";
+ $("profileStatus").textContent="Profile saved! 💗";
+});
 
-  document.querySelectorAll("main section").forEach(section => {
-    section.classList.add("hidden");
-  });
-
-  target.classList.remove("hidden");
-
-  if (sectionId === "chat") loadMessages();
-  if (sectionId === "treats") refreshTreats();
+// Member search and public profile viewing
+$("searchForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!requireLogin())return;
+ const term=$("memberSearch").value.trim();
+ const c=$("memberResults");c.replaceChildren();
+ const msg=document.createElement("p");msg.className="small";msg.textContent="Searching...";c.appendChild(msg);
+ let query=supabaseClient.from("profiles").select("id,username,profile_id,bio,equipped_items");
+ if(/^PUP-/i.test(term))query=query.ilike("profile_id",term);
+ else query=query.ilike("username","%"+term.replace(/[%_]/g,"")+"%");
+ const {data,error}=await query.limit(20);
+ c.replaceChildren();
+ if(error){c.textContent="Search failed: "+error.message;return}
+ const results=(data||[]).filter(p=>p.id!==currentUser.id);
+ if(!results.length){c.textContent="No other pups found. Try another username or ID!";return}
+ results.forEach(p=>{
+  const box=document.createElement("div");box.className="member";
+  const name=document.createElement("strong");name.textContent="🐾 "+p.username;
+  const id=document.createElement("p");id.className="profile-id";id.textContent=p.profile_id||"";
+  const btn=document.createElement("button");btn.textContent="Visit Profile";
+  btn.addEventListener("click",()=>viewMember(p.id));
+  box.append(name,id,btn);c.appendChild(box);
+ });
+});
+async function viewMember(id){
+ if(!requireLogin())return;
+ showSection("otherprofile");
+ const c=$("otherProfileContent");c.textContent="Loading puppy profile... 🐾";
+ const {data,error}=await supabaseClient.from("profiles")
+ .select("username,profile_id,bio,equipped_items").eq("id",id).maybeSingle();
+ if(error||!data){c.textContent="Couldn't load profile: "+(error?.message||"not found");return}
+ if(!shopCache.length){
+  const result=await supabaseClient.from("shop_items").select("id,name,emoji");
+  if(!result.error)shopCache=result.data||[];
+ }
+ c.replaceChildren();
+ const look=document.createElement("div");look.id="profileLook";look.textContent=lookFor(data.equipped_items||[]);
+ const name=document.createElement("h3");name.textContent="🐶 "+data.username;
+ const pid=document.createElement("p");pid.className="profile-id";pid.textContent=data.profile_id||"";
+ const bio=document.createElement("p");bio.textContent=data.bio||"This pup hasn't written a bio yet. 💗";
+ c.append(look,name,pid,bio);
 }
 
-function openRoom(roomId, roomName) {
-  currentRoom = roomId;
-  $("roomTitle").textContent = roomName;
-  showSection("chat");
-}
-
-function setLoggedIn(user, username) {
-  currentUser = user;
-  currentUsername = username;
-
-  $("logoutButton").classList.toggle("hidden", !user);
-  $("sendButton").disabled = !user || !username;
-  $("claimTreatsButton").disabled = !user;
-
-  $("accountStatus").textContent = user
-    ? "Logged in as " + (username || user.email || "member") + " 🐾"
-    : "Log in to join the conversation.";
-
-  if (user) {
-    refreshTreats();
-  } else {
-    $("treatBalance").textContent = "🦴 --";
-    setRewardStatus("Log in to claim your daily treats!");
-  }
-}
-
-async function refreshTreats() {
-  if (!supabaseClient || !currentUser) {
-    $("treatBalance").textContent = "🦴 --";
-    return;
-  }
-
-  const userId = currentUser.id;
-
-  const { data, error } = await supabaseClient
-    .from("profiles")
-    .select("treats")
-    .eq("id", userId)
-    .maybeSingle();
-
-  if (!currentUser || currentUser.id !== userId) return;
-
-  if (error) {
-    setRewardStatus("Couldn't load your treats: " + error.message);
-    return;
-  }
-
-  if (!data) {
-    setRewardStatus("Your profile wasn't found. Please log out and log in again.");
-    return;
-  }
-
-  $("treatBalance").textContent = "🦴 " + data.treats;
-}
-
-function showEmptyChat(message) {
-  const container = $("chatMessages");
-  container.replaceChildren();
-
-  const p = document.createElement("p");
-  p.className = "small empty-chat";
-  p.textContent = message;
-  container.appendChild(p);
-}
-
-function addMessage(message) {
-  const container = $("chatMessages");
-
-  if (message.id &&
-      container.querySelector('[data-message-id="' + message.id + '"]')) {
-    return;
-  }
-
-  const empty = container.querySelector(".empty-chat");
-  if (empty) empty.remove();
-
-  const item = document.createElement("div");
-  item.className = "message";
-  if (message.id) item.dataset.messageId = message.id;
-
-  const name = document.createElement("strong");
-  name.textContent = message.username || "Pack member";
-
-  const content = document.createElement("p");
-  content.textContent = message.content || "";
-  content.style.margin = "6px 0";
-
-  const time = document.createElement("time");
-  time.textContent = message.created_at
-    ? new Date(message.created_at).toLocaleString()
-    : "";
-
-  item.append(name, content, time);
-  container.appendChild(item);
-  container.scrollTop = container.scrollHeight;
-}
-
-async function ensureProfile(user) {
-  const { data, error } = await supabaseClient
-    .from("profiles")
-    .select("username")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (error) throw error;
-  if (data && data.username) return data.username;
-
-  const username = user.user_metadata && user.user_metadata.username;
-  if (!username) {
-    throw new Error("No username is saved to this account.");
-  }
-
-  const { error: insertError } = await supabaseClient
-    .from("profiles")
-    .upsert({ id: user.id, username }, { onConflict: "id" });
-
-  if (insertError) throw insertError;
-  return username;
-}
-
-async function restoreSession() {
-  if (!supabaseClient) return;
-
-  const version = ++authVersion;
-  const { data, error } = await supabaseClient.auth.getSession();
-
-  if (version !== authVersion) return;
-
-  if (error) {
-    setStatus("Couldn't restore login: " + error.message);
-    return;
-  }
-
-  if (!data.session) {
-    setLoggedIn(null, null);
-    return;
-  }
-
-  try {
-    const username = await ensureProfile(data.session.user);
-    if (version !== authVersion) return;
-
-    setLoggedIn(data.session.user, username);
-    if (!$("chat").classList.contains("hidden")) loadMessages();
-  } catch (err) {
-    setStatus("Login restored, but the profile couldn't load: " + err.message);
-  }
-}
-
-function startRealtime() {
-  if (!supabaseClient || messageSubscription) return;
-
-  messageSubscription = supabaseClient
-    .channel("clickrfun-live-messages")
-    .on(
-      "postgres_changes",
-      { event: "*", schema: "public", table: "messages" },
-      payload => {
-        const row = payload.new;
-        if (!row || row.room !== currentRoom || !currentUser) return;
-
-        if (payload.eventType === "INSERT") {
-          addMessage(row);
-        } else {
-          loadMessages();
-        }
-      }
-    )
-    .subscribe(status => {
-      if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
-        console.warn("Chat realtime status:", status);
-        setStatus("Live chat connection trouble. Check Supabase Realtime settings.");
-      }
-    });
-}
-
-async function loadMessages() {
-  const version = ++loadVersion;
-
-  if (!supabaseClient) {
-    showEmptyChat("Supabase isn't configured. Check the project settings in the code.");
-    return;
-  }
-
-  if (!currentUser) {
-    showEmptyChat("Please log in to see the chat.");
-    return;
-  }
-
-  const room = currentRoom;
-  showEmptyChat("Loading messages... 🐾");
-
-  const { data, error } = await supabaseClient
-    .from("messages")
-    .select("id, username, content, created_at, room")
-    .eq("room", room)
-    .order("created_at", { ascending: true })
-    .limit(100);
-
-  if (version !== loadVersion || room !== currentRoom) return;
-
-  if (error) {
-    showEmptyChat("Couldn't load messages: " + error.message);
-    return;
-  }
-
-  const container = $("chatMessages");
-  container.replaceChildren();
-
-  if (!data || data.length === 0) {
-    showEmptyChat("No messages yet. Be the first to say hi! 🐾");
-  } else {
-    data.forEach(addMessage);
-  }
-
-  startRealtime();
-}
-
-// Claim daily login treats
-$("claimTreatsButton").addEventListener("click", async () => {
-  if (!supabaseClient || !currentUser) {
-    setRewardStatus("Please log in first! 🐾");
-    return;
-  }
-
-  const button = $("claimTreatsButton");
-  button.disabled = true;
-  setRewardStatus("Claiming your treats... 🎁");
-
-  try {
-    const { data, error } = await supabaseClient.rpc("claim_daily_login");
-
-    if (error) throw error;
-
-    setRewardStatus(data || "Success! You earned 20 treats! 🦴");
-    await refreshTreats();
-  } catch (err) {
-    const message = err.message || "Something went wrong.";
-
-    if (message.toLowerCase().includes("already claimed")) {
-      setRewardStatus("You've already claimed your daily treats! Come back in 24 hours. 💗");
-    } else if (message.toLowerCase().includes("log in")) {
-      setRewardStatus("Please log in to claim your treats! 🐾");
-    } else {
-      setRewardStatus("Couldn't claim treats: " + message);
-    }
-  } finally {
-    button.disabled = !currentUser;
-  }
+// Daily treats
+$("claimTreatsButton").addEventListener("click",async()=>{
+ if(!requireLogin())return;
+ const b=$("claimTreatsButton");b.disabled=true;setRewardStatus("Claiming treats... 🎁");
+ try{
+  const {data,error}=await supabaseClient.rpc("claim_daily_login");
+  if(error)throw error;
+  setRewardStatus(data||"Success! You earned 20 treats! 🦴");await refreshTreats();
+ }catch(e){
+  const m=e.message||"Something went wrong.";
+  setRewardStatus(m.toLowerCase().includes("already claimed")?"You've already claimed your daily treats! Come back in 24 hours. 💗":"Couldn't claim treats: "+m);
+ }finally{b.disabled=!currentUser}
 });
 
 // Sign up
-$("signupForm").addEventListener("submit", async event => {
-  event.preventDefault();
-
-  if (!supabaseClient) {
-    setStatus("Supabase isn't configured correctly.");
-    return;
-  }
-
-  const username = $("signupUsername").value.trim();
-  const email = $("signupEmail").value.trim();
-  const password = $("signupPassword").value;
-  const button = event.currentTarget.querySelector('button[type="submit"]');
-
-  if (!/^[a-zA-Z0-9_-]{3,24}$/.test(username)) {
-    setStatus("Username must be 3–24 characters using letters, numbers, _ or -.");
-    return;
-  }
-
-  button.disabled = true;
-  setStatus("Creating your account... 💗");
-
-  try {
-    const { data, error } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: { data: { username } }
-    });
-
-    if (error) throw error;
-
-    if (!data.user) {
-      setStatus("No account was returned. Please try again.");
-      return;
-    }
-
-    if (!data.session) {
-      setStatus("Account created! If email confirmation is enabled in Supabase, confirm your email, then log in.");
-      return;
-    }
-
-    const savedUsername = await ensureProfile(data.user);
-    setLoggedIn(data.user, savedUsername);
-    setStatus("You're in! Welcome to Clickrfun 💗");
-    showSection("chat");
-  } catch (err) {
-    setStatus("Sign-up failed: " + err.message);
-  } finally {
-    button.disabled = false;
-  }
+$("signupForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!supabaseClient){setStatus("Supabase isn't configured.");return}
+ const username=$("signupUsername").value.trim(),email=$("signupEmail").value.trim(),password=$("signupPassword").value;
+ const b=e.currentTarget.querySelector('button[type="submit"]');
+ if(!/^[a-zA-Z0-9_-]{3,24}$/.test(username)){setStatus("Username must be 3–24 characters using letters, numbers, _ or -.");return}
+ b.disabled=true;setStatus("Creating your account... 💗");
+ try{
+  const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{username}}});
+  if(error)throw error;
+  if(!data.user)throw new Error("No account was returned.");
+  if(!data.session){setStatus("Account created! Confirm your email if required, then log in.");return}
+  const saved=await ensureProfile(data.user);setLoggedIn(data.user,saved);
+  setStatus("You're in! Welcome to Clickrfun 💗");showSection("chat");
+ }catch(err){setStatus("Sign-up failed: "+err.message)}
+ finally{b.disabled=false}
 });
 
 // Log in
-$("loginForm").addEventListener("submit", async event => {
-  event.preventDefault();
-
-  if (!supabaseClient) {
-    setStatus("Supabase isn't configured correctly.");
-    return;
-  }
-
-  const email = $("loginEmail").value.trim();
-  const password = $("loginPassword").value;
-  const button = event.currentTarget.querySelector('button[type="submit"]');
-
-  button.disabled = true;
-  setStatus("Logging in... 🐾");
-
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) throw error;
-
-    const username = await ensureProfile(data.user);
-    setLoggedIn(data.user, username);
-    setStatus("Welcome back, " + username + "! 🐾");
-    showSection("chat");
-  } catch (err) {
-    setStatus("Login failed: " + err.message);
-  } finally {
-    button.disabled = false;
-  }
+$("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!supabaseClient){setStatus("Supabase isn't configured.");return}
+ const email=$("loginEmail").value.trim(),password=$("loginPassword").value;
+ const b=e.currentTarget.querySelector('button[type="submit"]');b.disabled=true;setStatus("Logging in... 🐾");
+ try{
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error)throw error;
+  const username=await ensureProfile(data.user);setLoggedIn(data.user,username);
+  setStatus("Welcome back, "+username+"! 🐾");showSection("chat");
+ }catch(err){setStatus("Login failed: "+err.message)}
+ finally{b.disabled=false}
 });
 
 // Log out
-$("logoutButton").addEventListener("click", async () => {
-  if (!supabaseClient) return;
-
-  $("logoutButton").disabled = true;
-
-  try {
-    const { error } = await supabaseClient.auth.signOut();
-    if (error) throw error;
-
-    setLoggedIn(null, null);
-    showEmptyChat("Please log in to see the chat.");
-    setStatus("You've logged out. See you next time! 💗");
-    showSection("welcome");
-  } catch (err) {
-    setStatus("Couldn't log out: " + err.message);
-  } finally {
-    $("logoutButton").disabled = false;
-  }
+$("logoutButton").addEventListener("click",async()=>{
+ if(!supabaseClient)return;
+ $("logoutButton").disabled=true;
+ try{
+  const {error}=await supabaseClient.auth.signOut();if(error)throw error;
+  setLoggedIn(null,null);showEmptyChat("Please log in to see the chat.");
+  setStatus("You've logged out. See you next time! 💗");showSection("welcome");
+ }catch(e){setStatus("Couldn't log out: "+e.message)}
+ finally{$("logoutButton").disabled=false}
 });
 
-// Send message
-$("messageForm").addEventListener("submit", async event => {
-  event.preventDefault();
-
-  if (!supabaseClient || !currentUser || !currentUsername) {
-    setStatus("Please log in before sending a message.");
-    showSection("account");
-    return;
-  }
-
-  const input = $("messageInput");
-  const content = input.value.trim();
-  if (!content) return;
-
-  const button = $("sendButton");
-  button.disabled = true;
-
-  try {
-    const { error } = await supabaseClient
-      .from("messages")
-      .insert({
-        user_id: currentUser.id,
-        username: currentUsername,
-        content,
-        room: currentRoom
-      });
-
-    if (error) throw error;
-
-    input.value = "";
-    await loadMessages();
-  } catch (err) {
-    setStatus("Message could not be sent: " + err.message);
-  } finally {
-    button.disabled = !currentUser || !currentUsername;
-  }
-});
-
-// Start
-if (!window.supabase) {
-  setStatus("Supabase failed to load. Refresh the page and try again.");
-} else if (
-  !SUPABASE_URL.startsWith("https://") ||
-  !SUPABASE_PUBLISHABLE_KEY.startsWith("sb_publishable_")
-) {
-  setStatus("Check your Supabase URL and publishable key.");
-} else {
-  supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY,
-    {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true
-      }
-    }
-  );
-
-  restoreSession();
-
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-    if (event === "SIGNED_OUT" || !session) {
-      setLoggedIn(null, null);
-      showEmptyChat("Please log in to see the chat.");
-    }
+// Send chat message
+$("messageForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!supabaseClient||!currentUser||!currentUsername){setStatus("Please log in before sending a message.");showSection("account");return}
+ const input=$("messageInput"),content=input.value.trim();if(!content)return;
+ const b=$("sendButton");b.disabled=true;
+ try{
+  const {error}=await supabaseClient.from("messages").insert({
+   user_id:currentUser.id,username:currentUsername,content,room:currentRoom
   });
+  if(error)throw error;
+  input.value="";await loadMessages();
+ }catch(err){setStatus("Message could not be sent: "+err.message)}
+ finally{b.disabled=!currentUser||!currentUsername}
+});
+
+// Start Supabase
+if(!window.supabase){
+ setStatus("Supabase failed to load. Refresh and try again.");
+}else{
+ supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+ });
+ restoreSession();
+ supabaseClient.auth.onAuthStateChange((event,session)=>{
+  if(event==="SIGNED_OUT"||!session){
+   setLoggedIn(null,null);showEmptyChat("Please log in to see the chat.");
+  }
+ });
 }
 </script>
 </body>
