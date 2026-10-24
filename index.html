@@ -9,17 +9,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;color:#fff0fb;background:#180d27 url("cute-wallpaper.svg") center center/cover fixed}
-header{text-align:center;padding:28px 16px;background:#29143d;border-bottom:2px solid #f28bd4}
+body{margin:0;font-family:Arial,sans-serif;color:#fff0fb;background:#180d27;isolation:isolate}body::before{content:"";position:fixed;inset:0;z-index:-1;background:url("cute-wallpaper.svg") center center/cover no-repeat;opacity:.62;pointer-events:none}
+header{text-align:center;padding:28px 16px;background:rgba(41,20,61,.88);border-bottom:2px solid #f28bd4}
 h1,h2{color:#ff9cde}
 h1{margin:0 0 8px}
 header p{margin:0;color:#e9c8ee}
-nav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:14px;background:#211131}
+nav{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;padding:14px;background:rgba(33,17,49,.84)}
 button{border:0;border-radius:12px;padding:11px 15px;background:#e879c4;color:#28132f;font-weight:bold;cursor:pointer;margin:3px}
 button:hover{background:#ffa4df}
 button:disabled{opacity:.5;cursor:wait}
 main{width:min(950px,94%);margin:25px auto;min-height:45vh}
-.card{background:#29183b;border:1px solid #704276;border-radius:18px;padding:22px;margin-bottom:20px;box-shadow:0 8px 25px #09041055}
+.card{background:rgba(41,24,59,.82);backdrop-filter:blur(3px);border:1px solid #704276;border-radius:18px;padding:22px;margin-bottom:20px;box-shadow:0 8px 25px #09041055}
 h2{margin-top:0}
 input,textarea,select{display:block;width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit}
 textarea{resize:vertical;min-height:80px} select{width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit} select{width:100%;margin:10px 0;padding:12px;border:1px solid #a56da9;border-radius:10px;background:#180d27;color:white;font:inherit}
