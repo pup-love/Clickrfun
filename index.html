@@ -407,17 +407,12 @@ async function loadMessages() {
     return;
   }
 
-  container.replaceChildren();
+  container.innerHTML = "";
 
-  if (!data.length) {
-    const empty = document.createElement("p");
-    empty.className = "small";
-    empty.textContent = "No messages yet. Be the first to say hi! 🐾";
-    container.appendChild(empty);
-  } else {
-    data.forEach(addMessage);
-  }
-
+  (data || []).forEach(message => {
+    addMessage(message);
+  });
+}
   if (!messageSubscription) {
     messageSubscription = supabaseClient
       .channel("public-chat-messages")
