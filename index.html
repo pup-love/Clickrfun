@@ -940,7 +940,7 @@ async function loadShop(){
  shopCache.forEach(item=>{
   const box=document.createElement("div");box.className="item";
   const emoji=document.createElement("div");emoji.className="emoji";emoji.textContent=item.emoji||"🐾";
-  const title=document.createElement("h3");title.textContent=item.name+" × "+item.quantity;
+  const title=document.createElement("h3");title.textContent=item.name;
   const desc=document.createElement("p");desc.textContent=item.description||"A cute item!";
   const price=document.createElement("p");price.textContent="🦴 "+item.price+" treats";
   const button=document.createElement("button");button.textContent="Buy item";button.addEventListener("click",()=>buyItem(item));
@@ -980,7 +980,7 @@ async function loadInventory(){
  items.forEach(item=>{
   const box=document.createElement("div");box.className="item";
   const emoji=document.createElement("div");emoji.className="emoji";emoji.textContent=item.emoji||"🐾";
-  const title=document.createElement("h3");title.textContent=item.name;
+  const title=document.createElement("h3");title.textContent=item.name+" × "+item.quantity;
   const state=document.createElement("p");state.textContent=equipped.includes(item.id)?"✨ Equipped!":"In your bag";
   const button=document.createElement("button");button.textContent=equipped.includes(item.id)?"Unequip":"Equip ✨";
   button.addEventListener("click",()=>toggleItem(item.id,equipped.includes(item.id)));
