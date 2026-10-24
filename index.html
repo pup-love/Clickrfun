@@ -64,6 +64,15 @@ hr{border-color:#704276;margin:24px 0}
  .card{padding:17px}
  nav button{font-size:.9rem}
 }
+
+/* MEMBER SAFETY MENU */
+.clickable-member{cursor:pointer;text-decoration:underline;text-decoration-color:#ff9cde;text-underline-offset:3px}
+.clickable-member:focus{outline:2px solid #ff9cde;outline-offset:3px;border-radius:4px}
+.member-action-overlay{position:fixed;inset:0;z-index:9999;background:#090511d9;display:flex;align-items:center;justify-content:center;padding:18px}
+.member-action-overlay.hidden{display:none}
+.member-action-card{width:min(100%,360px);background:#29143d;border:2px solid #f28bd4;border-radius:18px;padding:20px;box-shadow:0 12px 45px #000b}
+.member-action-card h3{margin-top:0}.member-action-card button{width:100%;margin:6px 0}.member-action-card .secondary-action{background:#50305e}
+
 </style>
 </head>
 <body>
@@ -247,6 +256,58 @@ let loadVersion=0;
 let authVersion=0;
 let shopCache=[];
 
+/* MEMBER PROFILE, REPORTING AND BLOCKING */
+let selectedMember=null,memberMenuOverlay=null;
+function ensureMemberMenu(){
+ if(memberMenuOverlay)return memberMenuOverlay;
+ const overlay=document.createElement("div");overlay.className="member-action-overlay hidden";overlay.id="memberActionOverlay";
+ overlay.innerHTML='<div class="member-action-card" role="dialog" aria-modal="true" aria-labelledby="memberActionTitle"><h3 id="memberActionTitle">Pup actions 🐾</h3><p id="memberActionName"></p><button type="button" id="memberViewButton">🐶 Read Profile</button><button type="button" id="memberMessageButton">💌 Message</button><button type="button" id="memberReportButton" class="secondary-action">🚩 Report Member</button><button type="button" id="memberBlockButton" class="secondary-action">🚫 Block Member</button><button type="button" id="memberMenuClose" class="secondary-action">Cancel</button><p id="memberActionStatus" class="small" aria-live="polite"></p></div>';
+ document.body.appendChild(overlay);memberMenuOverlay=overlay;
+ overlay.addEventListener("click",e=>{if(e.target===overlay)closeMemberMenu();});
+ $("memberMenuClose").addEventListener("click",closeMemberMenu);
+ $("memberViewButton").addEventListener("click",()=>{if(selectedMember){const m=selectedMember;closeMemberMenu();viewMember(m.id);}});
+ $("memberMessageButton").addEventListener("click",()=>{if(selectedMember){const m=selectedMember;closeMemberMenu();openPrivateDM(m.id,m.username);}});
+ $("memberReportButton").addEventListener("click",reportSelectedMember);$("memberBlockButton").addEventListener("click",blockSelectedMember);
+ return overlay;
+}
+function showMemberMenu(userId,username){
+ if(!currentUser){setStatus("Please log in to open member actions.");showSection("account");return;}
+ if(!userId||userId===currentUser.id)return;
+ selectedMember={id:userId,username:username||"Pack member"};ensureMemberMenu();
+ $("memberActionName").textContent=selectedMember.username;$("memberActionStatus").textContent="";
+ $("memberActionOverlay").classList.remove("hidden");$("memberMenuClose").focus();
+}
+function closeMemberMenu(){if(memberMenuOverlay)memberMenuOverlay.classList.add("hidden");selectedMember=null;}
+async function isBlockedEitherWay(userId){
+ if(!currentUser||!userId)return false;
+ const {data,error}=await supabaseClient.from("user_blocks").select("blocker_id,blocked_id").or("and(blocker_id.eq."+currentUser.id+",blocked_id.eq."+userId+"),and(blocker_id.eq."+userId+",blocked_id.eq."+currentUser.id+")").limit(1);
+ if(error)throw error;return !!(data&&data.length);
+}
+async function reportSelectedMember(){
+ if(!selectedMember||!currentUser)return;const m={...selectedMember};
+ const reason=prompt("Why report "+m.username+"? Enter one: Harassment or bullying, Inappropriate content, Spam or scams, Threats, Other");
+ if(reason===null)return;const allowed=["Harassment or bullying","Inappropriate content","Spam or scams","Threats","Other"];
+ const valid=allowed.find(x=>x.toLowerCase()===reason.trim().toLowerCase());
+ if(!valid){$("memberActionStatus").textContent="Please enter one of the listed report reasons.";return;}
+ const details=prompt("Optional details (avoid private information):")||"";
+ const {error}=await supabaseClient.from("user_reports").insert({reporter_id:currentUser.id,reported_id:m.id,reason:valid,details:details.slice(0,2000)});
+ $("memberActionStatus").textContent=error?"Report failed: "+error.message:"Report submitted. Thank you for helping keep Clickrfun safe. 💗";
+}
+async function blockSelectedMember(){
+ if(!selectedMember||!currentUser)return;const m={...selectedMember};
+ if(!confirm("Block "+m.username+"? You won't be able to open or send private messages between each other in this website's interface."))return;
+ const {error}=await supabaseClient.from("user_blocks").upsert({blocker_id:currentUser.id,blocked_id:m.id},{onConflict:"blocker_id,blocked_id"});
+ if(error){$("memberActionStatus").textContent="Block failed: "+error.message;return;}
+ if(activeDmUserId===m.id){activeDmUserId=null;activeDmUsername=null;$("dmMessages").textContent="This conversation is blocked.";$("dmSendButton").disabled=true;}
+ $("memberActionStatus").textContent=m.username+" is blocked. 💗";
+}
+function makeMemberNameClickable(el,userId,username){
+ if(!currentUser||!userId||userId===currentUser.id)return;
+ el.classList.add("clickable-member");el.setAttribute("role","button");el.setAttribute("tabindex","0");el.setAttribute("aria-label","Actions for "+(username||"member"));
+ el.addEventListener("click",()=>showMemberMenu(userId,username));
+ el.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();showMemberMenu(userId,username);}});
+}
+
 /* PRIVATE DMS */
 let activeDmUserId=null;
 let activeDmUsername=null;
@@ -255,9 +316,10 @@ async function openPrivateDM(userId,username){
  if(!requireLogin())return;
  if(userId===currentUser.id){
   $("dmStatus").textContent="You can't send a DM to yourself! 🐾";
-  showSection("privateDMs");
-  return;
+  showSection("privateDMs");return;
  }
+ try{if(await isBlockedEitherWay(userId)){$("dmStatus").textContent="Private messaging is unavailable because one of you has blocked the other.";showSection("privateDMs");return;}}
+ catch(error){$("dmStatus").textContent="Couldn't check block settings: "+error.message;return;}
  activeDmUserId=userId;
  activeDmUsername=username;
  $("dmChatTitle").textContent="💌 Chat with "+username;
@@ -362,6 +424,8 @@ $("dmForm").addEventListener("submit",async event=>{
  const input=$("dmInput");
  const content=input.value.trim();
  if(!content||content.length>1000)return;
+ try{if(await isBlockedEitherWay(activeDmUserId)){$("dmStatus").textContent="This private conversation is unavailable because one of you has blocked the other.";$("dmSendButton").disabled=true;return;}}
+ catch(error){$("dmStatus").textContent="Couldn't check block settings: "+error.message;return;}
 
  const button=$("dmSendButton");
  button.disabled=true;
@@ -657,6 +721,7 @@ function addMessage(message){
  if(message.id)box.dataset.messageId=message.id;
  const name=document.createElement("strong");
  name.textContent=message.username||"Pack member";
+ makeMemberNameClickable(name,message.user_id,message.username);
  const body=document.createElement("p");
  body.textContent=message.content||"";
  body.style.margin="6px 0";
@@ -709,7 +774,7 @@ async function loadMessages(){
  if(!currentUser){showEmptyChat("Please log in to see the chat.");return;}
  const room=currentRoom;
  showEmptyChat("Loading messages... 🐾");
- const {data,error}=await supabaseClient.from("messages").select("id,username,content,created_at,room").eq("room",room).order("created_at",{ascending:true}).limit(100);
+ const {data,error}=await supabaseClient.from("messages").select("id,user_id,username,content,created_at,room").eq("room",room).order("created_at",{ascending:true}).limit(100);
  if(version!==loadVersion||room!==currentRoom)return;
  if(error){showEmptyChat("Couldn't load messages: "+error.message);return;}
  const container=$("chatMessages");
@@ -840,6 +905,7 @@ $("searchForm").addEventListener("submit",async event=>{
  results.forEach(profile=>{
   const box=document.createElement("div");box.className="member";
   const name=document.createElement("strong");name.textContent="🐾 "+profile.username;
+  makeMemberNameClickable(name,profile.id,profile.username);
   const id=document.createElement("p");id.className="profile-id";id.textContent=profile.profile_id||"";
   const button=document.createElement("button");button.textContent="Visit Profile";button.addEventListener("click",()=>viewMember(profile.id));
   box.append(name,id,button);container.appendChild(box);
