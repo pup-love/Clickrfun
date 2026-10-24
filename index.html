@@ -381,10 +381,27 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </section>
 </main>
 
-<footer><p>Made with luv 🐾</p><p class="small">Be sweet, be kind, and spread the love 💗</p><p class="small">Credit to AyeshaIcon for giving me the idea 💗</p></footer>
+<button id="musicToggle" type="button" aria-pressed="false" title="Toggle background music" style="position:fixed;right:14px;bottom:14px;z-index:20;border-radius:999px;box-shadow:0 4px 16px #0005">♫ Music: Off</button>
+<audio id="backgroundMusic" src="mixkit-keep-smiling-15.mp3" loop preload="none"></audio>
+<footer><p>Made with luv 🐾</p><p class="small">Be sweet, be kind, and spread the love 💗</p><p class="small">Credit to AyeshaIcon for giving me the idea 💗</p><p class="small">Credit to John19151 for the name &lt;3</p></footer>
 
 <script>
 "use strict";
+const bgMusic=$("backgroundMusic");
+const musicToggle=$("musicToggle");
+if(bgMusic&&musicToggle){
+  bgMusic.volume=0.12;
+  let musicEnabled=false;
+  musicToggle.addEventListener("click",async()=>{
+    if(!musicEnabled){
+      try{await bgMusic.play();musicEnabled=true;musicToggle.textContent="♫ Music: On";musicToggle.setAttribute("aria-pressed","true");}
+      catch(e){musicToggle.textContent="♫ Tap to retry";musicEnabled=false;}
+    }else{
+      bgMusic.pause();musicEnabled=false;musicToggle.textContent="♫ Music: Off";musicToggle.setAttribute("aria-pressed","false");
+    }
+  });
+}
+
 
 const SUPABASE_URL="https://fbrecutmmotwnsqzxaxv.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_uDxX8PVStNcE56hQx0ShpQ_XUxx9Z1g";
