@@ -1356,11 +1356,12 @@ let puppyAudio=null;
 function playPuppySound(type="bark"){
  if(!puppySoundsOn)return;
  try{
-  // Use the uploaded real WAV recording for clicks; synthesize the other toy sounds.
-  if(type==="click"){
-   const clickSound=new Audio("mixkit-mouse-click-close-1113.wav");
-   clickSound.volume=.8;
-   clickSound.play().catch(()=>{});
+  // Use uploaded real WAV recordings for clicks and bubble pops.
+  if(type==="click"||type==="pop"){
+   const soundFile=type==="click"?"mixkit-mouse-click-close-1113.wav":"mixkit-liquid-bubble-3000.wav";
+   const recordedSound=new Audio(soundFile);
+   recordedSound.volume=.8;
+   recordedSound.play().catch(()=>{});
    return;
   }
   const AudioContextClass=window.AudioContext||window.webkitAudioContext;
