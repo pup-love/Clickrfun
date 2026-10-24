@@ -1716,27 +1716,24 @@ function ensurePetGrave(stageId,pet,label){
  grave.style.display=pet.dead?"block":"none";
 }
 function petCareTick(){
- const now=Date.now(),HOUR=60*60*1000;
+ const now=Date.now(),FOOD_RATE=30*60*1000,HAPPY_RATE=45*60*1000;
  [[virtualPet,"puppy3dStage","puppy"],[virtualKitty,"virtualKitty3dStage","kitty"]].forEach(([pet,stage,label])=>{
   if(!pet.adopted){ensurePetGrave(stage,pet,label);return;}
-  if(!Number.isFinite(Number(pet.lastCareAt))||!pet.lastCareAt)pet.lastCareAt=now;
+  if(!pet.lastFoodAt)pet.lastFoodAt=now;
+  if(!pet.lastHappyAt)pet.lastHappyAt=now;
   if(!pet.dead){
-   const elapsed=Math.max(0,now-pet.lastCareAt),previousFullness=Number(pet.fullness)||0,previousHappiness=Number(pet.happiness)||0;
-   // Hunger drops by 1 every 30 minutes; happiness drops by 1 every 45 minutes.
-   const foodSteps=Math.floor(elapsed/(30*60*1000)),happySteps=Math.floor(elapsed/(45*60*1000));
-   if(foodSteps||happySteps){
-    pet.fullness=Math.max(0,previousFullness-foodSteps);
-    pet.happiness=Math.max(0,previousHappiness-happySteps);
-    pet.lastCareAt+=Math.max(foodSteps*30*60*1000,happySteps*45*60*1000);
-    if(!pet.zeroSince){
-     const foodZeroIn=previousFullness>0&&pet.fullness===0?previousFullness*30*60*1000:Infinity;
-     const happyZeroIn=previousHappiness>0&&pet.happiness===0?previousHappiness*45*60*1000:Infinity;
-     const timeToZero=Math.min(foodZeroIn,happyZeroIn);
-     if(timeToZero!==Infinity)pet.zeroSince=now-elapsed+timeToZero;
-    }
-   }
+   const oldFood=Math.max(0,Number(pet.fullness)||0),oldHappy=Math.max(0,Number(pet.happiness)||0);
+   const foodElapsed=Math.max(0,now-pet.lastFoodAt),happyElapsed=Math.max(0,now-pet.lastHappyAt);
+   const foodSteps=Math.floor(foodElapsed/FOOD_RATE),happySteps=Math.floor(happyElapsed/HAPPY_RATE);
+   if(foodSteps){pet.fullness=Math.max(0,oldFood-foodSteps);pet.lastFoodAt+=foodSteps*FOOD_RATE;}
+   if(happySteps){pet.happiness=Math.max(0,oldHappy-happySteps);pet.lastHappyAt+=happySteps*HAPPY_RATE;}
    if(Number(pet.happiness)<=0||Number(pet.fullness)<=0){
-    if(!pet.zeroSince)pet.zeroSince=now;
+    if(!pet.zeroSince){
+     const foodZeroAt=Number(pet.fullness)<=0?(oldFood>0?now-(foodElapsed%FOOD_RATE):pet.lastFoodAt):Infinity;
+     const happyZeroAt=Number(pet.happiness)<=0?(oldHappy>0?now-(happyElapsed%HAPPY_RATE):pet.lastHappyAt):Infinity;
+     pet.zeroSince=Math.min(foodZeroAt,happyZeroAt);
+     if(!Number.isFinite(pet.zeroSince))pet.zeroSince=now;
+    }
     if(now-pet.zeroSince>=10*60*1000){
      pet.dead=true;
      const msg="Rest peacefully, "+pet.name+". You will always be loved. 💗";
