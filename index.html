@@ -152,6 +152,11 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 .virtual-pet-actions button{border:2px solid #fff;border-radius:14px;padding:10px 15px;background:#b990e8;color:#2e1940;font-weight:700;cursor:pointer}
 .virtual-pet-actions button:hover{filter:brightness(1.05);transform:translateY(-1px)}
 #virtualPetMessage{min-height:1.5em;font-weight:700}
+.puppy-xp-track{height:12px;max-width:420px;margin:8px auto 18px;background:#fff;border-radius:99px;overflow:hidden;border:1px solid #d8b9f2}.puppy-xp-track span{display:block;width:0;height:100%;background:linear-gradient(90deg,#ff92cf,#a78bfa);transition:width .25s}
+.puppy-room-options{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:10px auto}.puppy-room-options button{border:2px solid #fff;border-radius:14px;padding:9px 12px;background:#fff5ff;color:#56366e;font-weight:800;cursor:pointer}
+.virtual-pet-card[data-room="bed"]{background:linear-gradient(135deg,#f3e8ff,#eadbff 55%,#ffe9f5)}.virtual-pet-card[data-room="garden"]{background:linear-gradient(135deg,#dcfce7,#bbf7d0 55%,#fef9c3)}.virtual-pet-card[data-room="space"]{background:linear-gradient(135deg,#1e1b4b,#4338ca 55%,#a78bfa);color:#fff}.virtual-pet-card[data-room="space"] h3,.virtual-pet-card[data-room="space"] p{color:#fff}.virtual-pet-card[data-room="candy"]{background:linear-gradient(135deg,#fbcfe8,#f5d0fe 55%,#fecdd3)}
+.puppy-minigame{max-width:540px;margin:20px auto;padding:14px;border:2px dashed #c4a5e8;border-radius:20px;background:#fff9ff;color:#56366e}.puppy-minigame h3,.puppy-minigame p{color:#56366e}.fetch-playfield{position:relative;height:160px;overflow:hidden;border-radius:16px;background:linear-gradient(#dbeafe 0 62%,#bbf7d0 62%);border:2px solid white}.fetch-playfield:after{content:"";position:absolute;left:0;right:0;bottom:0;height:18px;background:#86efac}.fetch-playfield button{position:absolute;z-index:1;left:15%;top:35%;border:0;background:transparent;font-size:36px;cursor:pointer;transition:left .12s,top .12s;filter:drop-shadow(0 3px 2px #0002)}#fetchStart{border:0;border-radius:12px;padding:10px 16px;background:#b990e8;color:#2e1940;font-weight:900;cursor:pointer}
+.puppy-action-pop{animation:puppyHappyHop .5s ease-in-out 2!important}@keyframes puppyHappyHop{0%,100%{transform:translateY(0) rotate(0)}35%{transform:translateY(-17px) rotate(-4deg)}70%{transform:translateY(0) rotate(4deg)}}
 /* Soft lilac sticker-book theme with a crisp white border and readable text. */
 #stickerCollection{background:linear-gradient(135deg,#c9a8f2 0%,#b99be8 55%,#d8c3fa 100%);border:3px solid #fff;color:#352047;box-shadow:0 8px 24px rgba(82,48,125,.22);}
 #stickerCollection h3,#stickerCollection p,#stickerCollection .sticker-heading{color:#352047;}
@@ -374,11 +379,39 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
   <div class="virtual-pet-stats">
     <span class="virtual-pet-stat">💖 Happiness: <strong id="virtualPetHappiness">3</strong>/10</span>
     <span class="virtual-pet-stat">🦴 Fullness: <strong id="virtualPetFullness">5</strong>/10</span>
+    <span class="virtual-pet-stat">⭐ Level: <strong id="virtualPetLevel">1</strong></span>
+    <span class="virtual-pet-stat">✨ XP: <strong id="virtualPetXP">0</strong>/<strong id="virtualPetNextXP">20</strong></span>
   </div>
+  <div class="puppy-xp-track"><span id="virtualPetXPFill"></span></div>
   <div class="virtual-pet-actions">
     <button type="button" id="virtualPetFeed">🦴 Feed a treat</button>
     <button type="button" id="virtualPetPet">🐾 Give cuddles</button>
     <button type="button" id="virtualPetPlay">🎾 Play together</button>
+    <button type="button" id="virtualPetSleep">💤 Nap time</button>
+  </div>
+  <h3>🧸 Make your puppy's room cozy</h3>
+  <div class="puppy-room-options">
+    <button type="button" data-puppy-room="bed">🛏️ Cozy bed</button>
+    <button type="button" data-puppy-room="garden">🌼 Puppy garden</button>
+    <button type="button" data-puppy-room="space">🚀 Space room</button>
+    <button type="button" data-puppy-room="candy">🍬 Candy room</button>
+  </div>
+  <p id="virtualPetRoomLabel" class="small">Room: Cozy bed</p>
+  <h3>🦴 Pick a toy</h3>
+  <div class="puppy-room-options">
+    <button type="button" data-puppy-toy="ball">🎾 Ball</button>
+    <button type="button" data-puppy-toy="duck">🦆 Squeaky duck</button>
+    <button type="button" data-puppy-toy="bone">🦴 Chew bone</button>
+    <button type="button" data-puppy-toy="rope">🪢 Tug rope</button>
+  </div>
+  <p id="virtualPetToyLabel" class="small">Favorite toy: Ball</p>
+  <div class="puppy-minigame">
+    <h3>🎾 Fetch Frenzy!</h3>
+    <p>Catch the bouncing ball before it scoots away. Each catch earns puppy XP!</p>
+    <div class="fetch-playfield" id="fetchPlayfield"><button type="button" id="fetchBall" aria-label="Catch the ball">🎾</button></div>
+    <p id="fetchScore" aria-live="polite">Catches: 0 · Best: 0</p>
+    <button type="button" id="fetchStart">▶️ Start fetch</button>
+    <span id="fetchTimer">15 seconds</span>
   </div>
   <p id="virtualPetMessage" role="status" aria-live="polite">Adopt your puppy to start your little adventure!</p>
 </div>
@@ -1618,7 +1651,7 @@ $("soundToggle").addEventListener("click",()=>{
 
 /* VIRTUAL PUPPY PET */
 const virtualPetKey="clickrfun-virtual-puppy-v1";
-const defaultVirtualPet={adopted:false,name:"",happiness:3,fullness:5,emoji:"🐶"};
+const defaultVirtualPet={adopted:false,name:"",happiness:3,fullness:5,emoji:"🐶",xp:0,level:1,room:"bed",toy:"ball",catches:0,bestCatches:0};
 let virtualPet={...defaultVirtualPet};
 try{const savedPet=JSON.parse(localStorage.getItem(virtualPetKey)||"null");if(savedPet&&typeof savedPet==="object")virtualPet={...defaultVirtualPet,...savedPet};}catch(e){}
 function saveVirtualPet(){try{localStorage.setItem(virtualPetKey,JSON.stringify(virtualPet));}catch(e){}}
@@ -1629,6 +1662,16 @@ function renderVirtualPet(message){
  name.textContent=virtualPet.adopted?virtualPet.name:"Your new bestie";
  $("virtualPetHappiness").textContent=String(virtualPet.happiness);
  $("virtualPetFullness").textContent=String(virtualPet.fullness);
+ const nextXP=virtualPet.level*20;
+ $("virtualPetLevel").textContent=String(virtualPet.level);
+ $("virtualPetXP").textContent=String(virtualPet.xp);
+ $("virtualPetNextXP").textContent=String(nextXP);
+ $("virtualPetXPFill").style.width=Math.min(100,virtualPet.xp/nextXP*100)+"%";
+ $("virtualPetCard").dataset.room=virtualPet.room||"bed";
+ const rooms={bed:"Cozy bed",garden:"Puppy garden",space:"Space room",candy:"Candy room"};
+ const toys={ball:"Ball",duck:"Squeaky duck",bone:"Chew bone",rope:"Tug rope"};
+ $("virtualPetRoomLabel").textContent="Room: "+(rooms[virtualPet.room]||rooms.bed);
+ $("virtualPetToyLabel").textContent="Favorite toy: "+(toys[virtualPet.toy]||toys.ball);
  $("virtualPetNameInput").value=virtualPet.adopted?virtualPet.name:$("virtualPetNameInput").value;
  mood.textContent=!virtualPet.adopted?"Your puppy can't wait to meet you! ✨":virtualPet.happiness>=8?"So happy! "+virtualPet.name+" is doing happy wiggles! 💖":virtualPet.fullness<=2?"Rumble, rumble... "+virtualPet.name+" could use a treat! 🦴":"You're doing great together! 🐾";
  $("virtualPetMessage").textContent=message||(virtualPet.adopted?"Your bestie is saved on this device. Come back for more cuddles! 💗":"Adopt your puppy to start your little adventure!");
@@ -1638,19 +1681,61 @@ $("virtualPetAdopt").addEventListener("click",()=>{
  if(!name){$("virtualPetMessage").textContent="Pick a cute name for your puppy first! 💕";input.focus();return;}
  virtualPet.adopted=true;virtualPet.name=name.slice(0,20);virtualPet.happiness=Math.max(virtualPet.happiness,3);virtualPet.fullness=Math.max(virtualPet.fullness,5);saveVirtualPet();playPuppySound("win");renderVirtualPet("YAY! "+virtualPet.name+" is officially part of your pack! 🎉🐶");
 });
+function addVirtualPetXP(amount){
+ virtualPet.xp=(Number(virtualPet.xp)||0)+amount;
+ let leveled=false;
+ while(virtualPet.xp>=virtualPet.level*20){virtualPet.xp-=virtualPet.level*20;virtualPet.level++;leveled=true;}
+ saveVirtualPet();return leveled;
+}
+function puppyPhotoReact(kind){
+ const photo=$("virtualPetEmoji");if(!photo)return;
+ photo.classList.remove("puppy-action-pop");void photo.offsetWidth;photo.classList.add("puppy-action-pop");
+ const images={happy:"https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=700&q=85",sleep:"https://images.unsplash.com/photo-1516734212186-a967f81ad0d7?auto=format&fit=crop&w=700&q=85",play:"https://images.unsplash.com/photo-1537151608828-ea2b11777ee8?auto=format&fit=crop&w=700&q=85"};
+ if(images[kind])photo.src=images[kind];
+}
 function virtualPetAction(action){
  if(!virtualPet.adopted){$("virtualPetMessage").textContent="Name and adopt your puppy first! 💗";return;}
  if(action==="feed"){
   if(virtualPet.fullness>=10){renderVirtualPet(virtualPet.name+" is all full up! Give them cuddles instead. 💕");return;}
-  virtualPet.fullness=Math.min(10,virtualPet.fullness+2);virtualPet.happiness=Math.min(10,virtualPet.happiness+1);playPuppySound("treat");renderVirtualPet("Yum yum! "+virtualPet.name+" loved that treat! 🦴");
+  virtualPet.fullness=Math.min(10,virtualPet.fullness+2);virtualPet.happiness=Math.min(10,virtualPet.happiness+1);const leveled=addVirtualPetXP(4);playPuppySound("treat");puppyPhotoReact("happy");renderVirtualPet("Yum yum! "+virtualPet.name+" loved that treat! 🦴"+(leveled?" LEVEL UP! ⭐":""));
  }else if(action==="pet"){
-  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);playPuppySound("yip");renderVirtualPet("Awww, "+virtualPet.name+" is soaking up the cuddles! 🥹💗");
+  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);const leveled=addVirtualPetXP(3);playPuppySound("yip");puppyPhotoReact("happy");renderVirtualPet("Awww, "+virtualPet.name+" is soaking up the cuddles! 🥹💗"+(leveled?" LEVEL UP! ⭐":""));
  }else{
-  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);virtualPet.fullness=Math.max(0,virtualPet.fullness-1);playPuppySound("boing");renderVirtualPet("WHEEE! "+virtualPet.name+" had the best playtime! 🎾✨");
+  virtualPet.happiness=Math.min(10,virtualPet.happiness+2);virtualPet.fullness=Math.max(0,virtualPet.fullness-1);const leveled=addVirtualPetXP(5);playPuppySound("boing");puppyPhotoReact("play");renderVirtualPet("WHEEE! "+virtualPet.name+" had the best playtime! 🎾✨"+(leveled?" LEVEL UP! ⭐":""));
  }
  saveVirtualPet();
 }
 $("virtualPetBoop").addEventListener("click",()=>{playPuppySound("bark");const photo=$("virtualPetEmoji");photo.style.animation="none";void photo.offsetWidth;photo.style.animation="puppyBreathe .45s ease-in-out 2";renderVirtualPet(virtualPet.adopted?virtualPet.name+" says WOOF! 🐶💗":"WOOF! Adopt me and let us be best friends! 🐾");});
+$("virtualPetSleep").addEventListener("click",()=>{
+ if(!virtualPet.adopted){$("virtualPetMessage").textContent="Adopt your puppy first! 💗";return;}
+ virtualPet.happiness=Math.min(10,virtualPet.happiness+1);const leveled=addVirtualPetXP(2);playPuppySound("yip");puppyPhotoReact("sleep");renderVirtualPet("Zzz... "+virtualPet.name+" is having the sweetest puppy dreams. 💤"+(leveled?" LEVEL UP! ⭐":""));
+});
+document.querySelectorAll("[data-puppy-room]").forEach(button=>button.addEventListener("click",()=>{
+ virtualPet.room=button.dataset.puppyRoom;saveVirtualPet();renderVirtualPet("Room makeover! "+button.textContent+" looks adorable! ✨");playPuppySound("gift");
+}));
+document.querySelectorAll("[data-puppy-toy]").forEach(button=>button.addEventListener("click",()=>{
+ virtualPet.toy=button.dataset.puppyToy;saveVirtualPet();renderVirtualPet(button.textContent+" selected! "+(virtualPet.name||"Your puppy")+" is ready to play! 🎾");playPuppySound("squeak");
+}));
+let fetchRunning=false,fetchSeconds=15,fetchTimerId=null,fetchScore=0;
+function moveFetchBall(){
+ const ball=$("fetchBall"),field=$("fetchPlayfield");if(!ball||!field)return;
+ ball.style.left=(3+Math.random()*82)+"%";ball.style.top=(5+Math.random()*55)+"%";ball.style.transform="rotate("+Math.round(Math.random()*50-25)+"deg)";
+}
+$("fetchBall").addEventListener("click",()=>{
+ if(!fetchRunning)return;
+ fetchScore++;virtualPet.catches=(Number(virtualPet.catches)||0)+1;virtualPet.bestCatches=Math.max(Number(virtualPet.bestCatches)||0,fetchScore);
+ $("fetchScore").textContent="Catches: "+fetchScore+" · Best: "+virtualPet.bestCatches;
+ playPuppySound("treat");moveFetchBall();
+});
+$("fetchStart").addEventListener("click",()=>{
+ if(fetchRunning)return;
+ if(!virtualPet.adopted){renderVirtualPet("Adopt your puppy before playing fetch! 🐾");return;}
+ fetchRunning=true;fetchScore=0;fetchSeconds=15;$("fetchStart").disabled=true;$("fetchTimer").textContent=fetchSeconds+" seconds";$("fetchScore").textContent="Catches: 0 · Best: "+(virtualPet.bestCatches||0);moveFetchBall();
+ fetchTimerId=setInterval(()=>{
+  fetchSeconds--;$("fetchTimer").textContent=fetchSeconds+" seconds";
+  if(fetchSeconds<=0){clearInterval(fetchTimerId);fetchRunning=false;$("fetchStart").disabled=false;const earned=fetchScore*2;const leveled=addVirtualPetXP(earned);virtualPet.happiness=Math.min(10,virtualPet.happiness+Math.min(3,Math.floor(fetchScore/3)));saveVirtualPet();playPuppySound("win");renderVirtualPet("Fetch finished! "+virtualPet.name+" caught "+fetchScore+" balls and earned "+earned+" XP! 🎾"+(leveled?" LEVEL UP! ⭐":""));}
+ },1000);
+});
 $("virtualPetFeed").addEventListener("click",()=>virtualPetAction("feed"));
 $("virtualPetPet").addEventListener("click",()=>virtualPetAction("pet"));
 $("virtualPetPlay").addEventListener("click",()=>virtualPetAction("play"));
