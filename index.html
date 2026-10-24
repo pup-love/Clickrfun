@@ -60,6 +60,25 @@ hr{border-color:#704276;margin:24px 0}
 .explore-card button{margin-top:auto}
 .explore-icon{font-size:2.8rem}
 .home-signoff{text-align:center;color:#ff9cde;margin:24px 0 4px;line-height:1.8}
+.button-play-stats{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:15px 0;padding:12px;border-radius:14px;background:#180d27;font-size:1.05rem}
+.click-button-wall{display:grid;grid-template-columns:repeat(auto-fit,minmax(125px,1fr));gap:10px}
+.click-button-wall button{min-height:72px;margin:0;border:3px solid #ffffff70;border-radius:18px;font-size:1rem;box-shadow:0 5px 0 #0003;transition:transform .08s,filter .08s}
+.click-button-wall button:active,.click-button-wall button.just-clicked{transform:translateY(4px) scale(.96);filter:brightness(1.15)}
+.click-button-wall .color-pink{background:#ff8dce;color:#4b1640}
+.click-button-wall .color-blue{background:#8ee7ff;color:#12374c}
+.click-button-wall .color-yellow{background:#ffe37b;color:#503d08}
+.click-button-wall .color-green{background:#a6efb4;color:#164927}
+.click-button-wall .color-purple{background:#c7a5ff;color:#35165b}
+.click-button-wall .color-orange{background:#ffb17d;color:#5a2a12}
+.toy-card{display:flex;flex-direction:column;align-items:center;gap:5px;min-width:0}
+.toy-big{font-size:3.2rem;min-height:70px;display:flex;align-items:center;justify-content:center}
+.toy-message{min-height:24px;color:#ffd0ed}
+.bubble-pit{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;width:100%;max-width:220px;min-height:90px;align-items:center}
+.bubble{font-size:1.8rem;padding:4px;margin:0;background:transparent;border:0;transition:transform .12s}
+.bubble:active{transform:scale(.65)}
+.paw-drum-row{display:flex;gap:5px;flex-wrap:wrap;justify-content:center}
+.drum-pad{margin:2px}
+@media(max-width:480px){.click-button-wall{grid-template-columns:repeat(2,minmax(0,1fr))}.button-play-stats{font-size:.95rem}}
 @media(max-width:480px){
  .games-panel{right:8px}
  .games-float{padding:13px 8px}
@@ -117,6 +136,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <button onclick="showSection('account')">🔐 Login</button>
 <button onclick="showSection('treats')">🦴 My Treats</button>
 <button onclick="showSection('shop')">🛍️ Shop</button>
+<button onclick="showSection('buttonPlayroom')">🔘 Button Playroom</button>
 <button onclick="showSection('support')">💗 Donate / Support</button>
 <button onclick="showSection('inventory')">🎒 Inventory</button>
 <button onclick="showSection('myprofile')">🐶 My Profile</button>
@@ -177,6 +197,81 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </div>
 </div>
 <br>🐾 Made with luv for every furfriend in the pack 🐾</p>
+</section>
+
+<section id="buttonPlayroom" class="card hidden">
+<h2>🔘 The Clicky Button Playroom! 🐶</h2>
+<p class="small">Puppies, this room is FULL of clicky buttons and silly toys! Tap anything that says “Click Me!” to play. Turn sounds off any time with the sound button. 💗</p>
+<div class="button-play-stats" aria-live="polite">
+  <span>🐾 Clicks: <strong id="clickCount">0</strong></span>
+  <span>🎉 Happy wiggles: <strong id="wiggleCount">0</strong></span>
+</div>
+<h3>💗 Button wall — click me!</h3>
+<div class="click-button-wall">
+  <button class="clicktoy color-pink" type="button">💗 Click Me!</button>
+  <button class="clicktoy color-blue" type="button">💧 Click Me!</button>
+  <button class="clicktoy color-yellow" type="button">⭐ Click Me!</button>
+  <button class="clicktoy color-green" type="button">🌿 Click Me!</button>
+  <button class="clicktoy color-purple" type="button">💜 Click Me!</button>
+  <button class="clicktoy color-orange" type="button">🧡 Click Me!</button>
+  <button class="clicktoy color-pink" type="button">🐾 Click Me!</button>
+  <button class="clicktoy color-blue" type="button">🦴 Click Me!</button>
+  <button class="clicktoy color-yellow" type="button">✨ Click Me!</button>
+  <button class="clicktoy color-green" type="button">🐸 Click Me!</button>
+  <button class="clicktoy color-purple" type="button">🌈 Click Me!</button>
+  <button class="clicktoy color-orange" type="button">🎀 Click Me!</button>
+</div>
+<hr>
+<h3>🧸 Interactive toy corner</h3>
+<div class="grid">
+  <div class="item toy-card">
+    <div class="toy-big" id="squeakyFace">🧸</div>
+    <h3>Squeaky Plushie</h3><p class="small">Give your plushie a squeeze!</p>
+    <button id="squeakToy" class="clicktoy" type="button">🧸 Click Me!</button>
+    <p id="squeakMessage" class="toy-message" aria-live="polite">I’m ready for a cuddle!</p>
+  </div>
+  <div class="item toy-card">
+    <div class="toy-big">🫧</div>
+    <h3>Bubble Popper</h3><p class="small">Pop all the bubbles you can!</p>
+    <div id="bubblePit" class="bubble-pit" aria-label="Bubble popping play area">
+      <button class="bubble" type="button" aria-label="Pop bubble">🫧</button>
+      <button class="bubble" type="button" aria-label="Pop bubble">🫧</button>
+      <button class="bubble" type="button" aria-label="Pop bubble">🫧</button>
+      <button class="bubble" type="button" aria-label="Pop bubble">🫧</button>
+      <button class="bubble" type="button" aria-label="Pop bubble">🫧</button>
+      <button class="bubble" type="button" aria-label="Pop bubble">🫧</button>
+    </div>
+    <p id="bubbleMessage" class="toy-message" aria-live="polite">Bloop! Pop a bubble!</p>
+  </div>
+  <div class="item toy-card">
+    <div class="toy-big" id="ballEmoji">🎾</div>
+    <h3>Bouncy Ball</h3><p class="small">Boing the ball around!</p>
+    <button id="bounceToy" class="clicktoy" type="button">🎾 Click Me!</button>
+    <p id="ballMessage" class="toy-message" aria-live="polite">Ready, set, BOING!</p>
+  </div>
+  <div class="item toy-card">
+    <div class="toy-big" id="fortuneEmoji">🎁</div>
+    <h3>Surprise Box</h3><p class="small">What silly surprise is inside?</p>
+    <button id="surpriseToy" class="clicktoy" type="button">🎁 Click Me!</button>
+    <p id="surpriseMessage" class="toy-message" aria-live="polite">A mystery awaits...</p>
+  </div>
+  <div class="item toy-card">
+    <div class="toy-big" id="pawPrints">🐾</div>
+    <h3>Paw Drum</h3><p class="small">Make a tiny beat with your paws!</p>
+    <div class="paw-drum-row">
+      <button class="drum-pad clicktoy" data-drum="low" type="button">🥁 Click Me!</button>
+      <button class="drum-pad clicktoy" data-drum="high" type="button">🔔 Click Me!</button>
+    </div>
+    <p id="drumMessage" class="toy-message" aria-live="polite">Tap out a puppy song!</p>
+  </div>
+  <div class="item toy-card">
+    <div class="toy-big" id="moodEmoji">🥹</div>
+    <h3>Feelings Button</h3><p class="small">Pick a happy little mood.</p>
+    <button id="moodToy" class="clicktoy" type="button">🥰 Click Me!</button>
+    <p id="moodMessage" class="toy-message" aria-live="polite">Boop for a mood!</p>
+  </div>
+</div>
+<p id="buttonPlayroomStatus" class="toy-message" role="status" aria-live="polite">Ready to click, boop, bounce, and pop! 🐾</p>
 </section>
 
 <section id="account" class="card hidden">
@@ -1269,6 +1364,12 @@ function playPuppySound(type="bark"){
   const notes={
    bark:[{f:420,d:.09},{f:260,d:.13}],
    yip:[{f:650,d:.07},{f:820,d:.08}],
+   click:[{f:1050,d:.035},{f:720,d:.045}],
+   squeak:[{f:1250,d:.08},{f:980,d:.10}],
+   pop:[{f:880,d:.045}],
+   boing:[{f:300,d:.07},{f:520,d:.08},{f:760,d:.10}],
+   drumLow:[{f:140,d:.12}],
+   drumHigh:[{f:1300,d:.055}],
    treat:[{f:660,d:.08},{f:880,d:.10}],
    win:[{f:523,d:.12},{f:659,d:.12},{f:784,d:.20}]
   };
@@ -1292,6 +1393,58 @@ $("soundToggle").addEventListener("click",()=>{
  $("soundToggle").textContent=puppySoundsOn?"🔊 Sounds: ON":"🔇 Sounds: OFF";
  if(puppySoundsOn)playPuppySound("yip");
 });
+
+/* BUTTON PLAYROOM + INTERACTIVE TOYS */
+let playroomClicks=0;
+let playroomWiggles=0;
+function countPlayroomClick(wiggle=false){
+ playroomClicks++;
+ if(wiggle)playroomWiggles++;
+ $("clickCount").textContent=String(playroomClicks);
+ $("wiggleCount").textContent=String(playroomWiggles);
+}
+document.querySelectorAll("#buttonPlayroom .clicktoy").forEach(button=>{
+ button.addEventListener("click",()=>{
+  countPlayroomClick(true);
+  playPuppySound(button.dataset.drum==="low"?"drumLow":button.dataset.drum==="high"?"drumHigh":"click");
+  button.classList.add("just-clicked");
+  setTimeout(()=>button.classList.remove("just-clicked"),140);
+  const status=$("buttonPlayroomStatus");
+  const messages=["CLICK! ✨","Boop boop! 🐾","That button loves you! 💗","Clickity-click! 🎉","Tiny paws, BIG clicks! 🐶","Another happy click! 🌈"];
+  status.textContent=messages[Math.floor(Math.random()*messages.length)];
+ });
+});
+$("squeakToy").addEventListener("click",()=>{
+ playPuppySound("squeak");$("squeakyFace").textContent=["🧸","🐻","🐶","🐸"][Math.floor(Math.random()*4)];
+ $("squeakMessage").textContent=["SQUEAK! Give me another squeeze!","Eep! That tickles!","Cuddle mode activated! 💗","Squeak squeak, puppy!"][Math.floor(Math.random()*4)];
+});
+$("bubblePit").addEventListener("click",event=>{
+ const bubble=event.target.closest(".bubble");if(!bubble)return;
+ countPlayroomClick(true);playPuppySound("pop");
+ bubble.textContent=["✨","💗","⭐","🐾","💫"][Math.floor(Math.random()*5)];
+ bubble.disabled=true;$("bubbleMessage").textContent="POP! Bubbly hooray! 🫧";
+ setTimeout(()=>{bubble.textContent="🫧";bubble.disabled=false;},650);
+});
+$("bounceToy").addEventListener("click",()=>{
+ playPuppySound("boing");const ball=$("ballEmoji");
+ ball.animate([{transform:"translateY(0) rotate(0)"},{transform:"translateY(-35px) rotate(180deg)"},{transform:"translateY(0) rotate(360deg)"}],{duration:480,easing:"ease-out"});
+ $("ballMessage").textContent=["BOING BOING! 🎾","A perfect bounce!","Fetch! ...just kidding, click again! 🐶"][Math.floor(Math.random()*3)];
+});
+$("surpriseToy").addEventListener("click",()=>{
+ playPuppySound("win");
+ const surprises=[["🦴","A yummy pretend bone!"],["🌈","A teeny rainbow!"],["💎","A shiny pretend gem!"],["🐣","A tiny new friend!"],["🎀","A fancy bow!"],["🍪","A pretend cookie!"],["💗","A pocket full of love!"]];
+ const prize=surprises[Math.floor(Math.random()*surprises.length)];
+ $("fortuneEmoji").textContent=prize[0];$("surpriseMessage").textContent=prize[1]+" 🎉";
+});
+$("moodToy").addEventListener("click",()=>{
+ const moods=[["🥰","Extra cuddly!"],["😎","Cool pup energy!"],["🤪","Silly zoomies!"],["😴","Sleepy little bean!"],["🤩","SUPER EXCITED!"],["🥹","Just a lil baby!"]];
+ const mood=moods[Math.floor(Math.random()*moods.length)];
+ $("moodEmoji").textContent=mood[0];$("moodMessage").textContent=mood[1];playPuppySound("yip");
+});
+document.querySelectorAll("[data-drum]").forEach(button=>button.addEventListener("click",()=>{
+ $("drumMessage").textContent=button.dataset.drum==="low"?"BOOM ba-dum! 🥁":"DING ding! 🔔";
+ $("pawPrints").textContent=["🐾","🎶","🐶","💗"][Math.floor(Math.random()*4)];
+}));
 
 /* DISPLAY THEMES */
 const availableDisplayThemes=["default","ocean","meadow","sunset","light"];
