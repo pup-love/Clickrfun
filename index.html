@@ -527,4 +527,181 @@ async function loadInventory(){
   box.append(emoji,title,state,btn);c.appendChild(box);
  });
 }
-async function toggleItem(itemId
+async function toggleItem(itemId,isEquipped){
+ if(!requireLogin())return;
+ const {data:profile,error}=await supabaseClient.from("profiles").select("equipped_items").eq("id",currentUser.id).maybeSingle();
+ if(error||!profile){$("inventoryStatus").textContent="Couldn't load your profile: "+(error?.message||"profile missing");return}
+ let items=profile.equipped_items||[];
+ items=isEquipped?items.filter(id=>id!==itemId):[...new Set([...items,itemId])];
+ const {error:updateError}=await supabaseClient.from("profiles").update({equipped_items:items}).eq("id",currentUser.id);
+ if(updateError){$("inventoryStatus").textContent="Couldn't save outfit: "+updateError.message;return}
+ $("inventoryStatus").textContent=isEquipped?"Item unequipped!":"Item equipped! Looking adorable! 💗";
+ await loadInventory();await loadMyProfile();
+}
+
+// Own profile
+async function loadMyProfile(){
+ if(!requireLogin())return;
+ $("profileStatus").textContent="Loading your profile...";
+ const {data,error}=await supabaseClient.from("profiles")
+ .select("username,profile_id,bio,equipped_items").eq("id",currentUser.id).maybeSingle();
+ if(error||!data){$("profileStatus").textContent="Couldn't load profile: "+(error?.message||"profile not found");return}
+ $("profileUsername").value=data.username||currentUsername||"";
+ $("profileBio").value=data.bio||"";
+ $("myProfileId").textContent=data.profile_id||"Puppy ID is being created...";
+ $("profileLook").textContent=lookFor(data.equipped_items||[]);
+ $("profileStatus").textContent="Your profile is ready! 🐾";
+}
+function lookFor(ids){
+ const found=(ids||[]).map(id=>shopCache.find(x=>x.id===id)).filter(Boolean);
+ return found.length?"🐶 "+found.map(x=>x.emoji||"🐾").join(" "):"🐶 No accessories equipped yet!";
+}
+$("profileForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!requireLogin())return;
+ const username=$("profileUsername").value.trim(),bio=$("profileBio").value.trim();
+ if(!/^[a-zA-Z0-9_-]{3,24}$/.test(username)){
+  $("profileStatus").textContent="Username must be 3–24 characters using letters, numbers, _ or -.";return;
+ }
+ $("profileStatus").textContent="Saving profile...";
+ const {error}=await supabaseClient.from("profiles").update({username,bio}).eq("id",currentUser.id);
+ if(error){$("profileStatus").textContent="Couldn't save: "+error.message;return}
+ currentUsername=username;
+ await supabaseClient.auth.updateUser({data:{username}});
+ $("accountStatus").textContent="Logged in as "+username+" 🐾";
+ $("profileStatus").textContent="Profile saved! 💗";
+});
+
+// Member search and public profile viewing
+$("searchForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!requireLogin())return;
+ const term=$("memberSearch").value.trim();
+ const c=$("memberResults");c.replaceChildren();
+ const msg=document.createElement("p");msg.className="small";msg.textContent="Searching...";c.appendChild(msg);
+ let query=supabaseClient.from("profiles").select("id,username,profile_id,bio,equipped_items");
+ if(/^PUP-/i.test(term))query=query.ilike("profile_id",term);
+ else query=query.ilike("username","%"+term.replace(/[%_]/g,"")+"%");
+ const {data,error}=await query.limit(20);
+ c.replaceChildren();
+ if(error){c.textContent="Search failed: "+error.message;return}
+ const results=(data||[]).filter(p=>p.id!==currentUser.id);
+ if(!results.length){c.textContent="No other pups found. Try another username or ID!";return}
+ results.forEach(p=>{
+  const box=document.createElement("div");box.className="member";
+  const name=document.createElement("strong");name.textContent="🐾 "+p.username;
+  const id=document.createElement("p");id.className="profile-id";id.textContent=p.profile_id||"";
+  const btn=document.createElement("button");btn.textContent="Visit Profile";
+  btn.addEventListener("click",()=>viewMember(p.id));
+  box.append(name,id,btn);c.appendChild(box);
+ });
+});
+async function viewMember(id){
+ if(!requireLogin())return;
+ showSection("otherprofile");
+ const c=$("otherProfileContent");c.textContent="Loading puppy profile... 🐾";
+ const {data,error}=await supabaseClient.from("profiles")
+ .select("username,profile_id,bio,equipped_items").eq("id",id).maybeSingle();
+ if(error||!data){c.textContent="Couldn't load profile: "+(error?.message||"not found");return}
+ if(!shopCache.length){
+  const result=await supabaseClient.from("shop_items").select("id,name,emoji");
+  if(!result.error)shopCache=result.data||[];
+ }
+ c.replaceChildren();
+ const look=document.createElement("div");look.id="profileLook";look.textContent=lookFor(data.equipped_items||[]);
+ const name=document.createElement("h3");name.textContent="🐶 "+data.username;
+ const pid=document.createElement("p");pid.className="profile-id";pid.textContent=data.profile_id||"";
+ const bio=document.createElement("p");bio.textContent=data.bio||"This pup hasn't written a bio yet. 💗";
+ c.append(look,name,pid,bio);
+}
+
+// Daily treats
+$("claimTreatsButton").addEventListener("click",async()=>{
+ if(!requireLogin())return;
+ const b=$("claimTreatsButton");b.disabled=true;setRewardStatus("Claiming treats... 🎁");
+ try{
+  const {data,error}=await supabaseClient.rpc("claim_daily_login");
+  if(error)throw error;
+  setRewardStatus(data||"Success! You earned 20 treats! 🦴");await refreshTreats();
+ }catch(e){
+  const m=e.message||"Something went wrong.";
+  setRewardStatus(m.toLowerCase().includes("already claimed")?"You've already claimed your daily treats! Come back in 24 hours. 💗":"Couldn't claim treats: "+m);
+ }finally{b.disabled=!currentUser}
+});
+
+// Sign up
+$("signupForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!supabaseClient){setStatus("Supabase isn't configured.");return}
+ const username=$("signupUsername").value.trim(),email=$("signupEmail").value.trim(),password=$("signupPassword").value;
+ const b=e.currentTarget.querySelector('button[type="submit"]');
+ if(!/^[a-zA-Z0-9_-]{3,24}$/.test(username)){setStatus("Username must be 3–24 characters using letters, numbers, _ or -.");return}
+ b.disabled=true;setStatus("Creating your account... 💗");
+ try{
+  const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{username}}});
+  if(error)throw error;
+  if(!data.user)throw new Error("No account was returned.");
+  if(!data.session){setStatus("Account created! Confirm your email if required, then log in.");return}
+  const saved=await ensureProfile(data.user);setLoggedIn(data.user,saved);
+  setStatus("You're in! Welcome to Clickrfun 💗");showSection("chat");
+ }catch(err){setStatus("Sign-up failed: "+err.message)}
+ finally{b.disabled=false}
+});
+
+// Log in
+$("loginForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!supabaseClient){setStatus("Supabase isn't configured.");return}
+ const email=$("loginEmail").value.trim(),password=$("loginPassword").value;
+ const b=e.currentTarget.querySelector('button[type="submit"]');b.disabled=true;setStatus("Logging in... 🐾");
+ try{
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error)throw error;
+  const username=await ensureProfile(data.user);setLoggedIn(data.user,username);
+  setStatus("Welcome back, "+username+"! 🐾");showSection("chat");
+ }catch(err){setStatus("Login failed: "+err.message)}
+ finally{b.disabled=false}
+});
+
+// Log out
+$("logoutButton").addEventListener("click",async()=>{
+ if(!supabaseClient)return;
+ $("logoutButton").disabled=true;
+ try{
+  const {error}=await supabaseClient.auth.signOut();if(error)throw error;
+  setLoggedIn(null,null);showEmptyChat("Please log in to see the chat.");
+  setStatus("You've logged out. See you next time! 💗");showSection("welcome");
+ }catch(e){setStatus("Couldn't log out: "+e.message)}
+ finally{$("logoutButton").disabled=false}
+});
+
+// Send chat message
+$("messageForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(!supabaseClient||!currentUser||!currentUsername){setStatus("Please log in before sending a message.");showSection("account");return}
+ const input=$("messageInput"),content=input.value.trim();if(!content)return;
+ const b=$("sendButton");b.disabled=true;
+ try{
+  const {error}=await supabaseClient.from("messages").insert({
+   user_id:currentUser.id,username:currentUsername,content,room:currentRoom
+  });
+  if(error)throw error;
+  input.value="";await loadMessages();
+ }catch(err){setStatus("Message could not be sent: "+err.message)}
+ finally{b.disabled=!currentUser||!currentUsername}
+});
+
+// Start Supabase
+if(!window.supabase){
+ setStatus("Supabase failed to load. Refresh and try again.");
+}else{
+ supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+ });
+ restoreSession();
+ supabaseClient.auth.onAuthStateChange((event,session)=>{
+  if(event==="SIGNED_OUT"||!session){
+   setLoggedIn(null,null);showEmptyChat("Please log in to see the chat.");
+  }
+ });
+}
+</script>
+</body>
+</html>
+```
