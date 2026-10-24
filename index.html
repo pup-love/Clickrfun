@@ -95,6 +95,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <button id="themeQuickToggle" type="button" style="border:2px solid #ff9cde;border-radius:50px;padding:12px 14px;background:#e879c4;color:#28132f;font-weight:bold;cursor:pointer">🎨 Themes</button>
 <button id="soundToggle" type="button" style="border:2px solid #ff9cde;border-radius:50px;padding:12px 14px;background:#e879c4;color:#28132f;font-weight:bold;cursor:pointer">🔊 Sounds: ON</button>
 </div>
+<button type="button" onclick="showSection('support')" style="position:fixed;bottom:18px;left:18px;z-index:1002;border:2px solid #ff9cde;border-radius:50px;padding:12px 14px;background:#e879c4;color:#28132f;font-weight:bold;cursor:pointer">💗 Donate / Support</button>
 
 <div id="gamesPanel" class="games-panel hidden">
 <h2>🎮 Paw Arcade</h2>
@@ -1092,7 +1093,7 @@ async function viewMember(id){
  const socialTitle=document.createElement("h3");socialTitle.textContent="💞 Send some paw love!";
  const socialHelp=document.createElement("p");socialHelp.className="small";socialHelp.textContent="Boop or nuzzle them, or send a little toy/snack surprise!";
  const actions=document.createElement("div");actions.style.cssText="display:flex;flex-wrap:wrap;gap:6px;";
- [["👉","Boop","booped you! 👉💗"],["🐾","Nuzzle","gave you a cozy nuzzle! 🐾💕"],["🧸","Gift a toy","sent you a toy! 🧸"],["🍪","Gift a snack","sent you a yummy snack! 🍪"],["🌟","Gold Star gift","sent you a Gold Star gift! 🌟"]].forEach(([emoji,label,content])=>{
+ [["👉","Boop","booped you! 👉💗"],["🐾","Nuzzle","gave you a cozy nuzzle! 🐾💕"]].forEach(([emoji,label,content])=>{
   const action=document.createElement("button");action.type="button";action.textContent=emoji+" "+label;
   action.addEventListener("click",async()=>{
    if(!requireLogin())return;
@@ -1107,6 +1108,34 @@ async function viewMember(id){
   });
   actions.appendChild(action);
  });
+ const giftTitle=document.createElement("h3");giftTitle.textContent="🎁 Send a real gift";
+ const giftHelp=document.createElement("p");giftHelp.className="small";giftHelp.textContent="Choose one toy or snack from your inventory to send.";
+ const giftSelect=document.createElement("select");giftSelect.setAttribute("aria-label","Choose an item to gift");
+ const giftButton=document.createElement("button");giftButton.type="button";giftButton.textContent="🎁 Send selected gift";giftButton.disabled=true;
+ const giftStatus=document.createElement("p");giftStatus.className="small";giftStatus.textContent="Loading your inventory...";
+ try{
+  const ownedResult=await supabaseClient.from("inventory").select("item_id").eq("user_id",currentUser.id);
+  if(ownedResult.error)throw ownedResult.error;
+  const counts={};(ownedResult.data||[]).forEach(row=>{const key=String(row.item_id);counts[key]=(counts[key]||0)+1;});
+  if(!shopCache.length){const itemsResult=await supabaseClient.from("shop_items").select("id,name,emoji");if(itemsResult.error)throw itemsResult.error;shopCache=itemsResult.data||[];}
+  giftSelect.replaceChildren();
+  const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Choose an item you own...";giftSelect.appendChild(placeholder);
+  shopCache.filter(item=>counts[String(item.id)]>0).forEach(item=>{const option=document.createElement("option");option.value=String(item.id);option.textContent=(item.emoji||"🎁")+" "+item.name+" × "+counts[String(item.id)];giftSelect.appendChild(option);});
+  giftButton.disabled=giftSelect.options.length<2;
+  giftStatus.textContent=giftButton.disabled?"You don't have any shop items to gift yet.":"";
+ }catch(giftLoadError){giftStatus.textContent="Couldn't load inventory: "+giftLoadError.message;}
+ giftButton.addEventListener("click",async()=>{
+  if(!requireLogin()||!giftSelect.value)return;
+  giftButton.disabled=true;giftStatus.textContent="Sending your gift...";
+  try{
+   const transfer=await supabaseClient.rpc("gift_clickrfun_item",{p_item_id:giftSelect.value,p_recipient_id:id});
+   if(transfer.error)throw transfer.error;
+   const notice=await supabaseClient.from("private_messages").insert({sender_id:currentUser.id,receiver_id:id,recipient_id:id,content:"🎁 "+(currentUsername||"A friend")+" sent you a gift! 💗"});
+   if(notice.error)throw notice.error;
+   giftStatus.textContent="Gift sent! 🎁💗";giftSelect.selectedIndex=0;
+  }catch(giftError){giftStatus.textContent="Couldn't send gift: "+giftError.message;giftButton.disabled=false;}
+ });
+ social.append(giftTitle,giftHelp,giftSelect,giftButton,giftStatus);
  social.append(socialTitle,socialHelp,actions);container.appendChild(social);
 }
 
