@@ -950,7 +950,11 @@ $("enableMessageNotifications").addEventListener("click",async()=>{
   else status.textContent="Notifications are off. You can still see unread bubbles here. 💌";
  }catch(e){status.textContent="Couldn't enable notifications in this browser.";}
 });
+// Prevent overlapping inbox refreshes from appending duplicate conversation buttons.
+let privateInboxLoadVersion=0;
 async function loadPrivateInbox(){
+ const loadVersion=++privateInboxLoadVersion;
+ const requestedUserId=currentUser&&currentUser.id;
  const inbox=$("dmInbox");
  inbox.replaceChildren();
  if(!currentUser){
@@ -964,6 +968,7 @@ async function loadPrivateInbox(){
   .or("sender_id.eq."+currentUser.id+",recipient_id.eq."+currentUser.id)
   .order("created_at",{ascending:false}).limit(200);
 
+ if(loadVersion!==privateInboxLoadVersion||!currentUser||requestedUserId!==currentUser.id)return;
  if(error){
   $("dmStatus").textContent="Couldn't load private messages: "+error.message;
   return;
@@ -972,7 +977,7 @@ async function loadPrivateInbox(){
  const conversations=new Map();
  for(const message of(data||[])){
   const otherId=message.sender_id===currentUser.id?message.recipient_id:message.sender_id;
-  if(!conversations.has(otherId))conversations.set(otherId,message);
+  if(otherId&&otherId!==currentUser.id&&!conversations.has(otherId))conversations.set(otherId,message);
  }
 
  if(!conversations.size){
@@ -984,6 +989,7 @@ async function loadPrivateInbox(){
  const {data:profiles,error:profileError}=await supabaseClient.from("profiles")
   .select("id,username,account_type,bio").in("id",ids);
 
+ if(loadVersion!==privateInboxLoadVersion||!currentUser||requestedUserId!==currentUser.id)return;
  if(profileError){
   $("dmStatus").textContent="Couldn't load pup names: "+profileError.message;
   return;
@@ -995,16 +1001,21 @@ async function loadPrivateInbox(){
    unreadByPerson.set(message.sender_id,(unreadByPerson.get(message.sender_id)||0)+1);
   }
  }
+ // Render a single button per profile, even if the query returns repeated profile rows.
+ const renderedProfileIds=new Set();
  for(const profile of(profiles||[])){
+  if(!profile.id||renderedProfileIds.has(profile.id))continue;
+  renderedProfileIds.add(profile.id);
   const button=document.createElement("button");
   button.type="button";
   const unreadCount=unreadByPerson.get(profile.id)||0;
-  const dmType=accountTypeOf(profile,null); button.append(document.createTextNode("💌 "+(dmType==="human"?"🧑 Hooman · ":dmType==="kitty"?"🐱 Kitty · ":dmType==="owner"?"💗 Owner · ":"🐶 Puppy · ")+profile.username+" "));
+  const dmType=accountTypeOf(profile,null);
+  button.append(document.createTextNode("💌 "+(dmType==="human"?"🧑 Hooman · ":dmType==="kitty"?"🐱 Kitty · ":dmType==="owner"?"💗 Owner · ":"🐶 Puppy · ")+profile.username+" "));
   if(unreadCount){const bubble=document.createElement("span");bubble.className="dm-unread-bubble";bubble.textContent=String(unreadCount);bubble.setAttribute("aria-label",unreadCount+" unread");button.appendChild(bubble);}
   button.addEventListener("click",()=>openPrivateDM(profile.id,profile.username));
   inbox.appendChild(button);
  }
- await refreshDmNotifications(false);
+ if(loadVersion===privateInboxLoadVersion)await refreshDmNotifications(false);
 }
 
 // Only the newest conversation load may render. This prevents overlapping refresh/navigation
