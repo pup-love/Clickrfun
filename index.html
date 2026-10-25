@@ -486,6 +486,16 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required>
 <button type="submit">Log In 🐾</button>
 </form>
+<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px">
+ <button id="forgotPasswordButton" type="button">🔑 Forgot password?</button>
+ <button id="magicLinkButton" type="button">💌 Email me a magic login link</button>
+</div>
+<form id="newPasswordForm" class="hidden" style="margin-top:14px">
+ <h3>Choose a new password 🔐</h3>
+ <label for="newPasswordInput">New password</label>
+ <input id="newPasswordInput" type="password" minlength="6" autocomplete="new-password" placeholder="At least 6 characters" required>
+ <button type="submit">Save new password 💗</button>
+</form>
 <p id="status" role="status" aria-live="polite"></p>
 <button id="logoutButton" class="hidden" type="button">Log Out</button>
 </section>
@@ -1611,6 +1621,31 @@ $("loginForm").addEventListener("submit",async event=>{
  finally{button.disabled=false;}
 });
 
+/* PASSWORD HELP */
+const AUTH_REDIRECT_URL="https://pup-love.github.io/Clickrfun/";
+$("forgotPasswordButton").addEventListener("click",async()=>{
+ if(!supabaseClient){setStatus("Supabase isn't configured.");return;}
+ const email=$("loginEmail").value.trim();
+ if(!email){$("loginEmail").focus();setStatus("Enter your email address above first, then click Forgot password? 💗");return;}
+ const button=$("forgotPasswordButton");button.disabled=true;setStatus("Sending your password reset email... 💌");
+ try{const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:AUTH_REDIRECT_URL});if(error)throw error;setStatus("Password reset email sent! Check your inbox (and spam folder). 💗");}
+ catch(error){setStatus("Couldn't send reset email: "+error.message);}finally{button.disabled=false;}
+});
+$("magicLinkButton").addEventListener("click",async()=>{
+ if(!supabaseClient){setStatus("Supabase isn't configured.");return;}
+ const email=$("loginEmail").value.trim();
+ if(!email){$("loginEmail").focus();setStatus("Enter your email address above first, then click the magic link button. 💗");return;}
+ const button=$("magicLinkButton");button.disabled=true;setStatus("Sending your magic login link... 💌");
+ try{const {error}=await supabaseClient.auth.signInWithOtp({email,options:{emailRedirectTo:AUTH_REDIRECT_URL}});if(error)throw error;setStatus("Magic login link sent! Check your inbox (and spam folder). 💗");}
+ catch(error){setStatus("Couldn't send magic link: "+error.message);}finally{button.disabled=false;}
+});
+$("newPasswordForm").addEventListener("submit",async event=>{
+ event.preventDefault();if(!supabaseClient){setStatus("Supabase isn't configured.");return;}
+ const password=$("newPasswordInput").value;const button=event.currentTarget.querySelector('button[type="submit"]');button.disabled=true;setStatus("Updating your password... 🔐");
+ try{const {error}=await supabaseClient.auth.updateUser({password});if(error)throw error;$("newPasswordInput").value="";$("newPasswordForm").classList.add("hidden");setStatus("Password changed successfully! 💗");}
+ catch(error){setStatus("Couldn't update password: "+error.message);}finally{button.disabled=false;}
+});
+
 /* LOG OUT */
 $("logoutButton").addEventListener("click",async()=>{
  if(!supabaseClient)return;
@@ -2051,6 +2086,10 @@ if(!window.supabase){
  restoreSession();
  setInterval(()=>{if(currentUser)refreshDmNotifications(true);},20000);
  supabaseClient.auth.onAuthStateChange((event,session)=>{
+   if(event==="PASSWORD_RECOVERY"){
+    $("newPasswordForm").classList.remove("hidden");
+    setStatus("Password reset link verified. Choose a new password below. 🔐");
+   }
   if(event==="SIGNED_OUT"||!session){
    setLoggedIn(null,null);
    showEmptyChat("Please log in to see the chat.");
