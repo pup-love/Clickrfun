@@ -1539,13 +1539,22 @@ async function loadMessages(){
  // repeated rows in a response from creating duplicate bubbles on initial load.
  container.replaceChildren();
  const seenMessageIds=new Set();
+ const recentCopies=new Map();
  const uniqueMessages=[];
  for(const message of (data||[])){
+  // First deduplicate repeated copies of the exact same database row.
   if(message.id){
    const id=String(message.id);
    if(seenMessageIds.has(id))continue;
    seenMessageIds.add(id);
   }
+  // Also guard against duplicate records accidentally created for the same
+  // sender/text within a few seconds. Keep later repeated messages legitimate.
+  const timestamp=Date.parse(message.created_at||"");
+  const signature=JSON.stringify([message.user_id,message.username||"",message.content||"",message.room||room]);
+  const previous=recentCopies.get(signature);
+  if(Number.isFinite(timestamp)&&previous!==undefined&&timestamp>=previous&&timestamp-previous<=3000)continue;
+  if(Number.isFinite(timestamp))recentCopies.set(signature,timestamp);
   uniqueMessages.push(message);
  }
  if(!uniqueMessages.length)showEmptyChat("No messages yet. Be the first to say hi! 🐾");
