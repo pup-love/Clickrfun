@@ -1854,19 +1854,28 @@ $("logoutButton").addEventListener("click",async()=>{
 });
 
 /* SEND CHAT MESSAGE */
+let sendingChatMessage=false;
 $("messageForm").addEventListener("submit",async event=>{
  event.preventDefault();
+ if(sendingChatMessage)return;
  if(!supabaseClient||!currentUser||!currentUsername){
   setStatus("Please log in before sending a message.");showSection("account");return;
  }
  const input=$("messageInput");const content=input.value.trim();if(!content)return;
- const button=$("sendButton");button.disabled=true;
+ const button=$("sendButton");sendingChatMessage=true;button.disabled=true;
+ const senderId=currentUser.id;
+ const room=currentRoom;
  try{
-  const {error}=await supabaseClient.from("messages").insert({user_id:currentUser.id,username:currentUsername,content,room:currentRoom});
+  // Request the one inserted row and render it by its database ID. The realtime
+  // event may arrive first; addMessage() deduplicates both paths by that same ID.
+  const {data,error}=await supabaseClient.from("messages")
+   .insert({user_id:senderId,username:currentUsername,content,room})
+   .select("id,user_id,username,content,created_at,room").single();
   if(error)throw error;
-  input.value="";await loadMessages();
+  if(input.value.trim()===content)input.value="";
+  if(currentUser&&currentUser.id===senderId&&currentRoom===room&&$("chat")&&!$("chat").classList.contains("hidden"))addMessage(data);
  }catch(error){setStatus("Message could not be sent: "+error.message);}
- finally{button.disabled=!currentUser||!currentUsername;}
+ finally{sendingChatMessage=false;button.disabled=!currentUser||!currentUsername;}
 });
 
 /* PUPPY SOUNDS */
