@@ -451,7 +451,12 @@ hr{border:0;border-top:1px solid var(--cf-border)}
 <p class="small">Your own little bestie: choose a name, share treats, cuddle, and play together!</p>
 <div class="virtual-pet-card" id="virtualPetCard">
   <h3>🐶 Adopt Your Very Own Puppy! 💗</h3>
-  <p class="small">Give your little buddy a name, feed them treats, and give them lots of love!</p>
+  <p class="small">Choose your puppy breed, then give your little buddy a name!</p>
+  <div class="puppy-room-options breed-options" id="puppyBreedOptions" aria-label="Choose puppy breed">
+    <button type="button" data-puppy-breed="golden" class="selected">🐶 First Pup</button>
+    <button type="button" data-puppy-breed="dachshund">🌭 Wiener Dog</button>
+  </div>
+  <p class="small" id="puppyBreedDescription">Your original fluffy puppy 💛</p>
   <h3 id="virtualPetDisplayName" style="margin:8px 0 0">Your new bestie</h3>
   <p id="virtualPetAge" class="small" style="margin:2px 0 10px">Age: not adopted yet</p>
   <div class="puppy3d-wrap">
@@ -523,7 +528,13 @@ hr{border:0;border-top:1px solid var(--cf-border)}
 <p class="small">Your own little kitty friend: choose a name, share snacks, cuddle, and play together!</p>
 <div class="virtual-pet-card" id="virtualKittyCard" style="margin-top:24px;background:linear-gradient(135deg,#fff0f8,#f1e8ff,#e4f7ff)">
   <h3>🐱 Meet Your Virtual Kitty! 💗</h3>
-  <p class="small">Adopt a little kitty too! Name her or him, give cuddles, offer snacks, and play.</p>
+  <p class="small">Pick your kitty's coat style, then give them a name!</p>
+  <div class="puppy-room-options breed-options" id="kittyBreedOptions" aria-label="Choose kitty coat">
+    <button type="button" data-kitty-breed="orange" class="selected">🧡 Garfield Orange</button>
+    <button type="button" data-kitty-breed="grey">🐱 Grey &amp; White</button>
+    <button type="button" data-kitty-breed="charcoal">🖤 Black &amp; Grey</button>
+  </div>
+  <p class="small" id="kittyBreedDescription">Orange tabby with visible stripes 🧡</p>
   <h3 id="virtualKittyDisplayName" style="margin:8px 0 0">Your new kitty</h3>
   <p id="virtualKittyAge" class="small" style="margin:2px 0 10px">Age: not adopted yet</p>
   <div class="puppy3d-wrap"><div class="puppy3d-stage" id="virtualKitty3dStage" aria-label="Interactive 3D kitty play area"><div class="puppy3d-loading" id="virtualKitty3dLoading">🐾 Waking up your kitty's 3D world…</div></div><p class="puppy-photo-hint">BOOP MY NOSE! 🐱</p><div class="puppy-trick-controls" aria-label="Kitty tricks"><button type="button" data-kitty-action="walk">🚶 Walk</button><button type="button" data-kitty-action="sit">🪑 Sit</button><button type="button" data-kitty-action="purr">💗 Purr</button><button type="button" data-kitty-action="jump">⬆️ Jump</button><button type="button" data-kitty-action="spin">🌀 Spin</button><button type="button" data-kitty-action="loaf">🍞 Cat loaf</button></div><p class="small">Your own 3D kitty! Try a trick or give them a cuddle. ✨</p><h3>🏡 Decorate your kitty\u2019s room</h3><div class="puppy-room-options"><button type="button" data-kitty-room="bed">🛏️ Cozy bed</button><button type="button" data-kitty-room="garden">🌼 Flower garden</button><button type="button" data-kitty-room="space">🚀 Space room</button><button type="button" data-kitty-room="candy">🍬 Candy room</button></div><p id="virtualKittyRoomLabel" class="small">Room: Cozy bed</p><h3>🧸 Pick her favorite toy</h3><div class="puppy-room-options"><button type="button" data-kitty-toy="ball">🧶 Yarn ball</button><button type="button" data-kitty-toy="mouse">🐭 Toy mouse</button><button type="button" data-kitty-toy="fish">🐟 Plush fish</button><button type="button" data-kitty-toy="feather">🪶 Feather wand</button></div><p id="virtualKittyToyLabel" class="small">Favorite toy: Yarn ball</p></div><div id="virtualKittyAvatar" role="img" aria-label="Cute virtual kitty" style="display:none">🐱</div>
@@ -1931,7 +1942,7 @@ $("soundToggle").addEventListener("click",()=>{
 
 /* VIRTUAL PUPPY PET */
 const virtualPetKey="clickrfun-virtual-puppy-v1";
-const defaultVirtualPet={adopted:false,name:"",adoptedAt:0,happiness:3,fullness:5,emoji:"🐶",xp:0,level:1,room:"bed",toy:"ball",catches:0,bestCatches:0,dead:false,zeroSince:0};
+const defaultVirtualPet={adopted:false,name:"",breed:"golden",adoptedAt:0,happiness:3,fullness:5,emoji:"🐶",xp:0,level:1,room:"bed",toy:"ball",catches:0,bestCatches:0,dead:false,zeroSince:0};
 let virtualPet={...defaultVirtualPet};
 try{const savedPet=JSON.parse(localStorage.getItem(virtualPetKey)||"null");if(savedPet&&typeof savedPet==="object")virtualPet={...defaultVirtualPet,...savedPet};}catch(e){}
 function saveVirtualPet(){try{localStorage.setItem(virtualPetKey,JSON.stringify(virtualPet));}catch(e){}}
@@ -2004,13 +2015,22 @@ function renderVirtualPet(message){
  mood.textContent=!virtualPet.adopted?"Your puppy can't wait to meet you! ✨":virtualPet.happiness>=8?"So happy! "+virtualPet.name+" is doing happy wiggles! 💖":virtualPet.fullness<=2?"Rumble, rumble... "+virtualPet.name+" could use a treat! 🦴":"You're doing great together! 🐾";
  $("virtualPetMessage").textContent=message||(virtualPet.adopted?"Your bestie is saved on this device. Come back for more cuddles! 💗":"Adopt your puppy to start your little adventure!");
 }
+function choosePuppyBreed(breed){
+ if(!["golden","dachshund"].includes(breed))return;
+ virtualPet.breed=breed;saveVirtualPet();
+ document.querySelectorAll("[data-puppy-breed]").forEach(b=>b.classList.toggle("selected",b.dataset.puppyBreed===breed));
+ const desc=$("puppyBreedDescription");if(desc)desc.textContent=breed==="dachshund"?"Long little body, short legs, and floppy ears 🌭":"Your original fluffy puppy 💛";
+ if(window.clickrPuppySetBreed)window.clickrPuppySetBreed(breed);
+}
+document.querySelectorAll("[data-puppy-breed]").forEach(b=>b.addEventListener("click",()=>choosePuppyBreed(b.dataset.puppyBreed)));
+choosePuppyBreed(virtualPet.breed||"golden");
 $("virtualPetAdopt").addEventListener("click",()=>{
  const input=$("virtualPetNameInput"),name=input.value.trim();
  if(!name){$("virtualPetMessage").textContent="Pick a cute name for your puppy first! 💕";input.focus();return;}
  virtualPet.adopted=true;virtualPet.name=name.slice(0,20);virtualPet.adoptedAt=virtualPet.adoptedAt||Date.now();virtualPet.happiness=Math.max(virtualPet.happiness,3);virtualPet.fullness=Math.max(virtualPet.fullness,5);saveVirtualPet();playPuppySound("win");renderVirtualPet("YAY! "+virtualPet.name+" is officially part of your pack! 🎉🐶");
 });
 const virtualKittyKey="clickrfun_virtual_kitty_v1";
-const defaultVirtualKitty={adopted:false,name:"",adoptedAt:0,happiness:3,fullness:5,dead:false,zeroSince:0};
+const defaultVirtualKitty={adopted:false,name:"",breed:"orange",adoptedAt:0,happiness:3,fullness:5,dead:false,zeroSince:0};
 let virtualKitty={...defaultVirtualKitty};
 try{const savedKitty=JSON.parse(localStorage.getItem(virtualKittyKey)||"null");if(savedKitty&&typeof savedKitty==="object")virtualKitty={...defaultVirtualKitty,...savedKitty};}catch(e){}
 function saveVirtualKitty(){try{localStorage.setItem(virtualKittyKey,JSON.stringify(virtualKitty));}catch(e){}}
@@ -2043,6 +2063,16 @@ function renderVirtualKitty(message){
  $("virtualKittyNameInput").value=virtualKitty.adopted?virtualKitty.name:$("virtualKittyNameInput").value;
  if(window.setKitty3DAction)window.setKitty3DAction("idle");
 }
+function chooseKittyBreed(breed){
+ if(!["orange","grey","charcoal"].includes(breed))return;
+ virtualKitty.breed=breed;saveVirtualKitty();
+ document.querySelectorAll("[data-kitty-breed]").forEach(b=>b.classList.toggle("selected",b.dataset.kittyBreed===breed));
+ const desc=$("kittyBreedDescription");
+ if(desc)desc.textContent=breed==="orange"?"Orange tabby with visible stripes 🧡":breed==="grey"?"Soft grey coat with white chest and paws 🤍":"Charcoal-grey coat with a soft silver muzzle 🖤";
+ if(window.clickrKittySetBreed)window.clickrKittySetBreed(breed);
+}
+document.querySelectorAll("[data-kitty-breed]").forEach(b=>b.addEventListener("click",()=>chooseKittyBreed(b.dataset.kittyBreed)));
+chooseKittyBreed(virtualKitty.breed||"orange");
 $("virtualKittyAdopt").addEventListener("click",()=>{
  const input=$("virtualKittyNameInput"),name=input.value.trim();
  if(!name){$("virtualKittyMood").textContent="Choose a cute name for your kitty first! 💗";input.focus();return;}
@@ -2339,10 +2369,10 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   for(let i=0;i<18;i++){const a=i*2.399,r=2.15+(i%3)*.4;const x=Math.cos(a)*r,z=Math.sin(a)*r;const stem=new THREE.Mesh(new THREE.CylinderGeometry(.018,.025,.22,6),mat("#4d9b5c"));stem.position.set(x,.1,z);gardenFlowers.add(stem);for(let j=0;j<5;j++){ball(gardenFlowers,mat(i%2?"#ffcae2":"#fff5a5"),[x+Math.cos(j*1.256)*.07,.23,z+Math.sin(j*1.256)*.07],[.055,.035,.055]);}ball(gardenFlowers,mat("#f6b94a"),[x,.24,z],[.04,.035,.04]);}
   const puppy=new THREE.Group();scene.add(puppy);puppy.position.y=.95;puppy.rotation.y=-Math.PI/2;
   const body=new THREE.Group();body.position.y=-.95;puppy.add(body);
-  ball(body,gold,[0,.95,0],[.66,.39,.36]);
+  const dogBodyCoat=ball(body,gold,[0,.95,0],[.66,.39,.36]);
   ball(body,cream,[.15,.74,.055],[.37,.19,.29]);
   const headPivot=new THREE.Group();headPivot.position.set(.48,1.35,0);body.add(headPivot);
-  ball(headPivot,gold,[0,.12,0],[.35,.36,.33]);
+  const dogHeadCoat=ball(headPivot,gold,[0,.12,0],[.35,.36,.33]);
   ball(headPivot,cream,[.19,-.07,.012],[.205,.135,.205]);
   ball(headPivot,white,[.355,-.025,.02],[.085,.065,.105]);
   ball(headPivot,dark,[.43,-.005,.025],[.058,.043,.067]);
@@ -2359,6 +2389,18 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   ball(tailPivot,cream,[-.73,.34,0],[.14,.11,.11]);
   const legs=[];
   for(const x of [-.48,.48])for(const z of [-.26,.26]){const pivot=new THREE.Group();pivot.position.set(x,.72,z);body.add(pivot);ball(pivot,gold,[0,-.23,0],[.17,.34,.16]);ball(pivot,cream,[.035,-.43,.025],[.18,.1,.17]);legs.push(pivot);}
+  window.clickrPuppySetBreed=(breed)=>{
+   const long=breed==="dachshund";
+   gold.color.set(long?"#8b4b2b":"#d99a45");cream.color.set(long?"#e9bd8d":"#ffe0a6");earMat.color.set(long?"#60351f":"#9c5a2b");
+   dogBodyCoat.scale.set(long?.91:.66,long?.33:.39,long?.34:.36);
+   dogBodyCoat.position.x=long?-.02:0;dogHeadCoat.material.color.set(long?"#8b4b2b":"#d99a45");
+   headPivot.position.set(long?.56:.48,1.35,0);
+   ear1.scale.set(.15,long?.34:.27,.10);ear2.scale.set(.15,long?.34:.27,.10);
+   ear1.rotation.z=long?-.82:-.42;ear2.rotation.z=long?-.82:-.42;
+   legs.forEach(leg=>{leg.scale.y=long?.78:1;leg.position.x=long?(leg.position.x<0?-.53:.53):(leg.position.x<0?-.48:.48);});
+   tail.scale.x=long?.43:.48;
+  };
+  window.clickrPuppySetBreed(document.querySelector("[data-puppy-breed].selected")?.dataset.puppyBreed||"golden");
   // collar + little heart tag
   const collar=new THREE.Mesh(new THREE.TorusGeometry(.29,.055,8,28),mat("#f16eae"));collar.position.set(.39,1.13,0);collar.rotation.x=Math.PI/2;body.add(collar);
   const tag=ball(body,mat("#ffd64f"),[.66,1.02,0],[.09,.11,.045]);
@@ -2489,6 +2531,15 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   }
   const tailPivot=new THREE.Group();tailPivot.position.set(-.58,.83,0);body.add(tailPivot);const tail=ball(tailPivot,fur,[-.32,-.12,0],[.39,.13,.13]);tail.rotation.z=-.48;ball(tailPivot,patch,[-.62,-.29,0],[.12,.11,.11]);
   const legs=[];for(const x of [-.4,.4])for(const z of [-.25,.25]){const p=new THREE.Group();p.position.set(x,.55,z);body.add(p);ball(p,fur,[0,-.19,0],[.14,.29,.14]);ball(p,white,[.025,-.36,.02],[.16,.09,.15]);legs.push(p);}
+  window.clickrKittySetBreed=(breed)=>{
+   const coats={orange:{base:"#f28a2e",stripe:"#b94d19",white:"#fff0d2",eye:"#65b9a0"},grey:{base:"#858b9a",stripe:"#646b7b",white:"#f4f4f7",eye:"#72b7a5"},charcoal:{base:"#454854",stripe:"#292d36",white:"#aeb5c2",eye:"#d4b56d"}};
+   const p=coats[breed]||coats.orange;fur.color.set(p.base);patch.color.set(p.stripe);white.color.set(p.white);eye.color.set(p.eye);
+   coatCtx.fillStyle=p.base;coatCtx.fillRect(0,0,512,256);coatCtx.strokeStyle=p.stripe;coatCtx.lineWidth=13;coatCtx.lineCap="round";
+   for(let i=0;i<10;i++){const x=22+i*52;coatCtx.beginPath();coatCtx.moveTo(x+14,18);coatCtx.bezierCurveTo(x-8,72,x+32,112,x+7,160);coatCtx.stroke();coatCtx.beginPath();coatCtx.moveTo(x+32,170);coatCtx.bezierCurveTo(x+14,196,x+27,222,x+9,246);coatCtx.stroke();}
+   coatTexture.needsUpdate=true;bodyFur.map=coatTexture;bodyFur.needsUpdate=true;
+   document.querySelectorAll("[data-kitty-breed]").forEach(b=>b.classList.toggle("selected",b.dataset.kittyBreed===breed));
+  };
+  window.clickrKittySetBreed(document.querySelector("[data-kitty-breed].selected")?.dataset.kittyBreed||"orange");
   const collar=new THREE.Mesh(new THREE.TorusGeometry(.25,.045,8,28),mat("#f16eae"));collar.position.set(.3,1.08,0);collar.rotation.x=Math.PI/2;body.add(collar);ball(body,mat("#ffd66f"),[.52,.98,.03],[.065,.075,.045]);
   const idleY=-.04,faceUserY=-Math.PI/2;let action="idle",spin=0,jump=0,last=0,actionUntil=0,walkOrigin=0,currentRoom="bed",currentToy="ball",toyMesh=null,roomBits=[];
   window.setKitty3DAction=a=>{action=a||"idle";actionUntil=performance.now()+2200;if(action==="spin")spin=0;if(action==="jump")jump=0;if(action==="walk")walkOrigin=performance.now();if(action==="idle")actionUntil=0;};
