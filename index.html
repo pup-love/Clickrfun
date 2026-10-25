@@ -2086,7 +2086,31 @@ function virtualPetAction(action){
  }
  saveVirtualPet();
 }
-document.querySelectorAll("[data-puppy-action]").forEach(button=>button.addEventListener("click",()=>{const action=button.dataset.puppyAction;if(window.clickrPuppyAction)window.clickrPuppyAction(action);else $("virtualPetMessage").textContent="Your puppy is still waking up! Try again in a moment. 🐾";playPuppySound(action==="jump"||action==="spin"?"boing":action==="wag"?"yip":"bark");}));
+const dogBarkSound=$("pawSound");
+if(dogBarkSound){
+ dogBarkSound.addEventListener("error",()=>{
+  if(!dogBarkSound.dataset.fallbackTried){
+   dogBarkSound.dataset.fallbackTried="true";
+   dogBarkSound.src="https://raw.githubusercontent.com/pup-love/Clickrfun/main/mixkit-medium-size-angry-dog-bark-54.wav";
+   dogBarkSound.load();
+  }
+ });
+}
+function playRealDogBark(){
+ if(!puppySoundsOn)return;
+ const sound=$("pawSound");
+ if(sound){
+  try{sound.currentTime=0;const playback=sound.play();if(playback&&typeof playback.catch==="function")playback.catch(()=>playPuppySound("bark"));return;}catch(error){}
+ }
+ playPuppySound("bark");
+}
+document.querySelectorAll("[data-puppy-action]").forEach(button=>button.addEventListener("click",()=>{
+ const action=button.dataset.puppyAction;
+ if(window.clickrPuppyAction)window.clickrPuppyAction(action);
+ else $("virtualPetMessage").textContent="Your puppy is still waking up! Try again in a moment. 🐾";
+ if(action==="roll")playRealDogBark();
+ else playPuppySound(action==="jump"||action==="spin"?"boing":action==="wag"?"yip":"bark");
+}));
 $("puppy3dStage").addEventListener("click",event=>{if(event.target.closest("canvas")){if(window.clickrPuppyAction)window.clickrPuppyAction("boop");playPuppySound("bark");renderVirtualPet(virtualPet.adopted?virtualPet.name+" says WOOF! 🐶💗":"WOOF! Adopt me and let us be best friends! 🐾");}});
 $("virtualPetSleep").addEventListener("click",()=>{
  if(!virtualPet.adopted){$("virtualPetMessage").textContent="Adopt your puppy first! 💗";return;}
