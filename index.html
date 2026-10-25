@@ -1032,9 +1032,20 @@ async function loadPrivateMessages(){
   return;
  }
 
+ // Hide accidental duplicate rows from the database. Match only the same sender,
+ // recipient and exact text sent within 2 seconds; separate later messages remain visible.
+ const recentBySignature=new Map();
  for(const message of data){
+  const signature=JSON.stringify([message.sender_id,message.recipient_id,message.content]);
+  const timestamp=Date.parse(message.created_at);
+  const previousTimestamp=recentBySignature.get(signature);
+  if(Number.isFinite(timestamp)&&previousTimestamp!==undefined&&timestamp-previousTimestamp>=0&&timestamp-previousTimestamp<=2000){
+   continue;
+  }
+  if(Number.isFinite(timestamp))recentBySignature.set(signature,timestamp);
   const box=document.createElement("div");
   box.className="message";
+  if(message.id)box.dataset.messageId=message.id;
   const heading=document.createElement("strong");
   heading.textContent=message.sender_id===currentUser.id?"You":activeDmUsername;
   const body=document.createElement("p");
