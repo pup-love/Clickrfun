@@ -15,7 +15,7 @@
 <button type="button" id="pencil" class="active">✏️ Pencil</button><button type="button" id="eraser">🧽 Eraser</button>
 <label>🎨 Color <input id="color" type="color" value="#d94fa8" aria-label="Brush color"></label>
 <label>🖌️ Size <input id="size" type="range" min="2" max="32" value="6"><span id="sizeLabel">6</span></label>
-<button type="button" id="undo">↩️ Undo last stroke</button><button type="button" id="share">💌 Share doodle (save image)</button><button type="button" id="clear">🧹 Clear my board</button>
+<button type="button" id="undo">↩️ Undo last stroke</button><button type="button" id="share">💌 Share doodle (save image)</button><button type="button" id="sendInDM">💌 Send in Clickrfun DM</button><button type="button" id="clear">🧹 Clear my board</button>
 </div>
 <canvas id="board" aria-label="Shared drawing canvas"></canvas>
 <p id="status" role="status">Connecting to the shared doodle board…</p>
@@ -43,7 +43,9 @@ function setTool(next){tool=next;document.getElementById("pencil").classList.tog
 sizeInput.oninput=()=>sizeLabel.textContent=sizeInput.value;
 document.getElementById("undo").onclick=()=>{if(!strokes.length){say("Nothing to undo yet.");return}strokes.pop();savePrivate();redraw();say("Last stroke undone. 💗")};
 document.getElementById("clear").onclick=()=>{if(!confirm("Clear your private doodle on this device? This cannot be undone."))return;strokes=[];savePrivate();redraw();say("Your private board is clear. Start a fresh doodle! 🐾")};
-document.getElementById("share").onclick=()=>{const exportCanvas=document.createElement("canvas");exportCanvas.width=canvas.width;exportCanvas.height=canvas.height;const exportCtx=exportCanvas.getContext("2d");exportCtx.fillStyle="#ffffff";exportCtx.fillRect(0,0,exportCanvas.width,exportCanvas.height);exportCtx.drawImage(canvas,0,0);const link=document.createElement("a");link.download="my-clickrfun-doodle.png";link.href=exportCanvas.toDataURL("image/png");link.click();say("Image saved! You decide who to send it to. 💌")};
+function makeShareImage(){const exportCanvas=document.createElement("canvas");const scale=Math.min(1,900/canvas.width);exportCanvas.width=Math.max(1,Math.round(canvas.width*scale));exportCanvas.height=Math.max(1,Math.round(canvas.height*scale));const exportCtx=exportCanvas.getContext("2d");exportCtx.fillStyle="#ffffff";exportCtx.fillRect(0,0,exportCanvas.width,exportCanvas.height);exportCtx.drawImage(canvas,0,0,exportCanvas.width,exportCanvas.height);return exportCanvas.toDataURL("image/jpeg",0.78)}
+document.getElementById("share").onclick=()=>{const link=document.createElement("a");link.download="my-clickrfun-doodle.jpg";link.href=makeShareImage();link.click();say("Image saved! You decide who to send it to. 💌")};
+document.getElementById("sendInDM").onclick=()=>{try{localStorage.setItem("clickrfun_pending_doodle_dm_v1",makeShareImage());say("Doodle ready to send! Opening Clickrfun — choose a DM and tap “Send saved doodle”. 💌");window.location.href="https://pup-love.github.io/Clickrfun/#privateDMs"}catch(e){say("Couldn't prepare the image. Try saving it with Share doodle instead.")}};
 try{const saved=localStorage.getItem(STORAGE_KEY);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))strokes=parsed}}catch(e){}
 window.addEventListener("resize",resizeCanvas);resizeCanvas();say("🔒 Private board ready! Only saved in this browser. Have fun doodling! 💗");
 </script>
