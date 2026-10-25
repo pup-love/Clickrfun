@@ -2385,13 +2385,19 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   ball(headPivot,cream,[.19,-.07,.012],[.205,.135,.205]);
   ball(headPivot,white,[.355,-.025,.02],[.085,.065,.105]);
   ball(headPivot,dark,[.43,-.005,.025],[.058,.043,.067]);
-  // Eyes on the camera-facing side and far side.
-  ball(headPivot,eyeMat,[.29,.18,.14],[.045,.055,.032]);
-  ball(headPivot,eyeMat,[.29,.18,-.14],[.045,.055,.032]);
-  ball(headPivot,white,[.312,.20,.151],[.014,.016,.01]);
-  ball(headPivot,white,[.312,.20,-.151],[.014,.016,.01]);
-  const ear1=ball(headPivot,earMat,[-.16,.405,.245],[.15,.27,.10]);ear1.rotation.z=-.42;
-  const ear2=ball(headPivot,earMat,[-.16,.405,-.245],[.15,.27,.10]);ear2.rotation.z=-.42;
+  // Big glossy eyes and soft floppy ears for a friendly puppy face.
+  ball(headPivot,eyeMat,[.30,.19,.145],[.067,.078,.043]);
+  ball(headPivot,eyeMat,[.30,.19,-.145],[.067,.078,.043]);
+  ball(headPivot,white,[.337,.222,.163],[.023,.026,.014]);
+  ball(headPivot,white,[.337,.222,-.127],[.023,.026,.014]);
+  const ear1=ball(headPivot,earMat,[-.13,.245,.255],[.17,.29,.125]);ear1.rotation.z=-.58;
+  const ear2=ball(headPivot,earMat,[-.13,.245,-.255],[.17,.29,.125]);ear2.rotation.z=-.58;
+  const earInner1=ball(headPivot,pink,[-.055,.20,.342],[.07,.17,.018]);earInner1.rotation.z=-.58;
+  const earInner2=ball(headPivot,pink,[-.055,.20,-.342],[.07,.17,.018]);earInner2.rotation.z=-.58;
+  const fluff=[];
+  for(const [x,y,z,s] of [[-.25,.12,.20,.085],[-.25,.12,-.20,.085],[-.14,.35,.20,.07],[-.14,.35,-.20,.07],[.02,.40,.12,.055],[.02,.40,-.12,.055]]){
+   fluff.push(ball(headPivot,gold,[x,y,z],[s,s*.8,s*.7]));
+  }
   ball(headPivot,pink,[.31,-.18,.11],[.085,.04,.025]);
   const tailPivot=new THREE.Group();tailPivot.position.set(-.69,1.12,0);body.add(tailPivot);
   const tail=ball(tailPivot,gold,[-.34,.18,0],[.48,.13,.13]);tail.rotation.z=-.32;
@@ -2404,10 +2410,13 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
    dogBodyCoat.scale.set(long?.83:.66,long?.255:.39,long?.29:.36);
    dogBodyCoat.position.x=long?-.02:0;dogHeadCoat.material.color.set(long?"#8b4b2b":"#d99a45");
    headPivot.position.set(long?.53:.48,1.35,0);
-   ear1.scale.set(.17,long?.39:.27,.105);ear2.scale.set(.17,long?.39:.27,.105);
-   ear1.rotation.z=long?-.12:-.42;ear2.rotation.z=long?-.12:-.42;
-   ear1.position.set(-.18,.34,.245);ear2.position.set(-.18,.34,-.245);
-   legs.forEach(leg=>{leg.scale.y=long?.78:1;leg.position.x=long?(leg.position.x<0?-.53:.53):(leg.position.x<0?-.48:.48);});
+   ear1.scale.set(long?.19:.17,long?.43:.32,long?.12:.125);ear2.scale.set(long?.19:.17,long?.43:.32,long?.12:.125);
+   ear1.rotation.z=long?-.72:-.58;ear2.rotation.z=long?-.72:-.58;
+   ear1.position.set(long?-.17:-.13,long?.16:.23,.255);ear2.position.set(long?-.17:-.13,long?.16:.23,-.255);
+   earInner1.position.set(long?-.08:-.055,long?.13:.20,.342);earInner2.position.set(long?-.08:-.055,long?.13:.20,-.342);
+   earInner1.scale.set(.075,long?.22:.17,.018);earInner2.scale.set(.075,long?.22:.17,.018);
+   fluff.forEach(tuft=>{tuft.visible=!long;});
+   legs.forEach(leg=>{leg.scale.y=long?.72:1;leg.position.x=long?(leg.position.x<0?-.53:.53):(leg.position.x<0?-.48:.48);});
    tail.scale.x=long?.43:.48;
   };
   window.clickrPuppySetBreed(document.querySelector("[data-puppy-breed].selected")?.dataset.puppyBreed||"golden");
@@ -2507,16 +2516,16 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   const head=new THREE.Group();head.position.set(.34,1.28,0);body.add(head);ball(head,fur,[0,.1,0],[.46,.39,.38]);
   const earL=ball(head,fur,[-.27,.405,.18],[.145,.19,.105]);earL.rotation.z=-.22;const earR=ball(head,fur,[-.27,.405,-.18],[.145,.19,.105]);earR.rotation.z=-.22;
   ball(head,inner,[-.255,.415,.205],[.068,.105,.022]);ball(head,inner,[-.255,.415,-.205],[.068,.105,.022]);
-  // Clearly visible dark-orange tabby stripes across the forehead and both cheeks.
-  for(const side of [-1,1]){
-   for(const [x,y,z,rx,ry] of [[-.21,.34,.185,.028,.105],[-.08,.37,.205,.026,.12],[.055,.33,.195,.024,.095]]){const stripe=ball(head,patch,[x,y,side*z],[rx,ry,.008]);stripe.rotation.z=-.24;}
+  // Three clear tabby marks across the visible forehead.
+  for(const z of [-.15,0,.15]){
+   const stripe=ball(head,patch,[.31,.405,z],[.025,.095,.018]);stripe.rotation.z=-.18;
   }
-  // Small, soft kitten eyes that sit naturally in the face.
+  // Big round kitten eyes, oversized pupils, and glossy catchlights.
   for(const side of [-1,1]){
-   ball(head,eye,[.405,.18,side*.176],[.072,.084,.045]);
-   ball(head,dark,[.435,.18,side*.196],[.039,.052,.025]);
-   ball(head,white,[.451,.213,side*.211],[.018,.021,.012]);
-   ball(head,white,[.452,.194,side*.213],[.008,.009,.006]);
+   ball(head,eye,[.408,.17,side*.175],[.112,.122,.064]);
+   ball(head,dark,[.454,.17,side*.191],[.061,.078,.036]);
+   ball(head,white,[.478,.218,side*.207],[.027,.03,.016]);
+   ball(head,white,[.481,.184,side*.213],[.012,.014,.009]);
   }
   // Two small muzzle puffs keep the snout soft and proportionate.
   ball(head,white,[.405,-.045,.075],[.105,.085,.105]);
