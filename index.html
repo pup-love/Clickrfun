@@ -1255,9 +1255,10 @@ function syncOwnerProfileFields(){
  const selectedType=$("profileAccountType").value;
  const owner=selectedType==="owner";
  const kitty=selectedType==="kitty";
+ const human=selectedType==="human";
  $("ownerPuppiesWrap").classList.toggle("hidden",!owner);
- $("myProfileHeading").textContent=owner?"💗 My Owner Profile":kitty?"🐱 My Kitty Profile":"🐶 My Puppy Profile";
- $("profileLook").textContent=owner?"💗 Owner":kitty?"🐱 Kitty":"🐶 Puppy";
+ $("myProfileHeading").textContent=owner?"💗 My Owner Profile":kitty?"🐱 My Kitty Profile":human?"🧑 My Hooman Profile":"🐶 My Puppy Profile";
+ $("profileLook").textContent=owner?"💗 Owner":kitty?"🐱 Kitty":human?"🧑 Hooman":"🐶 Puppy";
 }
 $("profileAccountType").addEventListener("change",syncOwnerProfileFields);
 
