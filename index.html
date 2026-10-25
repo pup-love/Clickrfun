@@ -1007,7 +1007,12 @@ async function loadPrivateInbox(){
  await refreshDmNotifications(false);
 }
 
+// Only the newest conversation load may render. This prevents overlapping refresh/navigation
+// requests from appending the same history twice.
+let privateMessagesLoadVersion=0;
 async function loadPrivateMessages(){
+ const loadVersion=++privateMessagesLoadVersion;
+ const requestedUserId=activeDmUserId;
  const container=$("dmMessages");
  container.replaceChildren();
 
@@ -1020,6 +1025,10 @@ async function loadPrivateMessages(){
   .select("id,sender_id,recipient_id,content,created_at")
   .or("and(sender_id.eq."+currentUser.id+",recipient_id.eq."+activeDmUserId+"),and(sender_id.eq."+activeDmUserId+",recipient_id.eq."+currentUser.id+")")
   .order("created_at",{ascending:true}).limit(200);
+
+ // Ignore this result if another load started while the query was in flight,
+ // or if the user switched to a different conversation.
+ if(loadVersion!==privateMessagesLoadVersion||requestedUserId!==activeDmUserId)return;
 
  if(error){
   $("dmStatus").textContent="Couldn't load conversation: "+error.message;
