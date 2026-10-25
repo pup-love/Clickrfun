@@ -453,10 +453,10 @@ hr{border:0;border-top:1px solid var(--cf-border)}
   <h3>🐶 Adopt Your Very Own Puppy! 💗</h3>
   <p class="small">Choose your puppy breed, then give your little buddy a name!</p>
   <div class="puppy-room-options breed-options" id="puppyBreedOptions" aria-label="Choose puppy breed">
-    <button type="button" data-puppy-breed="golden" class="selected">🐶 First Pup</button>
+    <button type="button" data-puppy-breed="golden" class="selected">🐶 First Dog</button>
     <button type="button" data-puppy-breed="dachshund">🌭 Wiener Dog</button>
   </div>
-  <p class="small" id="puppyBreedDescription">Your original fluffy puppy 💛</p>
+  <p class="small" id="puppyBreedDescription">Golden &amp; shaggy 💛</p>
   <h3 id="virtualPetDisplayName" style="margin:8px 0 0">Your new bestie</h3>
   <p id="virtualPetAge" class="small" style="margin:2px 0 10px">Age: not adopted yet</p>
   <div class="puppy3d-wrap">
@@ -2019,7 +2019,7 @@ function choosePuppyBreed(breed){
  if(!["golden","dachshund"].includes(breed))return;
  virtualPet.breed=breed;saveVirtualPet();
  document.querySelectorAll("[data-puppy-breed]").forEach(b=>b.classList.toggle("selected",b.dataset.puppyBreed===breed));
- const desc=$("puppyBreedDescription");if(desc)desc.textContent=breed==="dachshund"?"Long little body, short legs, and floppy ears 🌭":"Your original fluffy puppy 💛";
+ const desc=$("puppyBreedDescription");if(desc)desc.textContent=breed==="dachshund"?"Slim, long little body, short legs, and floppy ears 🌭":"Golden & shaggy 💛";
  if(window.clickrPuppySetBreed)window.clickrPuppySetBreed(breed);
 }
 document.querySelectorAll("[data-puppy-breed]").forEach(b=>b.addEventListener("click",()=>choosePuppyBreed(b.dataset.puppyBreed)));
@@ -2392,11 +2392,12 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   window.clickrPuppySetBreed=(breed)=>{
    const long=breed==="dachshund";
    gold.color.set(long?"#8b4b2b":"#d99a45");cream.color.set(long?"#e9bd8d":"#ffe0a6");earMat.color.set(long?"#60351f":"#9c5a2b");
-   dogBodyCoat.scale.set(long?.91:.66,long?.33:.39,long?.34:.36);
+   dogBodyCoat.scale.set(long?.83:.66,long?.255:.39,long?.29:.36);
    dogBodyCoat.position.x=long?-.02:0;dogHeadCoat.material.color.set(long?"#8b4b2b":"#d99a45");
-   headPivot.position.set(long?.56:.48,1.35,0);
-   ear1.scale.set(.15,long?.34:.27,.10);ear2.scale.set(.15,long?.34:.27,.10);
-   ear1.rotation.z=long?-.82:-.42;ear2.rotation.z=long?-.82:-.42;
+   headPivot.position.set(long?.53:.48,1.35,0);
+   ear1.scale.set(.17,long?.39:.27,.105);ear2.scale.set(.17,long?.39:.27,.105);
+   ear1.rotation.z=long?-.12:-.42;ear2.rotation.z=long?-.12:-.42;
+   ear1.position.set(-.18,.34,.245);ear2.position.set(-.18,.34,-.245);
    legs.forEach(leg=>{leg.scale.y=long?.78:1;leg.position.x=long?(leg.position.x<0?-.53:.53):(leg.position.x<0?-.48:.48);});
    tail.scale.x=long?.43:.48;
   };
@@ -2503,9 +2504,10 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   }
   // Small, soft kitten eyes that sit naturally in the face.
   for(const side of [-1,1]){
-   ball(head,eye,[.405,.18,side*.176],[.046,.061,.033]);
-   ball(head,dark,[.426,.18,side*.19],[.022,.043,.017]);
-   ball(head,white,[.439,.204,side*.198],[.010,.013,.008]);
+   ball(head,eye,[.405,.18,side*.176],[.072,.084,.045]);
+   ball(head,dark,[.435,.18,side*.196],[.039,.052,.025]);
+   ball(head,white,[.451,.213,side*.211],[.018,.021,.012]);
+   ball(head,white,[.452,.194,side*.213],[.008,.009,.006]);
   }
   // Two small muzzle puffs keep the snout soft and proportionate.
   ball(head,white,[.405,-.045,.075],[.105,.085,.105]);
