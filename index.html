@@ -550,7 +550,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <h2>🔎 Find Pups, Kitties & Owners</h2>
 <p class="small">Meet puppies or find their owners. Owners can list the puppies they own on their own profile.</p>
 <label for="memberTypeFilter">Who are you looking for?</label>
-<select id="memberTypeFilter"><option value="puppy">🐶 Puppies</option><option value="kitty">🐱 Kitties</option><option value="owner">💗 Owners</option><option value="all">🐾 Everyone</option></select>
+<select id="memberTypeFilter"><option value="puppy">🐶 Puppies</option><option value="kitty">🐱 Kitties</option><option value="owner">💗 Owners</option><option value="human">🧑 Hoomans</option><option value="all">🐾 Everyone</option></select>
 <form id="searchForm"><input id="memberSearch" maxlength="40" placeholder="Username or member ID" required><button type="submit">Search 🐾</button></form>
 <div id="memberResults"></div>
 </section>
@@ -1249,7 +1249,7 @@ function addMessage(message){
 }
 function accountTypeOf(profile,user){
  const type=(profile&&profile.account_type)||(user&&user.user_metadata&&user.user_metadata.account_type);
- return ["owner","kitty"].includes(type)?type:"puppy";
+ return ["owner","kitty","human"].includes(type)?type:"puppy";
 }
 function syncOwnerProfileFields(){
  const selectedType=$("profileAccountType").value;
@@ -1464,7 +1464,7 @@ $("searchForm").addEventListener("submit",async event=>{
  if(!results.length){container.textContent="No other pups found. Try another username or ID!";return;}
  results.forEach(profile=>{
   const box=document.createElement("div");box.className="member";
-  const name=document.createElement("strong");name.textContent=(accountTypeOf(profile,null)==="owner"?"💗 Owner · ":accountTypeOf(profile,null)==="kitty"?"🐱 Kitty · ":"🐶 Puppy · ")+profile.username;
+  const type=accountTypeOf(profile,null); const name=document.createElement("strong");name.textContent=(type==="owner"?"💗 Owner · ":type==="kitty"?"🐱 Kitty · ":type==="human"?"🧑 Hooman · ":"🐶 Puppy · ")+profile.username;
   makeMemberNameClickable(name,profile.id,profile.username);
   const id=document.createElement("p");id.className="profile-id";id.textContent=profile.profile_id||"";
   const button=document.createElement("button");button.textContent="Visit Profile";button.addEventListener("click",()=>viewMember(profile.id));
@@ -1483,7 +1483,7 @@ async function viewMember(id){
  }
  container.replaceChildren();
  const look=document.createElement("div");look.id="profileLook";look.textContent=lookFor(data.equipped_items||[]);
- const name=document.createElement("h3");name.textContent=(accountTypeOf(data,null)==="owner"?"💗 Owner · ":accountTypeOf(data,null)==="kitty"?"🐱 Kitty · ":"🐶 Puppy · ")+data.username;
+ const type=accountTypeOf(data,null); const name=document.createElement("h3");name.textContent=(type==="owner"?"💗 Owner · ":type==="kitty"?"🐱 Kitty · ":type==="human"?"🧑 Hooman · ":"🐶 Puppy · ")+data.username;
  const pid=document.createElement("p");pid.className="profile-id";pid.textContent=data.profile_id||"";
  const bio=document.createElement("p");bio.textContent=data.bio||"This pup hasn't written a bio yet. 💗";
  const starCounter=document.createElement("p");starCounter.className="profile-id";starCounter.textContent="🌟 Gold Stars: counting...";
