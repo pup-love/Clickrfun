@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clickrfun Doodle Den 🖍️</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:18px;font-family:Arial,sans-serif;background:#180d27;color:#fff0fb}main{max-width:1100px;margin:auto}.card{background:#2b173b;border:1px solid #70416e;border-radius:20px;padding:18px;box-shadow:0 8px 24px #09051066}h1{margin-top:0;color:#ff9cde}p{line-height:1.5}.toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:12px 0}button,a{font:inherit}button,.link{border:0;border-radius:12px;padding:10px 14px;background:#e779c7;color:#30132d;font-weight:bold;cursor:pointer;text-decoration:none}button.active{outline:3px solid #fff0fb}button:disabled{opacity:.55;cursor:wait}label{display:flex;align-items:center;gap:7px;background:#442451;padding:8px 10px;border-radius:12px}input[type=range]{width:100px}#board{display:block;width:100%;height:min(65vh,620px);min-height:320px;background:#fff;border-radius:14px;touch-action:none;cursor:crosshair;border:3px solid #e779c7}#status{min-height:1.4em;color:#ffc6ed}.small{font-size:.92rem;color:#e5cce7}.top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+</style>
+</head>
+<body><main>
+<div class="card">
+<div class="top"><div><h1>🖍️ Clickrfun Doodle Den</h1><p>Draw together, doodle silly things, and leave a little pawprint for the next person. 💗</p></div><a class="link" href="https://pup-love.github.io/Clickrfun/">← Back to Clickrfun</a></div>
+<div class="toolbar" aria-label="Drawing tools">
+<button type="button" id="pencil" class="active">✏️ Pencil</button><button type="button" id="eraser">🧽 Eraser</button>
+<label>🎨 Color <input id="color" type="color" value="#d94fa8" aria-label="Brush color"></label>
+<label>🖌️ Size <input id="size" type="range" min="2" max="32" value="6"><span id="sizeLabel">6</span></label>
+<button type="button" id="undo">↩️ Undo my last stroke</button><button type="button" id="clear">🧹 Clear shared board</button>
+</div>
+<canvas id="board" aria-label="Shared drawing canvas"></canvas>
+<p id="status" role="status">Connecting to the shared doodle board…</p>
+<p class="small">This is a public board: everyone can see drawings and clear the canvas. Please don't write personal information here. The board syncs when the Supabase table is set up below.</p>
+</div>
+</main>
+<script>
+const SUPABASE_URL="https://fbrecutmmotwnsqzxaxv.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_uDxX8PVStNcE56hQx0ShpQ_XUxx9Z1g";
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const canvas=document.getElementById("board"),ctx=canvas.getContext("2d"),status=document.getElementById("status");
+const colorInput=document.getElementById("color"),sizeInput=document.getElementById("size"),sizeLabel=document.getElementById("sizeLabel");
+let tool="pencil",drawing=false,currentPoints=[],strokes=[],strokeStartCount=0,channel=null;
+function say(message){status.textContent=message}
+function resizeCanvas(){const old=document.createElement("canvas");old.width=canvas.width;old.height=canvas.height;old.getContext("2d").drawImage(canvas,0,0);const rect=canvas.getBoundingClientRect();const dpr=Math.max(1,window.devicePixelRatio||1);canvas.width=Math.round(rect.width*dpr);canvas.height=Math.round(rect.height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);ctx.lineCap="round";ctx.lineJoin="round";redraw();if(old.width&&old.height&&!strokes.length)ctx.drawImage(old,0,0,old.width,old.height,0,0,rect.width,rect.height)}
+function redraw(){const rect=canvas.getBoundingClientRect();ctx.clearRect(0,0,rect.width,rect.height);ctx.fillStyle="#ffffff";ctx.fillRect(0,0,rect.width,rect.height);for(const stroke of strokes)drawStroke(stroke)}
+function drawStroke(stroke){const pts=stroke.points||[];if(!pts.length)return;const w=canvas.clientWidth,h=canvas.clientHeight;ctx.save();ctx.strokeStyle=stroke.color||"#d94fa8";ctx.fillStyle=ctx.strokeStyle;ctx.lineWidth=Number(stroke.brush_size)||6;ctx.lineCap="round";ctx.lineJoin="round";if(pts.length===1){ctx.beginPath();ctx.arc(pts[0][0]*w,pts[0][1]*h,ctx.lineWidth/2,0,Math.PI*2);ctx.fill()}else{ctx.beginPath();ctx.moveTo(pts[0][0]*w,pts[0][1]*h);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0]*w,pts[i][1]*h);ctx.stroke()}ctx.restore()}
+function pointerPoint(e){const r=canvas.getBoundingClientRect();return [Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)),Math.max(0,Math.min(1,(e.clientY-r.top)/r.height))]}
+canvas.addEventListener("pointerdown",e=>{if(!client){return}drawing=true;currentPoints=[pointerPoint(e)];canvas.setPointerCapture(e.pointerId);drawStroke({points:currentPoints,color:tool==="eraser"?"#ffffff":colorInput.value,brush_size:tool==="eraser"?Math.max(18,Number(sizeInput.value)*2):Number(sizeInput.value)})});
+canvas.addEventListener("pointermove",e=>{if(!drawing)return;currentPoints.push(pointerPoint(e));redraw();drawStroke({points:currentPoints,color:tool==="eraser"?"#ffffff":colorInput.value,brush_size:tool==="eraser"?Math.max(18,Number(sizeInput.value)*2):Number(sizeInput.value)})});
+async function finishStroke(){if(!drawing)return;drawing=false;if(!currentPoints.length)return;const row={points:currentPoints,color:tool==="eraser"?"#ffffff":colorInput.value,brush_size:tool==="eraser"?Math.max(18,Number(sizeInput.value)*2):Number(sizeInput.value)};currentPoints=[];try{const {data,error}=await client.from("drawing_strokes").insert(row).select("id,points,color,brush_size,created_at").single();if(error)throw error;if(!strokes.some(x=>x.id===data.id)){strokes.push(data);redraw()}say("Your doodle is shared! 🐾")}catch(error){say("Couldn't save stroke yet: "+error.message+" — check the setup instructions below.");}}
+canvas.addEventListener("pointerup",finishStroke);canvas.addEventListener("pointercancel",finishStroke);
+document.getElementById("pencil").onclick=()=>setTool("pencil");document.getElementById("eraser").onclick=()=>setTool("eraser");
+function setTool(next){tool=next;document.getElementById("pencil").classList.toggle("active",next==="pencil");document.getElementById("eraser").classList.toggle("active",next==="eraser")}
+sizeInput.oninput=()=>sizeLabel.textContent=sizeInput.value;
+document.getElementById("undo").onclick=async()=>{const mine=strokes[strokes.length-1];if(!mine){say("Nothing to undo yet.");return}if(!confirm("Undo the most recent stroke on the shared board?"))return;const {error}=await client.from("drawing_strokes").delete().eq("id",mine.id);if(error){say("Couldn't undo: "+error.message);return}strokes=strokes.filter(x=>x.id!==mine.id);redraw();say("Last stroke removed.")}
+document.getElementById("clear").onclick=async()=>{if(!confirm("Clear the entire shared board for everyone? This cannot be undone."))return;const {error}=await client.from("drawing_strokes").delete().gte("id",0);if(error){say("Couldn't clear board: "+error.message);return}strokes=[];redraw();say("The shared board is clear. Start a fresh doodle!")}
+async function loadBoard(){const {data,error}=await client.from("drawing_strokes").select("id,points,color,brush_size,created_at").order("id",{ascending:true}).limit(500);if(error){say("Board setup needed: "+error.message);return}strokes=data||[];redraw();say("You're connected! Draw something cute. 💗");channel=client.channel("clickrfun-shared-drawing").on("postgres_changes",{event:"*",schema:"public",table:"drawing_strokes"},payload=>{if(payload.eventType==="INSERT"){if(!strokes.some(s=>s.id===payload.new.id))strokes.push(payload.new);redraw()}else if(payload.eventType==="DELETE"){strokes=strokes.filter(s=>s.id!==payload.old.id);redraw()}}).subscribe(state=>{if(state==="SUBSCRIBED")say("Live sync connected! Draw with everyone. 💗");else if(state==="CHANNEL_ERROR")say("Live sync couldn't connect. Check Supabase Realtime setup.")})}
+window.addEventListener("resize",resizeCanvas);resizeCanvas();loadBoard();
+</script>
+</body></html>
