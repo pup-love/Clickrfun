@@ -589,7 +589,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </main>
 
 
-<audio id="backgroundMusic" src="mixkit-keep-smiling-15.mp3" loop preload="none"></audio>
+<audio id="backgroundMusic" src="./mixkit-keep-smiling-15.mp3" loop preload="auto"></audio>
 <audio id="heartbeatSound" src="mixkit-human-single-heart-beat-490.wav" preload="auto"></audio>
 <audio id="waterSound" src="mixkit-fish-flapping-2457.wav" preload="auto">
 <audio id="starSound" src="mixkit-fairy-glitter-867.wav" preload="auto">
@@ -615,12 +615,49 @@ const musicToggle=$("musicToggle");
 if(bgMusic&&musicToggle){
   bgMusic.volume=0.12;
   let musicEnabled=false;
+  let triedFallback=false;
+  bgMusic.addEventListener("error",()=>{
+    if(!triedFallback){
+      triedFallback=true;
+      bgMusic.src="https://raw.githubusercontent.com/pup-love/Clickrfun/main/mixkit-keep-smiling-15.mp3";
+      bgMusic.load();
+    }else{
+      musicToggle.textContent="♫ Music unavailable";
+      musicToggle.title="The music file could not be loaded. Refresh and try again.";
+    }
+  });
+  bgMusic.addEventListener("playing",()=>{
+    musicEnabled=true;
+    musicToggle.textContent="♫ Music: On";
+    musicToggle.setAttribute("aria-pressed","true");
+    musicToggle.title="Turn background music off";
+  });
+  bgMusic.addEventListener("pause",()=>{
+    if(musicEnabled){
+      musicEnabled=false;
+      musicToggle.textContent="♫ Music: Off";
+      musicToggle.setAttribute("aria-pressed","false");
+    }
+  });
   musicToggle.addEventListener("click",async()=>{
     if(!musicEnabled){
-      try{await bgMusic.play();musicEnabled=true;musicToggle.textContent="♫ Music: On";musicToggle.setAttribute("aria-pressed","true");}
-      catch(e){musicToggle.textContent="♫ Tap to retry";musicEnabled=false;}
+      try{
+        if(bgMusic.error) bgMusic.load();
+        await bgMusic.play();
+        musicEnabled=true;
+        musicToggle.textContent="♫ Music: On";
+        musicToggle.setAttribute("aria-pressed","true");
+      }catch(e){
+        musicEnabled=false;
+        musicToggle.textContent="♫ Tap to retry";
+        musicToggle.title="Playback was blocked or the audio is still loading. Click again to retry.";
+        musicToggle.setAttribute("aria-pressed","false");
+      }
     }else{
-      bgMusic.pause();musicEnabled=false;musicToggle.textContent="♫ Music: Off";musicToggle.setAttribute("aria-pressed","false");
+      bgMusic.pause();
+      musicEnabled=false;
+      musicToggle.textContent="♫ Music: Off";
+      musicToggle.setAttribute("aria-pressed","false");
     }
   });
 }
