@@ -1489,7 +1489,7 @@ async function viewMember(id){
  const look=document.createElement("div");look.id="profileLook";look.textContent=lookFor(data.equipped_items||[]);
  const type=accountTypeOf(data,null); const parsedBio=splitGenderBio(data.bio||""); const name=document.createElement("h3");name.textContent=(type==="owner"?"💗 Owner · ":type==="kitty"?"🐱 Kitty · ":type==="human"?"🧑 Hooman · ":"🐶 Puppy · ")+data.username;
  const pid=document.createElement("p");pid.className="profile-id";pid.textContent=data.profile_id||"";
- const parsedBio=splitGenderBio(data.bio||""); const bio=document.createElement("p");bio.textContent=parsedBio.bio||"This member has not written a bio yet. 💗"; const genderText=genderLabel(parsedBio.gender||(data.gender||"")); if(genderText){const gender=document.createElement("p");gender.className="small";gender.textContent="Gender: "+genderText;container.appendChild(gender);}
+ const bio=document.createElement("p");bio.textContent=parsedBio.bio||"This member has not written a bio yet. 💗"; const genderText=genderLabel(parsedBio.gender||(data.gender||"")); if(genderText){const gender=document.createElement("p");gender.className="small";gender.textContent="Gender: "+genderText;container.appendChild(gender);}
  const starCounter=document.createElement("p");starCounter.className="profile-id";starCounter.textContent="🌟 Gold Stars: counting...";
  container.appendChild(starCounter);
  const starCountResult=await supabaseClient.from("private_messages").select("id",{count:"exact",head:true}).eq("recipient_id",id).like("content","%Gold Star gift%");
