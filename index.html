@@ -669,6 +669,8 @@ hr{border:0;border-top:1px solid var(--cf-border)}
 <form id="dmForm">
 <textarea id="dmInput" maxlength="1000" placeholder="Write a private message..." required></textarea>
 <button id="dmSendButton" type="submit" disabled>Send Private Message 💌</button>
+<button id="sendDoodleDMButton" type="button" disabled>🖼️ Send saved doodle</button>
+<p id="doodleDmStatus" class="small" role="status">To share a doodle, open Doodle Den and choose “Send in Clickrfun DM”.</p>
 </form>
 </section>
 
@@ -898,6 +900,7 @@ async function openPrivateDM(userId,username){
  catch(error){$("dmStatus").textContent="Couldn't check block settings: "+error.message;return;}
  activeDmUserId=userId;
  activeDmUsername=username;
+ updateDoodleDmButton();
  dmLastRead[userId]=new Date().toISOString();saveDmLastRead();
  const {data:dmProfile}=await supabaseClient.from("profiles").select("account_type,bio").eq("id",userId).maybeSingle(); const dmType=accountTypeOf(dmProfile,null); const dmGender=genderLabel(splitGenderBio(dmProfile&&dmProfile.bio||"").gender); $("dmChatTitle").textContent="💌 "+(dmType==="human"?"🧑 Hooman":dmType==="kitty"?"🐱 Kitty":dmType==="owner"?"💗 Owner":"🐶 Puppy")+" · "+username+(dmGender?" · "+dmGender:"");
  $("dmStatus").textContent="Loading your private conversation...";
@@ -1069,9 +1072,11 @@ async function loadPrivateMessages(){
   if(message.id)box.dataset.messageId=message.id;
   const heading=document.createElement("strong");
   heading.textContent=message.sender_id===currentUser.id?"You":activeDmUsername;
-  const body=document.createElement("p");
-  body.textContent=message.content;
-  body.style.margin="6px 0";
+  if(typeof message.content==="string"&&message.content.startsWith("CLICKRFUN_DOODLE:")){
+   const image=document.createElement("img");image.src=message.content.slice("CLICKRFUN_DOODLE:".length);image.alt="Doodle shared in a private message";image.style.cssText="display:block;max-width:min(100%,420px);max-height:420px;object-fit:contain;border-radius:12px;border:2px solid #e779c7;margin:8px 0;background:#fff";box.appendChild(image);
+  }else{
+   const body=document.createElement("p");body.textContent=message.content;body.style.margin="6px 0";box.appendChild(body);
+  }
   const time=document.createElement("time");
   time.textContent=new Date(message.created_at).toLocaleString();
   box.append(heading,body,time);
@@ -1116,6 +1121,34 @@ $("dmForm").addEventListener("submit",async event=>{
  }
 });
 
+/* Send the privately saved Doodle Den image to the currently open DM. */
+const pendingDoodleKey="clickrfun_pending_doodle_dm_v1";
+function updateDoodleDmButton(){
+ const button=$("sendDoodleDMButton");if(!button)return;
+ let hasImage=false;try{hasImage=!!localStorage.getItem(pendingDoodleKey)}catch(e){}
+ button.disabled=!currentUser||!activeDmUserId||!hasImage;
+}
+$("sendDoodleDMButton").addEventListener("click",async()=>{
+ const button=$("sendDoodleDMButton"),status=$("doodleDmStatus");
+ if(!requireLogin()||!activeDmUserId){status.textContent="Log in and open the person’s DM first. 💌";updateDoodleDmButton();return;}
+ let image="";try{image=localStorage.getItem(pendingDoodleKey)||""}catch(e){}
+ if(!image.startsWith("data:image/")){status.textContent="No saved doodle is waiting. Go to Doodle Den and choose “Send in Clickrfun DM” first.";updateDoodleDmButton();return;}
+ if(dmSendInFlight)return;
+ dmSendInFlight=true;button.disabled=true;
+ const recipientId=activeDmUserId;
+ try{
+  if(await isBlockedEitherWay(recipientId)){status.textContent="This private conversation is unavailable because one of you has blocked the other.";return;}
+  const content="CLICKRFUN_DOODLE:"+image;
+  const {error}=await supabaseClient.from("private_messages").insert({sender_id:currentUser.id,receiver_id:recipientId,recipient_id:recipientId,content});
+  if(error){status.textContent="Couldn't send doodle: "+error.message;return;}
+  localStorage.removeItem(pendingDoodleKey);
+  status.textContent="Doodle sent privately to "+activeDmUsername+"! 💗";
+  await loadPrivateMessages();await loadPrivateInbox();
+ }catch(error){status.textContent="Couldn't send doodle: "+error.message;}
+ finally{dmSendInFlight=false;updateDoodleDmButton();}
+});
+updateDoodleDmButton();
+
 /* NAVIGATION */
 function showSection(id){
  const target=$(id);
@@ -1126,7 +1159,7 @@ function showSection(id){
  else $("exploreClickrfun").classList.add("hidden");
  if(id==="chat")loadMessages();
  if(id==="contactOwner")loadOwnerContact();
- if(id==="privateDMs"){loadPrivateInbox();if(activeDmUserId)loadPrivateMessages();}
+ if(id==="privateDMs"){loadPrivateInbox();if(activeDmUserId)loadPrivateMessages();updateDoodleDmButton();}
  if(id==="treats")refreshTreats();
  if(id==="shop")loadShop();
  if(id==="inventory")loadInventory();
