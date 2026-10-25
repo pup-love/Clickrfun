@@ -1535,9 +1535,21 @@ async function loadMessages(){
  if(version!==loadVersion||room!==currentRoom)return;
  if(error){showEmptyChat("Couldn't load messages: "+error.message);return;}
  const container=$("chatMessages");
+ // Build a fresh list from the query, keyed by database row ID. This prevents
+ // repeated rows in a response from creating duplicate bubbles on initial load.
  container.replaceChildren();
- if(!data||!data.length)showEmptyChat("No messages yet. Be the first to say hi! 🐾");
- else data.forEach(addMessage);
+ const seenMessageIds=new Set();
+ const uniqueMessages=[];
+ for(const message of (data||[])){
+  if(message.id){
+   const id=String(message.id);
+   if(seenMessageIds.has(id))continue;
+   seenMessageIds.add(id);
+  }
+  uniqueMessages.push(message);
+ }
+ if(!uniqueMessages.length)showEmptyChat("No messages yet. Be the first to say hi! 🐾");
+ else uniqueMessages.forEach(addMessage);
  startRealtime();
 }
 
