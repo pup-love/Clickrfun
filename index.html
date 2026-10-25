@@ -1265,19 +1265,20 @@ function syncOwnerProfileFields(){
 $("profileAccountType").addEventListener("change",syncOwnerProfileFields);
 
 async function ensureProfile(user){
- const {data,error}=await supabaseClient.from("profiles").select("username,account_type").eq("id",user.id).maybeSingle();
+ const {data,error}=await supabaseClient.from("profiles").select("username,account_type,bio").eq("id",user.id).maybeSingle();
  if(error)throw error;
  const username=(user.user_metadata&&user.user_metadata.username)||"";
+ const gender=(user.user_metadata&&user.user_metadata.gender)||"";
  if(data&&data.username){
   const type=accountTypeOf(data,user);
-  if(data.account_type!==type){
-   const {error:updateError}=await supabaseClient.from("profiles").update({account_type:type}).eq("id",user.id);
-   if(updateError)throw updateError;
-  }
+  const changes={};
+  if(data.account_type!==type)changes.account_type=type;
+  if(gender&&!splitGenderBio(data.bio||"").gender)changes.bio=bioWithGender(data.bio||"",gender);
+  if(Object.keys(changes).length){const {error:updateError}=await supabaseClient.from("profiles").update(changes).eq("id",user.id);if(updateError)throw updateError;}
   return data.username;
  }
  if(!username)throw new Error("No username is saved to this account.");
- const {error:upsertError}=await supabaseClient.from("profiles").upsert({id:user.id,username,account_type:accountTypeOf(null,user),owned_puppies:""},{onConflict:"id"});
+ const {error:upsertError}=await supabaseClient.from("profiles").upsert({id:user.id,username,account_type:accountTypeOf(null,user),bio:bioWithGender("",gender),owned_puppies:""},{onConflict:"id"});
  if(upsertError)throw upsertError;
  return username;
 }
