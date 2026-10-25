@@ -173,6 +173,40 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 /* Virtual-pet memorials */
 .pet-grave{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);z-index:5;display:none;text-align:center;color:#493557;background:rgba(255,246,255,.92);border:2px solid #fff;border-radius:14px;padding:8px 15px;box-shadow:0 4px 12px #56345b44;min-width:110px;font-size:12px;pointer-events:none}.pet-grave .grave-stone{font-size:28px;line-height:1.1}.pet-grave .grave-name{font-weight:700;overflow-wrap:anywhere}.pet-grave .grave-heart{color:#e66aab}
 .puppy3d-stage,.kitty3d-stage{position:relative}
+
+/* Modern polish: cleaner spacing, softer surfaces, and consistent controls. */
+:root{--cf-pink:#f28bd4;--cf-pink-bright:#ff9cde;--cf-lilac:#bda0f2;--cf-ink:#281936;--cf-panel:rgba(38,24,54,.9);--cf-line:rgba(231,177,244,.28)}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.55;letter-spacing:.005em}
+header{background:linear-gradient(135deg,rgba(35,19,52,.96),rgba(66,31,78,.91));border-bottom:1px solid rgba(255,156,222,.5);padding:34px 16px}
+header p{max-width:620px;margin:8px auto 0;line-height:1.6}
+nav{gap:7px;padding:14px max(12px,2vw);background:rgba(24,13,39,.9);border-bottom:1px solid var(--cf-line)}
+button{border:1px solid transparent;border-radius:13px;padding:10px 14px;background:linear-gradient(135deg,#f49bd8,#e879c4);box-shadow:0 2px 0 rgba(13,5,22,.18);transition:transform .16s ease,filter .16s ease,box-shadow .16s ease}
+button:hover{background:linear-gradient(135deg,#ffc0e9,#f28bd4);transform:translateY(-1px);box-shadow:0 5px 14px rgba(8,3,14,.2)}
+button:active{transform:translateY(0)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #ffc4e8;outline-offset:3px}
+main{width:min(1020px,94%);margin:clamp(18px,3vw,34px) auto}
+.card{background:linear-gradient(145deg,rgba(43,27,61,.94),rgba(32,19,47,.94));backdrop-filter:blur(12px);border:1px solid var(--cf-line);border-radius:22px;padding:clamp(17px,3vw,28px);margin-bottom:22px;box-shadow:0 12px 34px rgba(7,3,14,.18)}
+h1,h2{letter-spacing:-.025em}
+h2{line-height:1.25}
+input,textarea,select{border:1px solid rgba(202,153,218,.72);border-radius:13px;transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,textarea:focus,select:focus{border-color:#f28bd4;box-shadow:0 0 0 3px rgba(242,139,212,.14);outline:none}
+.faq-section{max-width:850px;margin-left:auto;margin-right:auto}
+.faq-heading{margin-bottom:22px}
+.faq-heading .eyebrow{display:inline-block;padding:5px 9px;border:1px solid rgba(255,156,222,.35);border-radius:999px;background:rgba(242,139,212,.1);color:#ffc4e8;font-size:.72rem;font-weight:800;letter-spacing:.12em}
+.faq-heading h2{margin:12px 0 8px;font-size:clamp(1.55rem,3vw,2.15rem)}
+.faq-heading p,.faq-footer{color:#ddcbe7}
+.faq-list{display:grid;gap:10px}
+.faq-item{border:1px solid rgba(225,184,242,.2);border-radius:15px;background:rgba(255,255,255,.035);overflow:hidden;transition:border-color .18s ease,background .18s ease}
+.faq-item[open]{border-color:rgba(242,139,212,.55);background:rgba(242,139,212,.055)}
+.faq-item summary{position:relative;cursor:pointer;list-style:none;padding:15px 48px 15px 17px;color:#fff1fb;font-weight:700}
+.faq-item summary::-webkit-details-marker{display:none}
+.faq-item summary:after{content:"+";position:absolute;right:17px;top:50%;transform:translateY(-50%);font-size:1.3rem;font-weight:500;color:#ffaddf}
+.faq-item[open] summary:after{content:"−"}
+.faq-item p{margin:0;padding:0 17px 17px;color:#e2d2eb;line-height:1.7}
+.faq-footer{margin:20px 0 0;padding:14px 16px;border-radius:13px;background:rgba(255,255,255,.04);font-size:.92rem}
+@media(max-width:600px){header{padding:25px 14px}nav{padding:10px 8px;gap:5px}nav button{font-size:.88rem;padding:9px 11px;margin:2px}main{width:94%;margin:16px auto}.card{border-radius:17px}.faq-item summary{padding:14px 42px 14px 14px}.faq-item p{padding:0 14px 15px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
+
 </style>
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js"></script>
 </head>
@@ -207,6 +241,7 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 
 <nav>
 <button onclick="showSection('welcome')">🏠 Home</button>
+<button id="faqNavButton" onclick="showSection('faq')">Help & FAQ</button>
 <button onclick="showSection('account')">🔐 Login</button>
 <button onclick="showSection('treats')">🦴 My Treats</button>
 <button onclick="showSection('shop')">🛍️ Shop</button>
@@ -586,6 +621,54 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 </form>
 <p class="small">Please be kind to other members. Messages are visible to signed-in users.</p>
 </section>
+
+<section id="faq" class="card hidden faq-section">
+  <div class="faq-heading">
+    <span class="eyebrow">NEW HERE?</span>
+    <h2>Help & Frequently Asked Questions</h2>
+    <p>Everything you need to find your paws around Clickrfun.</p>
+  </div>
+  <div class="faq-list">
+    <details class="faq-item">
+      <summary>What is Clickrfun?</summary>
+      <p>Clickrfun is a little social corner of the internet with profiles, chat rooms, private messages, virtual pets, badges, treats, a shop, and games.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How do I make an account?</summary>
+      <p>Open the Login section and choose the sign-up option. Follow the prompts to create your account. If confirmation is requested, check your email for the sign-up link.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How do I chat with other members?</summary>
+      <p>Sign in, then choose a public room from the navigation. You can also open Private DMs to message another member when that feature is available to your account.</p>
+    </details>
+    <details class="faq-item">
+      <summary>What are treats?</summary>
+      <p>Treats are virtual rewards used around Clickrfun. Check My Treats and the Shop to see the options currently available to you.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How do badges and stickers work?</summary>
+      <p>Explore the site and try the available activities to unlock collectibles. Your collection shows the badges or stickers you've earned.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How do virtual pets work?</summary>
+      <p>Visit My Virtual Puppy or My Virtual Kitty to meet and care for your virtual companion. Check their needs and use the available pet actions.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Can I use Clickrfun on my phone?</summary>
+      <p>Clickrfun is designed to fit different screen sizes. If something looks odd on your device, try refreshing the page or using an up-to-date browser.</p>
+    </details>
+    <details class="faq-item">
+      <summary>How can I keep my account safe?</summary>
+      <p>Never share your password or private account details with other members. Use a unique password and only enter your login details on the official Clickrfun website.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Something isn't working. What should I do?</summary>
+      <p>Refresh the page and try again. If the issue continues, note what you clicked and what happened, then share that information with the site owner so it can be investigated.</p>
+    </details>
+  </div>
+  <p class="faq-footer">Still stuck? Try refreshing Clickrfun, then ask for help with the exact thing that isn't working.</p>
+</section>
+
 </main>
 
 
