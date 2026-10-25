@@ -473,7 +473,8 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <form id="signupForm">
 <h3>Create an account</h3>
 <label for="signupAccountType">I am joining as a...</label>
-<select id="signupAccountType"><option value="puppy">🐶 Puppy</option><option value="kitty">🐱 Kitty</option><option value="owner">💗 Owner</option></select>
+<select id="signupAccountType"><option value="puppy">🐶 Puppy</option><option value="kitty">🐱 Kitty</option><option value="owner">💗 Owner</option><option value="human">🧑 Hooman</option></select>
+<label for="signupGender">Gender (optional)</label><select id="signupGender"><option value="">Prefer not to say</option><option value="woman">♀️ Woman</option><option value="man">♂️ Man</option><option value="nonbinary">💛 Non-binary</option><option value="genderfluid">🌈 Genderfluid</option><option value="agender">🌙 Agender</option><option value="questioning">❔ Questioning</option><option value="self-described">✨ Another identity / self-described</option></select>
 <input id="signupUsername" maxlength="24" autocomplete="username" placeholder="Username (3–24 letters, numbers, _ or -)" required>
 <input id="signupEmail" type="email" autocomplete="email" placeholder="Email address" required>
 <input id="signupPassword" type="password" minlength="6" autocomplete="new-password" placeholder="Password (at least 6 characters)" required>
@@ -536,8 +537,9 @@ body[data-theme="light"]{background:#fff4fb;color:#39213e} body[data-theme="ligh
 <h2 id="myProfileHeading">🐾 My Profile</h2>
 <div id="profileLook">🐶</div><p id="myProfileId" class="profile-id"></p>
 <form id="profileForm">
-<label for="profileAccountType">Account type</label>
-<select id="profileAccountType"><option value="puppy">🐶 Puppy</option><option value="kitty">🐱 Kitty</option><option value="owner">💗 Owner</option></select>
+<label for="profileAccountType">Who are you in the pack?</label>
+<select id="profileAccountType"><option value="puppy">🐶 Puppy</option><option value="kitty">🐱 Kitty</option><option value="owner">💗 Owner</option><option value="human">🧑 Hooman</option></select>
+<label for="profileGender">Gender (optional)</label><select id="profileGender"><option value="">Prefer not to say</option><option value="woman">♀️ Woman</option><option value="man">♂️ Man</option><option value="nonbinary">💛 Non-binary</option><option value="genderfluid">🌈 Genderfluid</option><option value="agender">🌙 Agender</option><option value="questioning">❔ Questioning</option><option value="self-described">✨ Another identity / self-described</option></select>
 <label for="profileUsername">Username</label><input id="profileUsername" maxlength="24" required>
 <label for="profileBio">About me</label><textarea id="profileBio" maxlength="300" placeholder="Tell the pack about yourself! 💗"></textarea>
 <div id="ownerPuppiesWrap" class="hidden"><label for="ownerPuppies">Puppies I own</label><textarea id="ownerPuppies" maxlength="500" placeholder="List your puppies' usernames, separated by commas"></textarea><p class="small">This is a list on your profile; it doesn't create separate puppy accounts.</p></div>
@@ -701,7 +703,7 @@ async function openPrivateDM(userId,username){
  activeDmUserId=userId;
  activeDmUsername=username;
  dmLastRead[userId]=new Date().toISOString();saveDmLastRead();
- $("dmChatTitle").textContent="💌 Chat with "+username;
+ const {data:dmProfile}=await supabaseClient.from("profiles").select("account_type,bio").eq("id",userId).maybeSingle(); const dmType=accountTypeOf(dmProfile,null); const dmGender=genderLabel(splitGenderBio(dmProfile&&dmProfile.bio||"").gender); $("dmChatTitle").textContent="💌 "+(dmType==="human"?"🧑 Hooman":dmType==="kitty"?"🐱 Kitty":dmType==="owner"?"💗 Owner":"🐶 Puppy")+" · "+username+(dmGender?" · "+dmGender:"");
  $("dmStatus").textContent="Loading your private conversation...";
  $("dmSendButton").disabled=false;
  showSection("privateDMs");
@@ -785,7 +787,7 @@ async function loadPrivateInbox(){
 
  const ids=[...conversations.keys()];
  const {data:profiles,error:profileError}=await supabaseClient.from("profiles")
-  .select("id,username").in("id",ids);
+  .select("id,username,account_type,bio").in("id",ids);
 
  if(profileError){
   $("dmStatus").textContent="Couldn't load pup names: "+profileError.message;
@@ -802,7 +804,7 @@ async function loadPrivateInbox(){
   const button=document.createElement("button");
   button.type="button";
   const unreadCount=unreadByPerson.get(profile.id)||0;
-  button.append(document.createTextNode("💌 "+profile.username+" "));
+  const dmType=accountTypeOf(profile,null); button.append(document.createTextNode("💌 "+(dmType==="human"?"🧑 Hooman · ":dmType==="kitty"?"🐱 Kitty · ":dmType==="owner"?"💗 Owner · ":"🐶 Puppy · ")+profile.username+" "));
   if(unreadCount){const bubble=document.createElement("span");bubble.className="dm-unread-bubble";bubble.textContent=String(unreadCount);bubble.setAttribute("aria-label",unreadCount+" unread");button.appendChild(bubble);}
   button.addEventListener("click",()=>openPrivateDM(profile.id,profile.username));
   inbox.appendChild(button);
@@ -1417,7 +1419,7 @@ async function loadMyProfile(){
  const {data,error}=await supabaseClient.from("profiles").select("username,profile_id,bio,equipped_items,account_type,owned_puppies").eq("id",currentUser.id).maybeSingle();
  if(error||!data){$("profileStatus").textContent="Couldn't load profile: "+(error?.message||"profile not found");return;}
  $("profileUsername").value=data.username||currentUsername||"";
- const savedBio=splitGenderBio(data.bio||""); $("profileBio").value=savedBio.bio; $("profileGender").value=savedBio.gender;
+ const savedBio=splitGenderBio(data.bio||""); $("profileBio").value=savedBio.bio; $("profileGender").value=savedBio.gender||(currentUser&&currentUser.user_metadata&&currentUser.user_metadata.gender)||"";
  $("profileAccountType").value=accountTypeOf(data,currentUser);
  $("ownerPuppies").value=data.owned_puppies||"";
  syncOwnerProfileFields();
@@ -1484,9 +1486,9 @@ async function viewMember(id){
  }
  container.replaceChildren();
  const look=document.createElement("div");look.id="profileLook";look.textContent=lookFor(data.equipped_items||[]);
- const type=accountTypeOf(data,null); const name=document.createElement("h3");name.textContent=(type==="owner"?"💗 Owner · ":type==="kitty"?"🐱 Kitty · ":type==="human"?"🧑 Hooman · ":"🐶 Puppy · ")+data.username;
+ const type=accountTypeOf(data,null); const parsedBio=splitGenderBio(data.bio||""); const name=document.createElement("h3");name.textContent=(type==="owner"?"💗 Owner · ":type==="kitty"?"🐱 Kitty · ":type==="human"?"🧑 Hooman · ":"🐶 Puppy · ")+data.username;
  const pid=document.createElement("p");pid.className="profile-id";pid.textContent=data.profile_id||"";
- const parsedBio=splitGenderBio(data.bio||""); const bio=document.createElement("p");bio.textContent=parsedBio.bio||"This member has not written a bio yet. 💗"; const genderText=genderLabel(parsedBio.gender); if(genderText){const gender=document.createElement("p");gender.className="small";gender.textContent="Gender: "+genderText;container.appendChild(gender);}
+ const parsedBio=splitGenderBio(data.bio||""); const bio=document.createElement("p");bio.textContent=parsedBio.bio||"This member has not written a bio yet. 💗"; const genderText=genderLabel(parsedBio.gender||(data.gender||"")); if(genderText){const gender=document.createElement("p");gender.className="small";gender.textContent="Gender: "+genderText;container.appendChild(gender);}
  const starCounter=document.createElement("p");starCounter.className="profile-id";starCounter.textContent="🌟 Gold Stars: counting...";
  container.appendChild(starCounter);
  const starCountResult=await supabaseClient.from("private_messages").select("id",{count:"exact",head:true}).eq("recipient_id",id).like("content","%Gold Star gift%");
@@ -1595,7 +1597,7 @@ $("signupForm").addEventListener("submit",async event=>{
  if(!/^[a-zA-Z0-9_-]{3,24}$/.test(username)){setStatus("Username must be 3–24 characters using letters, numbers, _ or -.");return;}
  button.disabled=true;setStatus("Creating your account... 💗");
  try{
-  const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{username,account_type:$("signupAccountType").value}}});
+  const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{username,account_type:$("signupAccountType").value,gender:$("signupGender").value}}});
   if(error)throw error;
   if(!data.user)throw new Error("No account was returned.");
   if(!data.session){setStatus("Account created! Confirm your email if required, then log in.");return;}
