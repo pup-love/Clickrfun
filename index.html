@@ -1247,7 +1247,7 @@ function addMessage(message){
  container.appendChild(box);
  container.scrollTop=container.scrollHeight;
 }
-function accountTypeOf(profile,user){
+function splitGenderBio(value){const bio=String(value||"");const marker="\n\n[[clickrfun_gender:";const i=bio.lastIndexOf(marker);if(i<0||!bio.endsWith("]]"))return {bio,gender:""};return {bio:bio.slice(0,i),gender:bio.slice(i+marker.length,-2)};} function bioWithGender(bio,gender){return bio+(gender?"\n\n[[clickrfun_gender:"+gender+"]]":"");} function genderLabel(value){return ({woman:"♀️ Woman",man:"♂️ Man",nonbinary:"💛 Non-binary",genderfluid:"🌈 Genderfluid",agender:"🌙 Agender",questioning:"❔ Questioning","self-described":"✨ Self-described"})[value]||"";} function accountTypeOf(profile,user){
  const type=(profile&&profile.account_type)||(user&&user.user_metadata&&user.user_metadata.account_type);
  return ["owner","kitty","human"].includes(type)?type:"puppy";
 }
@@ -1416,7 +1416,7 @@ async function loadMyProfile(){
  const {data,error}=await supabaseClient.from("profiles").select("username,profile_id,bio,equipped_items,account_type,owned_puppies").eq("id",currentUser.id).maybeSingle();
  if(error||!data){$("profileStatus").textContent="Couldn't load profile: "+(error?.message||"profile not found");return;}
  $("profileUsername").value=data.username||currentUsername||"";
- $("profileBio").value=data.bio||"";
+ const savedBio=splitGenderBio(data.bio||""); $("profileBio").value=savedBio.bio; $("profileGender").value=savedBio.gender;
  $("profileAccountType").value=accountTypeOf(data,currentUser);
  $("ownerPuppies").value=data.owned_puppies||"";
  syncOwnerProfileFields();
@@ -1431,7 +1431,7 @@ function lookFor(ids){
 $("profileForm").addEventListener("submit",async event=>{
  event.preventDefault();if(!requireLogin())return;
  const username=$("profileUsername").value.trim();
- const bio=$("profileBio").value.trim();
+ const bio=bioWithGender($("profileBio").value.trim(),$("profileGender").value);
  const account_type=$("profileAccountType").value;
  const owned_puppies=account_type==="owner"?$("ownerPuppies").value.trim():"";
  if(!/^[a-zA-Z0-9_-]{3,24}$/.test(username)){
@@ -1442,7 +1442,7 @@ $("profileForm").addEventListener("submit",async event=>{
  if(error){$("profileStatus").textContent="Couldn't save: "+error.message;return;}
  currentUsername=username;
  currentAccountType=account_type;
- const {error:authError}=await supabaseClient.auth.updateUser({data:{username,account_type}});
+ const {error:authError}=await supabaseClient.auth.updateUser({data:{username,account_type,gender:$("profileGender").value}});
  if(authError){$("profileStatus").textContent="Profile saved, but account metadata couldn't update: "+authError.message;return;}
  $("accountStatus").textContent="Logged in as "+username+" 🐾";
  $("profileStatus").textContent="Profile saved! 💗";
