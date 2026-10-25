@@ -207,6 +207,17 @@ input:focus,textarea:focus,select:focus{border-color:#f28bd4;box-shadow:0 0 0 3p
 @media(max-width:600px){header{padding:25px 14px}nav{padding:10px 8px;gap:5px}nav button{font-size:.88rem;padding:9px 11px;margin:2px}main{width:94%;margin:16px auto}.card{border-radius:17px}.faq-item summary{padding:14px 42px 14px 14px}.faq-item p{padding:0 14px 15px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation-duration:.01ms!important;animation-iteration-count:1!important}}
 
+
+.owner-contact-section{max-width:850px;margin-left:auto;margin-right:auto}
+.owner-contact-note{display:flex;flex-direction:column;gap:5px;padding:16px 18px;margin:18px 0;border:1px solid rgba(242,139,212,.28);border-radius:15px;background:rgba(242,139,212,.08);color:#ead9f0;line-height:1.65}
+.owner-contact-note strong{color:#ffc4e8}
+.owner-contact-list{display:grid;gap:12px}
+.owner-contact-card{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;border:1px solid rgba(225,184,242,.2);border-radius:15px;background:rgba(255,255,255,.035)}
+.owner-contact-card h3{margin:0 0 4px;color:#fff1fb;font-size:1rem}
+.owner-contact-card p{margin:0;color:#ddcbe7;font-size:.9rem}
+.owner-contact-card button{flex-shrink:0}
+@media(max-width:520px){.owner-contact-card{align-items:stretch;flex-direction:column}.owner-contact-card button{width:100%;margin:0}}
+
 </style>
 <script type="module" src="https://unpkg.com/@lottiefiles/dotlottie-wc@latest/dist/dotlottie-wc.js"></script>
 </head>
@@ -242,6 +253,7 @@ input:focus,textarea:focus,select:focus{border-color:#f28bd4;box-shadow:0 0 0 3p
 <nav>
 <button onclick="showSection('welcome')">🏠 Home</button>
 <button id="faqNavButton" onclick="showSection('faq')">Help & FAQ</button>
+<button id="contactOwnerNavButton" onclick="showSection('contactOwner')">Message Owner</button>
 <button onclick="showSection('account')">🔐 Login</button>
 <button onclick="showSection('treats')">🦴 My Treats</button>
 <button onclick="showSection('shop')">🛍️ Shop</button>
@@ -620,6 +632,21 @@ input:focus,textarea:focus,select:focus{border-color:#f28bd4;box-shadow:0 0 0 3p
 <button id="sendButton" type="submit" disabled>Send Message 💌</button>
 </form>
 <p class="small">Please be kind to other members. Messages are visible to signed-in users.</p>
+</section>
+
+
+<section id="contactOwner" class="card hidden owner-contact-section">
+  <div class="faq-heading">
+    <span class="eyebrow">NEED A HAND?</span>
+    <h2>Message the Owner</h2>
+    <p>Have a question, found a bug, or have an idea for Clickrfun? Leave the owner a private message here, even when they're offline.</p>
+  </div>
+  <div class="owner-contact-note">
+    <strong>💌 No email needed.</strong>
+    <span>Your message is saved in Clickrfun's private messages. The owner can read and reply when they come back online. You'll need to sign in to send a message.</span>
+  </div>
+  <p id="ownerContactStatus" class="small" aria-live="polite">Looking for the owner account…</p>
+  <div id="ownerContactList" class="owner-contact-list"></div>
 </section>
 
 <section id="faq" class="card hidden faq-section">
@@ -1018,6 +1045,7 @@ function showSection(id){
  if(id==="welcome")$("exploreClickrfun").classList.remove("hidden");
  else $("exploreClickrfun").classList.add("hidden");
  if(id==="chat")loadMessages();
+ if(id==="contactOwner")loadOwnerContact();
  if(id==="privateDMs"){loadPrivateInbox();if(activeDmUserId)loadPrivateMessages();}
  if(id==="treats")refreshTreats();
  if(id==="shop")loadShop();
@@ -2423,6 +2451,33 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
   }requestAnimationFrame(animate);
  }catch(e){console.warn("3D kitty unavailable",e);if(loading)loading.textContent="Your kitty's 3D world couldn't load in this browser. Try refreshing! 🐱";}
 })();
+
+/* Owner contact: routes visitors to the owner's existing private DM inbox. */
+async function loadOwnerContact(){
+ const list=$("ownerContactList");
+ const status=$("ownerContactStatus");
+ if(!list||!status)return;
+ list.replaceChildren();
+ if(!supabaseClient){status.textContent="Messaging is unavailable right now. Please try again later.";return;}
+ if(!currentUser){status.textContent="Please log in first so your message can be sent privately.";const b=document.createElement("button");b.type="button";b.textContent="Log in to message the owner";b.addEventListener("click",()=>showSection("account"));list.appendChild(b);return;}
+ status.textContent="Finding the owner account…";
+ const {data:owners,error}=await supabaseClient.from("profiles").select("id,username,account_type").eq("account_type","owner").limit(10);
+ if(error){status.textContent="Couldn't find the owner account right now. Please try again later.";console.warn("Owner contact lookup failed:",error.message);return;}
+ const available=(owners||[]).filter(owner=>owner.id&&owner.id!==currentUser.id);
+ if(!available.length){status.textContent="The owner account isn't available to message right now. Please try again later.";return;}
+ status.textContent="Your message will be private and stay here until the owner is back online.";
+ available.forEach(owner=>{
+  const card=document.createElement("div");card.className="owner-contact-card";
+  const info=document.createElement("div");
+  const title=document.createElement("h3");title.textContent="💗 "+owner.username;
+  const desc=document.createElement("p");desc.textContent="Click to open a private conversation with the owner.";
+  info.append(title,desc);
+  const button=document.createElement("button");button.type="button";button.textContent="Message owner";
+  button.addEventListener("click",()=>openPrivateDM(owner.id,owner.username));
+  card.append(info,button);list.appendChild(card);
+ });
+}
+
 </script>
 </body>
 </html>
