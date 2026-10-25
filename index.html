@@ -2106,10 +2106,19 @@ function playRealDogBark(){
 }
 document.querySelectorAll("[data-puppy-action]").forEach(button=>button.addEventListener("click",()=>{
  const action=button.dataset.puppyAction;
+ if(action==="roll"){
+  // Bark animation: repeat three times, spaced out so each pose can play.
+  if(window.clickrPuppyAction){
+   window.clickrPuppyAction("roll");
+   setTimeout(()=>window.clickrPuppyAction&&window.clickrPuppyAction("roll"),650);
+   setTimeout(()=>window.clickrPuppyAction&&window.clickrPuppyAction("roll"),1300);
+  }else $("virtualPetMessage").textContent="Your puppy is still waking up! Try again in a moment. 🐾";
+  playRealDogBark();
+  return;
+ }
  if(window.clickrPuppyAction)window.clickrPuppyAction(action);
  else $("virtualPetMessage").textContent="Your puppy is still waking up! Try again in a moment. 🐾";
- if(action==="roll")playRealDogBark();
- else playPuppySound(action==="jump"||action==="spin"?"boing":action==="wag"?"yip":"bark");
+ playPuppySound(action==="jump"||action==="spin"?"boing":action==="wag"?"yip":"bark");
 }));
 $("puppy3dStage").addEventListener("click",event=>{if(event.target.closest("canvas")){if(window.clickrPuppyAction)window.clickrPuppyAction("boop");playPuppySound("bark");renderVirtualPet(virtualPet.adopted?virtualPet.name+" says WOOF! 🐶💗":"WOOF! Adopt me and let us be best friends! 🐾");}});
 $("virtualPetSleep").addEventListener("click",()=>{
