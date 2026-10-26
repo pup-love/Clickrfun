@@ -1139,6 +1139,7 @@ if(dmMediaFile&&dmMediaSendButton){
    const path=currentUser.id+"/"+recipientId+"/"+Date.now()+"_"+safeName;
    const {error:uploadError}=await supabaseClient.storage.from("dm-voice-notes").upload(path,file,{contentType:file.type,upsert:false});
    if(uploadError)throw uploadError;
+   if(!recipientId){await supabaseClient.storage.from("dm-voice-notes").remove([path]);throw new Error("Please close this DM and reopen the person’s profile, then try again.");}
    const {error:messageError}=await supabaseClient.from("private_messages").insert({sender_id:currentUser.id,receiver_id:recipientId,recipient_id:recipientId,content:"CLICKRFUN_MEDIA:"+path+"|"+file.type});
    if(messageError){await supabaseClient.storage.from("dm-voice-notes").remove([path]);throw messageError;}
    dmMediaFile.value="";if(dmMediaPreview){dmMediaPreview.pause();dmMediaPreview.removeAttribute("src");dmMediaPreview.classList.add("hidden");dmMediaPreview.load();}if(dmMediaPreviewUrl){URL.revokeObjectURL(dmMediaPreviewUrl);dmMediaPreviewUrl=null;}
