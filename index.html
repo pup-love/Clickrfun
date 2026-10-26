@@ -670,6 +670,7 @@ hr{border:0;border-top:1px solid var(--cf-border)}
 <form id="dmForm">
 <textarea id="dmInput" maxlength="1000" placeholder="Write a private message..." required></textarea>
 <button id="dmSendButton" type="submit" disabled>Send Private Message 💌</button>
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0"><button id="voiceRecordButton" type="button" disabled>🎙️ Record voice note</button><button id="voiceStopButton" type="button" disabled>⏹️ Stop recording</button><button id="voiceSendButton" type="button" disabled>💌 Send voice note</button><span id="voiceNoteStatus" class="small" role="status" aria-live="polite">Record a short voice note for this DM.</span></div><audio id="voicePreview" controls class="hidden" style="max-width:100%;width:360px;margin:6px 0"></audio>
 <button id="sendDoodleDMButton" type="button" disabled>🖼️ Send saved doodle</button>
 <p id="doodleDmStatus" class="small" role="status">To share a doodle, open Doodle Den and choose “Send in Clickrfun DM”.</p>
 </form>
@@ -1075,6 +1076,8 @@ async function loadPrivateMessages(){
   heading.textContent=message.sender_id===currentUser.id?"You":activeDmUsername;
   if(typeof message.content==="string"&&message.content.startsWith("CLICKRFUN_DOODLE:")){
    const image=document.createElement("img");image.src=message.content.slice("CLICKRFUN_DOODLE:".length);image.alt="Doodle shared in a private message";image.style.cssText="display:block;max-width:min(100%,420px);max-height:420px;object-fit:contain;border-radius:12px;border:2px solid #e779c7;margin:8px 0;background:#fff";box.appendChild(image);
+  }else if(typeof message.content==="string"&&message.content.startsWith("CLICKRFUN_VOICE:")){
+   const audio=document.createElement("audio");audio.controls=true;audio.preload="none";audio.style.cssText="display:block;width:min(100%,360px);margin:8px 0";audio.setAttribute("aria-label","Private voice note");const voicePath=message.content.slice("CLICKRFUN_VOICE:".length);supabaseClient.storage.from("dm-voice-notes").createSignedUrl(voicePath,3600).then(({data,error})=>{if(data&&data.signedUrl)audio.src=data.signedUrl;else audio.title="Voice note unavailable: "+(error&&error.message||"check storage permissions");});box.appendChild(audio);
   }else{
    const body=document.createElement("p");body.textContent=message.content;body.style.margin="6px 0";box.appendChild(body);
   }
@@ -1086,6 +1089,23 @@ async function loadPrivateMessages(){
  $("dmStatus").textContent="Private conversation with "+activeDmUsername;
 }
 
+let voiceRecorder=null,voiceChunks=[],voiceBlob=null,voiceObjectUrl=null,voiceRecordingStream=null;
+const voiceRecordButton=$("voiceRecordButton"),voiceStopButton=$("voiceStopButton"),voiceSendButton=$("voiceSendButton"),voiceStatus=$("voiceNoteStatus"),voicePreview=$("voicePreview");
+function voiceStatusText(message){voiceStatus.textContent=message;}
+function clearVoicePreview(){if(voiceObjectUrl){URL.revokeObjectURL(voiceObjectUrl);voiceObjectUrl=null;}voiceBlob=null;voicePreview.removeAttribute("src");voicePreview.classList.add("hidden");voiceSendButton.disabled=true;}
+voiceRecordButton.addEventListener("click",async()=>{
+ if(!requireLogin()||!activeDmUserId){voiceStatusText("Log in and open a DM first. 💌");return;}
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){voiceStatusText("Voice recording isn't supported in this browser. Try an updated Chrome browser. 💗");return;}
+ try{clearVoicePreview();voiceRecordingStream=await navigator.mediaDevices.getUserMedia({audio:true});const mimeType=["audio/webm;codecs=opus","audio/webm","audio/mp4"].find(type=>MediaRecorder.isTypeSupported(type));voiceRecorder=mimeType?new MediaRecorder(voiceRecordingStream,{mimeType}):new MediaRecorder(voiceRecordingStream);voiceChunks=[];voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data);};voiceRecorder.onstop=()=>{voiceBlob=new Blob(voiceChunks,{type:voiceRecorder.mimeType||"audio/webm"});if(voiceBlob.size>5*1024*1024){clearVoicePreview();voiceStatusText("That note is over 5 MB. Please record a shorter one. 💗");}else if(voiceBlob.size){voiceObjectUrl=URL.createObjectURL(voiceBlob);voicePreview.src=voiceObjectUrl;voicePreview.classList.remove("hidden");voiceSendButton.disabled=false;voiceStatusText("Listen to your note, then send it when you're ready! 🐾");}else voiceStatusText("No audio was recorded. Try again.");if(voiceRecordingStream)voiceRecordingStream.getTracks().forEach(track=>track.stop());voiceRecordingStream=null;voiceRecorder=null;voiceRecordButton.disabled=!currentUser||!activeDmUserId;voiceStopButton.disabled=true;};voiceRecorder.start();voiceRecordButton.disabled=true;voiceStopButton.disabled=false;voiceStatusText("Recording… tap Stop when you're done! 🎙️");}
+ catch(error){if(voiceRecordingStream)voiceRecordingStream.getTracks().forEach(track=>track.stop());voiceRecordingStream=null;voiceStatusText("Couldn't access your microphone. Allow microphone access and try again.");}
+});
+voiceStopButton.addEventListener("click",()=>{if(voiceRecorder&&voiceRecorder.state!=="inactive")voiceRecorder.stop();});
+voiceSendButton.addEventListener("click",async()=>{
+ if(!voiceBlob||!requireLogin()||!activeDmUserId||dmSendInFlight)return;const recipientId=activeDmUserId,blob=voiceBlob;dmSendInFlight=true;voiceSendButton.disabled=true;voiceRecordButton.disabled=true;
+ try{if(await isBlockedEitherWay(recipientId)){voiceStatusText("Private messaging is unavailable because one of you has blocked the other.");return;}const ext=blob.type.includes("mp4")?"m4a":"webm";const path=currentUser.id+"/"+recipientId+"/"+Date.now()+"-"+Math.random().toString(36).slice(2)+"."+ext;const {error:uploadError}=await supabaseClient.storage.from("dm-voice-notes").upload(path,blob,{contentType:blob.type||"audio/webm",upsert:false});if(uploadError)throw uploadError;const {error:messageError}=await supabaseClient.from("private_messages").insert({sender_id:currentUser.id,receiver_id:recipientId,recipient_id:recipientId,content:"CLICKRFUN_VOICE:"+path});if(messageError){await supabaseClient.storage.from("dm-voice-notes").remove([path]);throw messageError;}clearVoicePreview();voiceStatusText("Voice note sent! 💗");await loadPrivateMessages();await loadPrivateInbox();}
+ catch(error){voiceStatusText("Couldn't send voice note: "+(error.message||"check storage policies"));voiceSendButton.disabled=!voiceBlob;}
+ finally{dmSendInFlight=false;voiceRecordButton.disabled=!currentUser||!activeDmUserId;}
+});
 let dmSendInFlight=false;
 $("dmForm").addEventListener("submit",async event=>{
  event.preventDefault();
