@@ -59,6 +59,11 @@
 .pixel-world-footer{background:#f1cce5;color:#9a6296;font-size:.78rem;padding:10px 14px}
 @media(max-width:850px){.pixel-world-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.pixel-world-actions{grid-template-columns:1fr}.pixel-scene{height:360px}.pixel-world-pet{left:50%;bottom:18%;width:70px;height:76px}.pixel-sign{left:40%;font-size:.6rem}.pixel-world-top{align-items:flex-start}}
+
+.pet-room-shell{margin:18px 0;padding:18px;border:2px solid #edc1e2;border-radius:18px;background:linear-gradient(135deg,#fff8fd,#f8e1f3);color:#714a7b;box-shadow:0 6px 0 #e6b7d8}
+.pet-room-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}.pet-room-heading h2{margin:0;color:#a45b9d;font-size:1.45rem}.pet-room-heading p{margin:5px 0}.room-eyebrow{font-size:.7rem;letter-spacing:.12em;font-weight:900;color:#c16ab0}.pet-room-heading label{font-size:.8rem;font-weight:800;min-width:160px}.pet-room-heading select{display:block;margin-top:5px;padding:8px;border:1px solid #e3b4d8;border-radius:9px;background:#fff;color:#714a7b}
+.pet-room-scene{height:270px;overflow:hidden;position:relative;margin-top:12px;border:4px solid #fff;border-radius:13px;box-shadow:inset 0 0 0 2px #e7b5d9;background:#f8d6ed}.pet-room-scene svg{width:100%;height:100%;display:block}
+.pet-room-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.pet-room-bottom p{font-size:.8rem}.pet-room-bottom button,.pet-room-roster button{border:1px solid #d58bc4;border-radius:9px;background:#f8bfe4;color:#7c477b;padding:8px 12px;cursor:pointer;font-weight:700}.pet-room-roster{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.pet-room-roster button.active{background:#c77cbd;color:white;box-shadow:0 2px 0 #995c9b}.pet-room-roster button span{display:block;font-size:.68rem;font-weight:500}
 </style>
 </head>
 <body><main>
@@ -129,6 +134,12 @@
   <div class="pixel-panel"><h3>🌼 Decorate the meadow</h3><p class="muted">Choose a little thing to add to your world.</p><select id="pixelDecoration"><option value="🌷">🌷 Flower patch · free</option><option value="🍄">🍄 Mushroom house · 5 ✨</option><option value="⛲">⛲ Tiny fountain · 12 ✨</option><option value="🪄">🪄 Magic tree · 18 ✨</option><option value="🏰">🏰 Fairy cottage · 30 ✨</option></select><button type="button" id="pixelAddDecoration">Place decoration</button><div id="pixelDecorations" class="muted">Your meadow is ready for decorating!</div></div>
  </div><div class="pixel-world-footer"><span>🌸 Your progress saves on this device</span><span>💗 More meadow adventures coming soon</span></div>
 </section>
+<section class="pet-room-shell" id="petRoomShell">
+ <div class="pet-room-heading"><div><p class="room-eyebrow">A LITTLE HOME FOR EVERY FRIEND</p><h2 id="petRoomTitle">Mochi's Cozy Room</h2><p id="petRoomSubtitle">Every pet gets their own little space to decorate.</p></div><label>Room style<select id="petRoomStyle"><option value="cozy">Cozy cottage</option><option value="candy">Candy pink</option><option value="forest">Mossy forest</option><option value="moon">Moon & stars</option><option value="ocean">Undersea blue</option></select></label></div>
+ <div id="petRoomScene" class="pet-room-scene" aria-label="Your pet's personal room"></div>
+ <div class="pet-room-bottom"><p id="petRoomSaved" aria-live="polite">Each pet keeps its own room style.</p><button type="button" id="savePetRoom">Save this room ✨</button></div>
+ <div id="petRoomRoster" class="pet-room-roster"></div>
+ </section>
 <div class="grid">
 <section class="card"><h2>🌦️ Changing seasons</h2><p>Choose the vibe for Pawtopia on this device.</p><select id="season"><option value="spring">🌷 Spring</option><option value="summer">☀️ Summer</option><option value="autumn">🍂 Autumn</option><option value="winter">❄️ Winter</option><option value="halloween">🎃 Halloween</option><option value="winterfest">🎁 Winterfest</option></select><p id="seasonMessage" class="status"></p></section>
 <section class="card"><h2>🔮 Fortune Paw</h2><p id="fortune">Your daily fortune is waiting...</p><button id="fortuneButton">🐾 Reveal today's fortune</button><p class="muted">One fortune per day, saved on this device.</p></section>
@@ -198,6 +209,24 @@ const pixelPetTypes={
 let pixelWorldState=read('meadowWorld',{stars:30,pets:[{id:'starter-mochi',name:'Mochi',emoji:'🐱',rarity:'Starter',accessory:'none'}],selected:'starter-mochi',decorations:['🌷'],lastQuest:''});
 if(!pixelWorldState||!Array.isArray(pixelWorldState.pets)){pixelWorldState={stars:30,pets:[{id:'starter-mochi',name:'Mochi',emoji:'🐱',rarity:'Starter',accessory:'none'}],selected:'starter-mochi',decorations:['🌷'],lastQuest:''};}
 function pixelSave(){write('meadowWorld',pixelWorldState);}
+const petRoomThemes={cozy:{wall:'#ffe5f0',floor:'#eab8d5',rug:'#d989bf',accent:'#bc7eb1',window:'#9de5f7'},candy:{wall:'#ffd8ee',floor:'#f6b6dc',rug:'#ff83c6',accent:'#c95ca6',window:'#b9eaff'},forest:{wall:'#d8efce',floor:'#9dce9a',rug:'#6fb67e',accent:'#588c68',window:'#a6e9f7'},moon:{wall:'#dcd8ff',floor:'#9b92d5',rug:'#7369b9',accent:'#5d559d',window:'#1c356d'},ocean:{wall:'#c9f5fa',floor:'#84d5e5',rug:'#54b8d6',accent:'#368eaf',window:'#74c6ff'}};
+function petRoomTheme(pet){return pet.roomStyle||'cozy';}
+function petRoomArt(pet){
+ const t=petRoomThemes[petRoomTheme(pet)]||petRoomThemes.cozy;
+ return '<svg viewBox="0 0 800 300" role="img" aria-label="'+escapeHtml(pet.name)+' personal room" shape-rendering="crispEdges"><rect width="800" height="220" fill="'+t.wall+'"/><path d="M0 0H800V18H0zM0 0V220H16V0M784 0H800V220H784" fill="#fff6ff" opacity=".9"/><path d="M0 220H800V300H0z" fill="'+t.floor+'"/><path d="M0 220H800" stroke="'+t.accent+'" stroke-width="8"/><path d="M280 300L390 220H520L640 300Z" fill="'+t.rug+'" stroke="'+t.accent+'" stroke-width="5"/><path d="M330 280l65-45h91l70 45z" fill="#fff0f9" opacity=".3"/><rect x="60" y="35" width="115" height="105" rx="6" fill="#fff6ff" stroke="'+t.accent+'" stroke-width="8"/><rect x="72" y="47" width="91" height="81" fill="'+t.window+'" stroke="#fff" stroke-width="4"/><path d="M117 47v81M72 87h91" stroke="#fff7ff" stroke-width="7"/><rect x="565" y="35" width="175" height="15" fill="'+t.accent+'"/><rect x="580" y="50" width="12" height="75" fill="'+t.accent+'"/><rect x="714" y="50" width="12" height="75" fill="'+t.accent+'"/><rect x="590" y="66" width="120" height="58" fill="#fff2fa" stroke="'+t.accent+'" stroke-width="4"/><rect x="600" y="76" width="100" height="38" fill="'+t.wall+'"/><rect x="610" y="86" width="80" height="6" fill="'+t.accent+'" opacity=".4"/><rect x="600" y="140" width="100" height="9" fill="'+t.accent+'"/><rect x="615" y="149" width="10" height="25" fill="'+t.accent+'"/><rect x="675" y="149" width="10" height="25" fill="'+t.accent+'"/><rect x="595" y="127" width="115" height="20" rx="4" fill="#ffe5a9" stroke="'+t.accent+'" stroke-width="3"/><rect x="300" y="80" width="12" height="28" fill="#fff9fc"/><rect x="315" y="65" width="12" height="43" fill="#fff9fc"/><rect x="330" y="80" width="12" height="28" fill="#fff9fc"/><path d="M280 218h55v-38h-55z" fill="'+t.accent+'"/><path d="M270 180l37-25 38 25z" fill="'+t.rug+'"/><rect x="290" y="188" width="36" height="30" fill="'+t.wall+'"/><ellipse cx="420" cy="228" rx="45" ry="8" fill="'+t.accent+'" opacity=".35"/><g transform="translate(373 124) scale(.92)">'+pixelPetArt(pet).replace(/<svg[^>]*>/,'').replace('</svg>','')+'</g><g fill="#fff8ff"><path d="M235 44l5-12 5 12 12 5-12 5-5 12-5-12-12-5z"/><path d="M495 52l4-9 4 9 9 4-9 4-4 9-4-9-9-4z"/></g><rect x="28" y="245" width="160" height="38" rx="8" fill="#fff8ff" stroke="'+t.accent+'" stroke-width="3"/><text x="108" y="269" text-anchor="middle" font-size="15" font-weight="bold" fill="'+t.accent+'">'+escapeHtml(pet.name.toUpperCase())+'’S ROOM</text></svg>';
+}
+function renderPetRoom(){
+ const pet=pixelSelected();if(!pet)return;
+ $('petRoomTitle').textContent=pet.name+"'s Cozy Room";
+ $('petRoomSubtitle').textContent=pet.name+" has a room all their own. Pick a style just for them!";
+ $('petRoomStyle').value=petRoomTheme(pet);
+ $('petRoomScene').innerHTML=petRoomArt(pet);
+ $('petRoomRoster').innerHTML=pixelWorldState.pets.map(p=>'<button type="button" class="'+(p.id===pet.id?'active':'')+'" data-room-pet="'+escapeHtml(p.id)+'">'+escapeHtml(p.name)+'<span>'+({cozy:'Cozy cottage',candy:'Candy pink',forest:'Mossy forest',moon:'Moon & stars',ocean:'Undersea blue'}[petRoomTheme(p)]||'Cozy cottage')+'</span></button>').join('');
+ document.querySelectorAll('[data-room-pet]').forEach(btn=>btn.addEventListener('click',()=>{const next=pixelWorldState.pets.find(p=>p.id===btn.dataset.roomPet);if(!next)return;pixelWorldState.selected=next.id;pixelSave();pixelRender();renderPetRoom();}));
+}
+$('petRoomStyle').addEventListener('change',()=>{const pet=pixelSelected();if(!pet)return;pet.roomStyle=$('petRoomStyle').value;renderPetRoom();$('petRoomSaved').textContent='Previewing '+pet.name+"'s new room style — press Save this room to keep it!";});
+$('savePetRoom').addEventListener('click',()=>{const pet=pixelSelected();if(!pet)return;pet.roomStyle=$('petRoomStyle').value;pixelSave();renderPetRoom();$('petRoomSaved').textContent=pet.name+"'s room is saved! Every other pet keeps its own room. ✨";});
+
 function pixelSelected(){return pixelWorldState.pets.find(p=>p.id===pixelWorldState.selected)||pixelWorldState.pets[0];}
 function pixelPetArt(pet){
  const details=((pet.name||'')+' '+(pet.emoji||'')).toLowerCase();
@@ -235,6 +264,7 @@ function pixelRender(){
  $('pixelDecorations').textContent=pixelWorldState.decorations.length?pixelWorldState.decorations.length+' decoration(s) placed':'Your meadow is ready for decorating!';
  const decoPositions=[[12,77],[29,86],[40,72],[57,85],[68,75],[88,86],[95,69],[18,59],[49,91],[76,57],[36,94],[83,93]];
  $('pixelWorldDeco').innerHTML=pixelWorldState.decorations.map((d,i)=>{const pos=decoPositions[i%decoPositions.length];return '<span style="position:absolute;left:'+pos[0]+'%;top:'+pos[1]+'%;width:18px;height:18px;border-radius:50%;background:#fff4b4;border:2px solid #f6a7d5;box-shadow:0 2px #7db77d" aria-label="Meadow decoration"></span>';}).join('');
+ renderPetRoom();
  $('pixelDailyQuest').disabled=pixelWorldState.lastQuest===new Date().toISOString().slice(0,10);
  if($('pixelDailyQuest').disabled)$('pixelQuestStatus').textContent='Daily bonus claimed! Come back tomorrow for more stardust.';
 }
