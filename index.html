@@ -904,6 +904,7 @@ async function openPrivateDM(userId,username){
  catch(error){$("dmStatus").textContent="Couldn't check block settings: "+error.message;return;}
  activeDmUserId=userId;
  activeDmUsername=username;
+ if($("dmCameraOpen"))$("dmCameraOpen").disabled=false;
  if($("dmMediaFile"))$("dmMediaFile").disabled=false;if($("dmMediaSendButton"))$("dmMediaSendButton").disabled=false;
  const voiceRecordControl=$("voiceRecordButton");if(voiceRecordControl)voiceRecordControl.disabled=false;
  const voiceStopControl=$("voiceStopButton");if(voiceStopControl)voiceStopControl.disabled=true;
