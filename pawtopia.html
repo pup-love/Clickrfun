@@ -28,13 +28,91 @@
 #board .cell{height:70px;width:70px;font-size:1.7rem}
 .game-picks button{font-size:1.05rem}
 @keyframes seasonFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* Pawtopia illustrated-world redesign */
+.pixel-world{border:0;border-radius:18px;overflow:hidden;background:#fbe8f5;color:#704b79;box-shadow:0 12px 40px #12082088;font-family:ui-rounded,"Trebuchet MS",Arial,sans-serif}
+.pixel-world-top{padding:13px 18px;background:linear-gradient(100deg,#ffe5f4,#f8cce8);border-bottom:2px solid #e8afd5;min-height:75px}
+.pixel-world-top h2{font-size:clamp(1.5rem,3vw,2.25rem);letter-spacing:-.04em;color:#a65ca0;text-shadow:1px 2px #fff;margin:0}
+.pixel-world-top p{font-size:.88rem;color:#865c8c;margin:2px 0}
+.pixel-world-balance{background:#fff;border:2px solid #edc2e3;border-radius:24px;padding:8px 13px;color:#8a5797;box-shadow:0 3px 0 #e8b3d9}
+.pixel-scene{height:clamp(350px,54vw,580px);min-height:350px;position:relative;background:#a8dcf2;border:0;overflow:hidden;isolation:isolate}
+.pt-scene-svg{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated}
+.pixel-world-pet{position:absolute;left:48%;bottom:19%;width:84px;height:90px;transform:translateX(-50%);font-size:0;filter:drop-shadow(0 5px 0 #578c7666);z-index:5;animation:petBounce 2.3s ease-in-out infinite}
+.pixel-world-pet svg{width:100%;height:100%;overflow:visible;image-rendering:pixelated}
+@keyframes petBounce{0%,100%{translate:0 0}50%{translate:0 -5px}}
+.pixel-sign{position:absolute;left:43%;bottom:7%;right:auto;background:#fff8d8;border:2px solid #d8a879;border-radius:4px;padding:6px 10px;font-size:.7rem;letter-spacing:.06em;color:#95634e;box-shadow:3px 4px #b9827966;transform:rotate(-2deg);z-index:6}
+.pixel-world-actions{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:11px;background:#f8dced}
+.pixel-panel{border:2px solid #edc3df;border-radius:13px;padding:12px;background:linear-gradient(#fffafd,#fff3fa);box-shadow:0 3px 0 #e7b6d9}
+.pixel-panel h3{font-size:1rem;color:#a45b9d;margin:0 0 8px}
+.pixel-panel button{font-size:.78rem;border:1px solid #d58bc4;border-radius:8px;background:#f8bfe4;color:#7c477b;box-shadow:0 2px 0 #d98bc1;padding:7px 9px}
+.pixel-panel button:hover{background:#ffd8ef}
+.pixel-panel button:disabled{opacity:.55}
+.pixel-pet-book{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pixel-pet-card{padding:5px!important;min-width:0;box-shadow:none!important;border:1px solid #edc3df!important;background:#fff!important}
+.pixel-pet-card .sprite{height:45px;display:grid;place-items:center;font-size:0}
+.pixel-pet-card .sprite svg{height:43px;width:43px}
+.pixel-pet-card strong{font-size:.75rem;display:block;overflow-wrap:anywhere}
+.pixel-pet-card small{font-size:.65rem}
+.pixel-world .muted{font-size:.78rem;line-height:1.35}
+.pixel-world label{font-size:.8rem;font-weight:700}
+.pixel-world select,.pixel-world input{width:100%;margin:4px 0 7px;padding:8px;border:1px solid #e3b4d8;background:#fff;border-radius:8px;color:#714a7b}
+.pixel-world-footer{background:#f1cce5;color:#9a6296;font-size:.78rem;padding:10px 14px}
+@media(max-width:850px){.pixel-world-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.pixel-world-actions{grid-template-columns:1fr}.pixel-scene{height:360px}.pixel-world-pet{left:50%;bottom:18%;width:70px;height:76px}.pixel-sign{left:40%;font-size:.6rem}.pixel-world-top{align-items:flex-start}}
 </style>
 </head>
 <body><main>
 <header><h1>🐾 Pawtopia: Clickrfun's little world 💗</h1><p>Collect things, find secrets, and play a tiny game!</p><a href="https://pup-love.github.io/Clickrfun/" style="color:#ff9cde">← Back to Clickrfun</a></header>
 <section class="pixel-world" aria-labelledby="pixelWorldTitle">
  <div class="pixel-world-top"><div><div style="font-weight:900;letter-spacing:.16em;font-size:.75rem;color:#b66da8">✦ YOUR LITTLE WORLD ✦</div><h2 id="pixelWorldTitle">🌷 Pawtopia Meadow</h2><p>Hatch tiny friends, dress them up, and make this place yours!</p></div><div class="pixel-world-balance">✨ <span id="pixelWorldStars">0</span> stardust</div></div>
- <div class="pixel-scene" aria-label="Pastel pixel-art meadow with a cottage, garden, and your pet"><span class="pixel-cloud" style="left:12%;top:12%">☁️</span><span class="pixel-cloud" style="left:48%;top:5%;font-size:30px">☁️</span><span class="pixel-sun">☀️</span><div class="pixel-hill"></div><div class="pixel-hill h2"></div><div class="pixel-path"></div><div class="pixel-house"><div class="pixel-roof"></div><div class="pixel-door"></div><div class="pixel-window"></div></div><span class="pixel-tree">🌳</span><span class="pixel-flower" style="left:8%">🌷</span><span class="pixel-flower" style="left:25%;animation-delay:.5s">🌼</span><span class="pixel-flower" style="left:72%;animation-delay:.8s">🌸</span><span class="pixel-flower" style="left:87%;animation-delay:.3s">🍄</span><div id="pixelWorldDeco" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;z-index:3"></div><div class="pixel-world-pet" id="pixelWorldPet" aria-label="Your selected pet">🐱</div><div class="pixel-sign" id="pixelWorldSign">WELCOME, PAWFECT FRIEND!</div></div>
+ <div class="pixel-scene" aria-label="Illustrated pastel pixel-art Pawtopia village with cottage, gardens, waterfall, river and bridge">
+<svg class="pt-scene-svg" viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Pink cottage beside a winding blue river, flowering trees, a waterfall and a little wooden bridge">
+<defs>
+ <linearGradient id="ptSky" x2="0" y2="1"><stop stop-color="#9bd9f5"/><stop offset="1" stop-color="#e5eaff"/></linearGradient>
+ <linearGradient id="ptGrass" x2="0" y2="1"><stop stop-color="#8bd39b"/><stop offset="1" stop-color="#4eaa82"/></linearGradient>
+ <linearGradient id="ptWater" x2="0.9" y2="1"><stop stop-color="#8be6f3"/><stop offset=".55" stop-color="#54b9e4"/><stop offset="1" stop-color="#648fe0"/></linearGradient>
+ <pattern id="ptPixels" width="18" height="18" patternUnits="userSpaceOnUse"><path d="M2 4h3v3H2zM12 12h2v2h-2z" fill="#e4ffbf" opacity=".32"/></pattern>
+ <g id="ptFlower"><path d="M0 8v18" stroke="#398a5d" stroke-width="3"/><rect x="-8" y="-1" width="7" height="7" fill="#ff8fc9"/><rect x="2" y="-1" width="7" height="7" fill="#ff8fc9"/><rect x="-3" y="-6" width="7" height="7" fill="#ffb8e1"/><rect x="-3" y="4" width="7" height="7" fill="#ffb8e1"/><rect x="-1" y="1" width="4" height="4" fill="#ffe58a"/></g>
+ <g id="ptTree"><rect x="-7" y="28" width="14" height="31" fill="#a96e5b"/><rect x="-30" y="3" width="24" height="27" fill="#62b77d"/><rect x="-10" y="-13" width="29" height="28" fill="#79cc89"/><rect x="8" y="8" width="26" height="25" fill="#4cae7b"/><rect x="-23" y="-9" width="18" height="18" fill="#95d99a"/><g fill="#ffb5df"><rect x="-24" y="4" width="6" height="6"/><rect x="2" y="-9" width="6" height="6"/><rect x="18" y="13" width="6" height="6"/><rect x="-8" y="19" width="6" height="6"/></g></g>
+</defs>
+<rect width="1000" height="560" fill="url(#ptSky)"/>
+<!-- blocky clouds -->
+<g fill="#fff6ff" stroke="#d8d6f5" stroke-width="3"><path d="M45 90h35V70h25V52h43v18h25v20h20v23H45z"/><path d="M420 62h28V45h32V28h45v17h24v17h24v20H420z"/><path d="M780 118h28V96h32V80h43v16h25v22h22v20H780z"/></g>
+<rect y="205" width="1000" height="355" fill="url(#ptGrass)"/><path d="M0 265Q150 200 290 267T560 242T1000 255V560H0Z" fill="#9ad995"/><path d="M0 415Q200 330 355 407T680 385T1000 410V560H0Z" fill="#73c88c"/><rect y="205" width="1000" height="355" fill="url(#ptPixels)"/>
+<!-- distant pink blossom grove -->
+<g opacity=".95"><use href="#ptTree" x="375" y="205" transform="translate(375 205) scale(1.25) translate(-375 -205)"/><use href="#ptTree" x="650" y="200"/><use href="#ptTree" x="850" y="205"/><use href="#ptTree" x="930" y="245"/></g>
+<!-- waterfall and river -->
+<path d="M720 130h65v63h-18v34h-19v31h-28z" fill="#6ba6df" stroke="#5787c2" stroke-width="5"/><path d="M731 139h12v81h-12zM752 142h10v68h-10zM769 145h8v52h-8z" fill="#d5fbff"/><path d="M735 222c-20 54-66 47-87 86s-5 64 50 82 101 48 110 90 68 39 100 6 17-69-32-93-75-50-63-83 62-44 70-84" fill="none" stroke="#4a9fda" stroke-width="102" stroke-linecap="square"/><path d="M735 222c-20 54-66 47-87 86s-5 64 50 82 101 48 110 90 68 39 100 6 17-69-32-93-75-50-63-83 62-44 70-84" fill="none" stroke="url(#ptWater)" stroke-width="88"/><path d="M735 222c-20 54-66 47-87 86s-5 64 50 82 101 48 110 90 68 39 100 6 17-69-32-93-75-50-63-83 62-44 70-84" fill="none" stroke="#d6fbff" stroke-width="5" stroke-dasharray="12 24" opacity=".8"/>
+<!-- bridge -->
+<path d="M706 371q56-78 117 0l-9 16q-49-59-100 0z" fill="#e9a2c4" stroke="#9d668e" stroke-width="6"/><path d="M708 367q57-68 114 0" fill="none" stroke="#ffd3e9" stroke-width="9"/><path d="M721 357v-18m22 2v-20m24 20v-18m23 17v17" stroke="#9d668e" stroke-width="7"/>
+<!-- stepping stones and path -->
+<path d="M80 560Q170 475 270 460T440 410" fill="none" stroke="#e8c99b" stroke-width="62"/><path d="M80 560Q170 475 270 460T440 410" fill="none" stroke="#ffe4b8" stroke-width="47"/><g fill="#d6b28a"><rect x="136" y="490" width="24" height="12"/><rect x="187" y="470" width="24" height="12"/><rect x="242" y="451" width="24" height="12"/><rect x="301" y="438" width="24" height="12"/></g>
+<!-- cottage shadow -->
+<path d="M50 376h360v153H50z" fill="#3d8d70" opacity=".25"/>
+<!-- cottage walls -->
+<rect x="75" y="300" width="286" height="205" fill="#ffe0ed" stroke="#b66f9e" stroke-width="8"/><rect x="92" y="318" width="252" height="169" fill="#ffd2e5"/><path d="M60 307L218 185 382 307z" fill="#d778b4" stroke="#a65b9a" stroke-width="9"/><path d="M86 300L218 204 357 300z" fill="#f4a5d2"/><path d="M98 291l25-19 19 20 20-20 20 18 20-20 19 18 20-20 19 20 21-19 19 21 22-19 20 20" fill="none" stroke="#ffe2f4" stroke-width="9"/>
+<!-- roof shingles -->
+<g fill="#c86ba8" stroke="#a95391" stroke-width="3"><rect x="117" y="263" width="34" height="15"/><rect x="160" y="230" width="34" height="15"/><rect x="204" y="218" width="34" height="15"/><rect x="248" y="232" width="34" height="15"/><rect x="291" y="264" width="34" height="15"/><rect x="139" y="285" width="34" height="14"/><rect x="183" y="264" width="34" height="14"/><rect x="227" y="264" width="34" height="14"/><rect x="271" y="285" width="34" height="14"/></g>
+<!-- attic window -->
+<rect x="188" y="246" width="61" height="61" rx="4" fill="#a66a9a" stroke="#fff0fb" stroke-width="6"/><rect x="198" y="256" width="41" height="41" fill="#8bd8f1"/><path d="M218 256v41m-20-20h41" stroke="#fff4ff" stroke-width="6"/>
+<!-- front door and windows -->
+<rect x="178" y="391" width="77" height="114" rx="8" fill="#b779ad" stroke="#fff0f8" stroke-width="7"/><rect x="190" y="405" width="53" height="88" fill="#e6a6d2"/><circle cx="235" cy="453" r="5" fill="#ffe88b"/><rect x="101" y="361" width="59" height="61" fill="#a96c9b" stroke="#fff0f8" stroke-width="7"/><rect x="110" y="370" width="41" height="43" fill="#91dcf3"/><path d="M130 370v43m-20-22h41" stroke="#fff5fb" stroke-width="5"/><rect x="276" y="361" width="59" height="61" fill="#a96c9b" stroke="#fff0f8" stroke-width="7"/><rect x="285" y="370" width="41" height="43" fill="#91dcf3"/><path d="M305 370v43m-20-22h41" stroke="#fff5fb" stroke-width="5"/>
+<!-- flower boxes -->
+<rect x="97" y="420" width="69" height="14" fill="#b16e87"/><g><use href="#ptFlower" x="113" y="417"/><use href="#ptFlower" x="137" y="414"/><use href="#ptFlower" x="299" y="417"/><use href="#ptFlower" x="319" y="414"/></g>
+<!-- fence -->
+<g fill="#fff4ee" stroke="#c98bb5" stroke-width="4"><rect x="390" y="365" width="15" height="86"/><path d="M384 367l13-19 14 19z" fill="#fff8f3"/><rect x="420" y="365" width="15" height="86"/><path d="M414 367l13-19 14 19z" fill="#fff8f3"/><rect x="450" y="365" width="15" height="86"/><path d="M444 367l13-19 14 19z" fill="#fff8f3"/><rect x="480" y="365" width="15" height="86"/><path d="M474 367l13-19 14 19z" fill="#fff8f3"/><path d="M385 390h112M385 423h112" fill="none"/></g>
+<!-- foreground blossom trees -->
+<use href="#ptTree" x="520" y="400" transform="translate(520 400) scale(1.55) translate(-520 -400)"/><use href="#ptTree" x="920" y="365" transform="translate(920 365) scale(1.5) translate(-920 -365)"/><use href="#ptTree" x="45" y="440" transform="translate(45 440) scale(1.25) translate(-45 -440)"/>
+<!-- flowers -->
+<g><use href="#ptFlower" x="405" y="470"/><use href="#ptFlower" x="450" y="500"/><use href="#ptFlower" x="510" y="490"/><use href="#ptFlower" x="580" y="470"/><use href="#ptFlower" x="630" y="505"/><use href="#ptFlower" x="870" y="480"/><use href="#ptFlower" x="955" y="510"/><use href="#ptFlower" x="375" y="530"/><use href="#ptFlower" x="700" y="530"/></g>
+<!-- pond sparkle details -->
+<g fill="#e5ffff"><rect x="758" y="405" width="18" height="5"/><rect x="812" y="438" width="13" height="5"/><rect x="862" y="398" width="19" height="5"/><rect x="780" y="473" width="15" height="5"/><path d="M835 415l5-10 5 10-5 10z"/></g>
+<!-- swing garden -->
+<g stroke="#986e87" stroke-width="7" fill="none"><path d="M825 205l20-105 20 105M832 160h27"/></g><path d="M831 161q14 22 28 0" fill="none" stroke="#d28bb7" stroke-width="5"/><rect x="833" y="180" width="27" height="8" fill="#d8a06c" stroke="#9b6d60" stroke-width="3"/>
+<!-- butterflies -->
+<g fill="#ffd5f0" stroke="#d98abf" stroke-width="2"><rect x="445" y="270" width="9" height="12"/><rect x="454" y="265" width="9" height="12"/><rect x="454" y="277" width="9" height="12"/><rect x="463" y="270" width="9" height="12"/><rect x="610" y="300" width="8" height="10"/><rect x="618" y="295" width="8" height="10"/><rect x="618" y="305" width="8" height="10"/><rect x="626" y="300" width="8" height="10"/></g>
+</svg>
+<div id="pixelWorldDeco" aria-hidden="true" style="position:absolute;inset:0;pointer-events:none;z-index:3"></div><div class="pixel-world-pet" id="pixelWorldPet" aria-label="Your selected pet"></div><div class="pixel-sign" id="pixelWorldSign">YOUR MEADOW</div></div>
  <div class="pixel-world-actions">
   <div class="pixel-panel"><h3>🥚 Mystery egg shop</h3><p class="muted">Hatch a new friend! Each egg has different possible pets.</p><button type="button" data-egg="meadow">🌷 Meadow egg · 10 ✨</button><button type="button" data-egg="star">🌟 Star egg · 25 ✨</button><button type="button" data-egg="moon">🌙 Moon egg · 40 ✨</button><p id="pixelHatchStatus" class="status" aria-live="polite">Your first little adventure awaits!</p><button type="button" id="pixelDailyQuest">📅 Daily login bonus (+8 ✨)</button><p id="pixelQuestStatus" class="muted" aria-live="polite">Daily bonus: come back each day for stardust.</p></div>
   <div class="pixel-panel"><h3>🎀 Dress up your pet</h3><p class="muted">Pick your favorite friend, then choose an accessory.</p><label for="pixelPetName">Pet name</label><br><input id="pixelPetName" maxlength="18" placeholder="e.g. Mochi"><br><label for="pixelAccessory">Accessory</label><br><select id="pixelAccessory"><option value="none">No accessory</option><option value="🎀">🎀 Pink bow</option><option value="👑">👑 Tiny crown</option><option value="🌸">🌸 Flower crown</option><option value="🕶️">🕶️ Cool shades</option><option value="🪽">🪽 Fairy wings</option><option value="🧣">🧣 Cozy scarf</option></select><button type="button" id="pixelSaveLook">Save look 💗</button><p id="pixelDressStatus" class="status" aria-live="polite">Your look saves on this device.</p></div>
@@ -112,20 +190,29 @@ let pixelWorldState=read('meadowWorld',{stars:30,pets:[{id:'starter-mochi',name:
 if(!pixelWorldState||!Array.isArray(pixelWorldState.pets)){pixelWorldState={stars:30,pets:[{id:'starter-mochi',name:'Mochi',emoji:'🐱',rarity:'Starter',accessory:'none'}],selected:'starter-mochi',decorations:['🌷'],lastQuest:''};}
 function pixelSave(){write('meadowWorld',pixelWorldState);}
 function pixelSelected(){return pixelWorldState.pets.find(p=>p.id===pixelWorldState.selected)||pixelWorldState.pets[0];}
+function pixelPetArt(pet){
+ const cat=/cat|shadow|twinkle|mochi|kitty/i.test((pet.name||'')+' '+(pet.emoji||'')) || (pet.emoji||'').includes('🐱') || (pet.emoji||'').includes('🐈');
+ const fur=cat?'#f3a16c':'#d9a16f',light=cat?'#ffd0a5':'#ffe0bd',ear=cat?'#cf7c63':'#b77b61';
+ const ears=cat?'<path d="M24 37L22 10 43 27M58 27L78 10 76 38" fill="'+ear+'" stroke="#865477" stroke-width="3"/><path d="M28 29l-2-11 11 12M63 30l11-12-2 13" fill="#f5a6b9"/>':'<path d="M28 30Q7 24 13 52Q17 68 33 54M67 30Q89 23 86 50Q82 67 66 54" fill="'+ear+'" stroke="#865477" stroke-width="3"/>';
+ const accessory=pet.accessory==='none'?'':pet.accessory==='bow'?'<path d="M60 20q-16-15-16 0t16 0q16-15 16 0t-16 0" fill="#ff6db8" stroke="#a94f95" stroke-width="3"/>':pet.accessory==='crown'?'<path d="M35 25L30 8 45 17 53 3 61 17 75 8 70 27z" fill="#ffe57d" stroke="#c68c56" stroke-width="3"/>':pet.accessory==='flower'?'<g fill="#ff9fd1" stroke="#fff0fb" stroke-width="2"><circle cx="53" cy="18" r="7"/><circle cx="44" cy="18" r="7"/><circle cx="49" cy="10" r="7"/><circle cx="49" cy="25" r="7"/><circle cx="49" cy="18" r="4" fill="#ffe58a"/></g>':'';
+ return '<svg viewBox="0 0 100 110" role="img" aria-label="'+escapeHtml(pet.name)+' pet sprite" shape-rendering="crispEdges"><ellipse cx="50" cy="101" rx="31" ry="6" fill="#478b6d" opacity=".28"/>'+ears+'<path d="M28 38Q27 24 50 24Q74 24 73 40L78 65Q78 88 50 92Q22 88 22 65z" fill="'+fur+'" stroke="#865477" stroke-width="3"/><path d="M31 57Q31 45 50 45Q69 45 69 57L66 74Q50 86 34 74z" fill="'+light+'"/><ellipse cx="39" cy="54" rx="4" ry="6" fill="#543d61"/><ellipse cx="61" cy="54" rx="4" ry="6" fill="#543d61"/><rect x="47" y="63" width="6" height="5" rx="2" fill="#8f5a72"/><path d="M45 69q5 6 10 0" fill="none" stroke="#8f5a72" stroke-width="2.5" stroke-linecap="round"/><path d="M29 67l-12-2m13 7-12 2m55-7 12-2m-13 7 12 2" stroke="#fff0d9" stroke-width="2" stroke-linecap="round"/>'+accessory+'<path d="M32 88l-2 10h13l2-9m13 0 2 9h13l-2-10" fill="'+light+'" stroke="#865477" stroke-width="3"/></svg>';
+}
 function pixelRender(){
  const pet=pixelSelected();$('pixelWorldStars').textContent=pixelWorldState.stars;
- $('pixelWorldPet').textContent=(pet.accessory&&pet.accessory!=='none'?pet.accessory:'')+pet.emoji;
+ $('pixelWorldPet').innerHTML=pixelPetArt(pet);
  $('pixelWorldPet').setAttribute('aria-label',pet.name+', '+pet.rarity);
  $('pixelWorldSign').textContent=(pet.name||'YOUR PET').toUpperCase()+'’S MEADOW';
  $('pixelPetName').value=pet.name||'';
- $('pixelAccessory').value=pet.accessory||'none';
- $('pixelPetBook').innerHTML=pixelWorldState.pets.map(p=>'<button type="button" class="pixel-pet-card'+(p.id===pixelWorldState.selected?' selected':'')+'" data-pixel-pet="'+p.id.replace(/[^a-zA-Z0-9_-]/g,'')+'"><div class="sprite">'+(p.accessory&&p.accessory!=='none'?p.accessory:'')+p.emoji+'</div><strong>'+escapeHtml(p.name)+'</strong><br><small>'+escapeHtml(p.rarity)+'</small></button>').join('');
- document.querySelectorAll('[data-pixel-pet]').forEach(b=>b.addEventListener('click',()=>{const p=pixelWorldState.pets.find(p=>p.id.replace(/[^a-zA-Z0-9_-]/g,'')===b.dataset.pixelPet);if(!p)return;pixelWorldState.selected=p.id;pixelSave();pixelRender();$('pixelHatchStatus').textContent=p.name+' is now your meadow buddy! 💗';}));
+ const accessoryMap={none:'none','🎀':'bow','👑':'crown','🌸':'flower'};
+ $('pixelAccessory').value=accessoryMap[pet.accessory]||'none';
+ $('pixelPetBook').innerHTML=pixelWorldState.pets.map(p=>'<button type="button" class="pixel-pet-card'+(p.id===pixelWorldState.selected?' selected':'')+'" data-pixel-pet="'+p.id.replace(/[^a-zA-Z0-9_-]/g,'')+'"><div class="sprite">'+pixelPetArt(p)+'</div><strong>'+escapeHtml(p.name)+'</strong><small>'+escapeHtml(p.rarity)+'</small></button>').join('');
+ document.querySelectorAll('[data-pixel-pet]').forEach(b=>b.addEventListener('click',()=>{const p=pixelWorldState.pets.find(p=>p.id.replace(/[^a-zA-Z0-9_-]/g,'')===b.dataset.pixelPet);if(!p)return;pixelWorldState.selected=p.id;pixelSave();pixelRender();$('pixelHatchStatus').textContent=p.name+' is now your meadow buddy!';}));
  $('pixelCollectionStatus').textContent=pixelWorldState.pets.length+' friend'+(pixelWorldState.pets.length===1?'':'s')+' collected · '+pixelWorldState.pets.filter(p=>p.rarity==='Rare'||p.rarity==='Epic').length+' rare or epic';
- $('pixelDecorations').textContent=pixelWorldState.decorations.length?pixelWorldState.decorations.join('  '):'Your meadow is ready for decorating!';
- $('pixelWorldDeco').innerHTML=pixelWorldState.decorations.map((d,i)=>'<span style="position:absolute;left:'+(8+(i*19)%82)+'%;top:'+(42+(i%3)*12)+'%;font-size:30px;filter:drop-shadow(2px 2px #528c68)">'+d+'</span>').join('');
+ $('pixelDecorations').textContent=pixelWorldState.decorations.length?pixelWorldState.decorations.length+' decoration(s) placed':'Your meadow is ready for decorating!';
+ const decoPositions=[[12,77],[29,86],[40,72],[57,85],[68,75],[88,86],[95,69],[18,59],[49,91],[76,57],[36,94],[83,93]];
+ $('pixelWorldDeco').innerHTML=pixelWorldState.decorations.map((d,i)=>{const pos=decoPositions[i%decoPositions.length];return '<span style="position:absolute;left:'+pos[0]+'%;top:'+pos[1]+'%;width:18px;height:18px;border-radius:50%;background:#fff4b4;border:2px solid #f6a7d5;box-shadow:0 2px #7db77d" aria-label="Meadow decoration"></span>';}).join('');
  $('pixelDailyQuest').disabled=pixelWorldState.lastQuest===new Date().toISOString().slice(0,10);
- if($('pixelDailyQuest').disabled)$('pixelQuestStatus').textContent='Daily bonus claimed! Come back tomorrow for more stardust. ✨';
+ if($('pixelDailyQuest').disabled)$('pixelQuestStatus').textContent='Daily bonus claimed! Come back tomorrow for more stardust.';
 }
 document.querySelectorAll('[data-egg]').forEach(button=>button.addEventListener('click',()=>{
  const kind=button.dataset.egg,cost={meadow:10,star:25,moon:40}[kind];
@@ -141,7 +228,7 @@ document.querySelectorAll('[data-egg]').forEach(button=>button.addEventListener(
 $('pixelSaveLook').addEventListener('click',()=>{
  const pet=pixelSelected();if(!pet)return;
  const name=$('pixelPetName').value.trim().slice(0,18);if(name)pet.name=name;
- pet.accessory=$('pixelAccessory').value;pixelSave();pixelRender();
+ pet.accessory=({none:'none',bow:'bow',crown:'crown',flower:'flower'})[$('pixelAccessory').value]||'none';pixelSave();pixelRender();
  $('pixelDressStatus').textContent='AWWW '+pet.name+' looks adorable! Your look is saved. 🎀';
 });
 $('pixelDailyQuest').addEventListener('click',()=>{
