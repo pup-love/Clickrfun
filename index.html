@@ -1080,7 +1080,7 @@ async function loadPrivateMessages(){
   }
   const time=document.createElement("time");
   time.textContent=new Date(message.created_at).toLocaleString();
-  box.append(heading,body,time);
+  box.append(heading,time);
   container.appendChild(box);
  }
  $("dmStatus").textContent="Private conversation with "+activeDmUsername;
