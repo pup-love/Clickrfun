@@ -671,6 +671,7 @@ hr{border:0;border-top:1px solid var(--cf-border)}
 <textarea id="dmInput" maxlength="1000" placeholder="Write a private message..." required></textarea>
 <button id="dmSendButton" type="submit" disabled>Send Private Message 💌</button>
 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0"><button id="voiceRecordButton" type="button" disabled>🎙️ Record voice note</button><button id="voiceStopButton" type="button" disabled>⏹️ Stop recording</button><button id="voiceSendButton" type="button" disabled>💌 Send voice note</button><span id="voiceNoteStatus" class="small" role="status" aria-live="polite">Record a short voice note for this DM.</span></div><audio id="voicePreview" controls class="hidden" style="max-width:100%;width:360px;margin:6px 0"></audio>
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0"><label for="dmMediaFile">🖼️ Attach photo/video</label><input id="dmMediaFile" type="file" accept="image/*,video/*" disabled><button id="dmMediaSendButton" type="button" disabled>Send photo/video 💗</button><span id="dmMediaStatus" class="small" role="status" aria-live="polite">Photos and videos up to 25 MB.</span></div><video id="dmMediaPreview" controls class="hidden" style="max-width:100%;max-height:320px;width:100%;margin:6px 0" playsinline></video>
 <button id="sendDoodleDMButton" type="button" disabled>🖼️ Send saved doodle</button>
 <p id="doodleDmStatus" class="small" role="status">To share a doodle, open Doodle Den and choose “Send in Clickrfun DM”.</p>
 </form>
@@ -902,6 +903,7 @@ async function openPrivateDM(userId,username){
  catch(error){$("dmStatus").textContent="Couldn't check block settings: "+error.message;return;}
  activeDmUserId=userId;
  activeDmUsername=username;
+ if($("dmMediaFile"))$("dmMediaFile").disabled=false;if($("dmMediaSendButton"))$("dmMediaSendButton").disabled=false;
  const voiceRecordControl=$("voiceRecordButton");if(voiceRecordControl)voiceRecordControl.disabled=false;
  const voiceStopControl=$("voiceStopButton");if(voiceStopControl)voiceStopControl.disabled=true;
  const voiceSendControl=$("voiceSendButton");if(voiceSendControl)voiceSendControl.disabled=true;
@@ -1080,6 +1082,8 @@ async function loadPrivateMessages(){
   heading.textContent=message.sender_id===currentUser.id?"You":activeDmUsername;
   if(typeof message.content==="string"&&message.content.startsWith("CLICKRFUN_DOODLE:")){
    const image=document.createElement("img");image.src=message.content.slice("CLICKRFUN_DOODLE:".length);image.alt="Doodle shared in a private message";image.style.cssText="display:block;max-width:min(100%,420px);max-height:420px;object-fit:contain;border-radius:12px;border:2px solid #e779c7;margin:8px 0;background:#fff";box.appendChild(image);
+  }else if(typeof message.content==="string"&&message.content.startsWith("CLICKRFUN_MEDIA:")){
+   const mediaParts=message.content.slice("CLICKRFUN_MEDIA:".length).split("|");const mediaPath=mediaParts[0];const mediaType=mediaParts.slice(1).join("|")||"";const isVideo=mediaType.startsWith("video/");const mediaEl=document.createElement(isVideo?"video":"img");if(isVideo){mediaEl.controls=true;mediaEl.preload="metadata";mediaEl.playsInline=true;mediaEl.style.cssText="display:block;width:min(100%,420px);max-height:420px;margin:8px 0;border-radius:12px;border:2px solid #e779c7";}else{mediaEl.alt="Photo sent in private message";mediaEl.loading="lazy";mediaEl.style.cssText="display:block;max-width:min(100%,420px);max-height:420px;object-fit:contain;border-radius:12px;border:2px solid #e779c7;margin:8px 0;background:#fff";}supabaseClient.storage.from("dm-voice-notes").createSignedUrl(mediaPath,3600).then(({data,error})=>{if(data&&data.signedUrl)mediaEl.src=data.signedUrl;else if(!isVideo)mediaEl.alt="Media unavailable: "+(error&&error.message||"check storage permissions");});box.appendChild(mediaEl);
   }else if(typeof message.content==="string"&&message.content.startsWith("CLICKRFUN_VOICE:")){
    const audio=document.createElement("audio");audio.controls=true;audio.preload="none";audio.style.cssText="display:block;width:min(100%,360px);margin:8px 0";audio.setAttribute("aria-label","Private voice note");const voicePath=message.content.slice("CLICKRFUN_VOICE:".length);supabaseClient.storage.from("dm-voice-notes").createSignedUrl(voicePath,3600).then(({data,error})=>{if(data&&data.signedUrl)audio.src=data.signedUrl;else audio.title="Voice note unavailable: "+(error&&error.message||"check storage permissions");});box.appendChild(audio);
   }else{
@@ -1110,6 +1114,39 @@ voiceSendButton.addEventListener("click",async()=>{
  catch(error){voiceStatusText("Couldn't send voice note: "+(error.message||"check storage policies"));voiceSendButton.disabled=!voiceBlob;}
  finally{dmSendInFlight=false;voiceRecordButton.disabled=!currentUser||!activeDmUserId;}
 });
+const dmMediaFile=$("dmMediaFile"),dmMediaSendButton=$("dmMediaSendButton"),dmMediaStatus=$("dmMediaStatus"),dmMediaPreview=$("dmMediaPreview");
+let dmMediaPreviewUrl=null;
+function setDmMediaStatus(message){if(dmMediaStatus)dmMediaStatus.textContent=message;}
+if(dmMediaFile&&dmMediaSendButton){
+ dmMediaFile.addEventListener("change",()=>{
+  const file=dmMediaFile.files&&dmMediaFile.files[0];
+  if(dmMediaPreview){dmMediaPreview.pause();dmMediaPreview.removeAttribute("src");dmMediaPreview.classList.add("hidden");dmMediaPreview.load();}
+  if(dmMediaPreviewUrl){URL.revokeObjectURL(dmMediaPreviewUrl);dmMediaPreviewUrl=null;}
+  if(!file){dmMediaSendButton.disabled=!currentUser||!activeDmUserId;setDmMediaStatus("Photos and videos up to 25 MB.");return;}
+  if(!file.type.startsWith("image/")&&!file.type.startsWith("video/")){dmMediaFile.value="";dmMediaSendButton.disabled=true;setDmMediaStatus("Please choose an image or video.");return;}
+  if(file.size>25*1024*1024){dmMediaFile.value="";dmMediaSendButton.disabled=true;setDmMediaStatus("That file is over 25 MB. Choose a smaller one.");return;}
+  if(file.type.startsWith("video/")&&dmMediaPreview){dmMediaPreviewUrl=URL.createObjectURL(file);dmMediaPreview.src=dmMediaPreviewUrl;dmMediaPreview.classList.remove("hidden");}
+  dmMediaSendButton.disabled=!currentUser||!activeDmUserId;setDmMediaStatus(file.type.startsWith("video/")?"Video ready to send! 🎬":"Photo ready to send! 📸");
+ });
+ dmMediaSendButton.addEventListener("click",async()=>{
+  const file=dmMediaFile.files&&dmMediaFile.files[0],recipientId=activeDmUserId;
+  if(!currentUser||!recipientId||!file||dmSendInFlight)return;
+  if(file.size>25*1024*1024){setDmMediaStatus("That file is over 25 MB.");return;}
+  if(!file.type.startsWith("image/")&&!file.type.startsWith("video/")){setDmMediaStatus("Please choose an image or video.");return;}
+  dmSendInFlight=true;dmMediaSendButton.disabled=true;setDmMediaStatus("Uploading your media… 💗");
+  try{
+   const safeName=file.name.replace(/[^a-zA-Z0-9._-]/g,"_").slice(-100)||"media";
+   const path=currentUser.id+"/"+recipientId+"/"+Date.now()+"_"+safeName;
+   const {error:uploadError}=await supabaseClient.storage.from("dm-voice-notes").upload(path,file,{contentType:file.type,upsert:false});
+   if(uploadError)throw uploadError;
+   const {error:messageError}=await supabaseClient.from("private_messages").insert({sender_id:currentUser.id,recipient_id:recipientId,content:"CLICKRFUN_MEDIA:"+path+"|"+file.type});
+   if(messageError){await supabaseClient.storage.from("dm-voice-notes").remove([path]);throw messageError;}
+   dmMediaFile.value="";if(dmMediaPreview){dmMediaPreview.pause();dmMediaPreview.removeAttribute("src");dmMediaPreview.classList.add("hidden");dmMediaPreview.load();}if(dmMediaPreviewUrl){URL.revokeObjectURL(dmMediaPreviewUrl);dmMediaPreviewUrl=null;}
+   setDmMediaStatus("Sent! 💗");await loadPrivateMessages();await loadPrivateInbox();
+  }catch(error){setDmMediaStatus("Couldn't send media: "+(error.message||"check storage permissions"));}
+  finally{dmSendInFlight=false;dmMediaSendButton.disabled=!currentUser||!activeDmUserId||!dmMediaFile.files||!dmMediaFile.files[0];}
+ });
+}
 let dmSendInFlight=false;
 $("dmForm").addEventListener("submit",async event=>{
  event.preventDefault();
