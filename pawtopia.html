@@ -313,4 +313,102 @@ $('pixelAddDecoration').addEventListener('click',()=>{
  pixelWorldState.stars-=cost;pixelWorldState.decorations.push(deco);pixelSave();pixelRender();
 });
 pixelRender();
-</script></body></html>
+</script>
+<style id="clickrfun-seasonal-style">
+#seasonal-lights{position:fixed;top:0;left:0;width:100%;height:28px;z-index:9998;display:flex;justify-content:space-around;pointer-events:none;overflow:hidden}
+.seasonal-bulb{width:10px;height:15px;border-radius:50% 50% 45% 45%;margin-top:0;box-shadow:0 0 10px currentColor;animation:seasonalTwinkle 1.4s ease-in-out infinite alternate}
+.seasonal-bulb:nth-child(3n){animation-delay:.45s}.seasonal-bulb:nth-child(4n){animation-delay:.8s}
+@keyframes seasonalTwinkle{from{opacity:.48;filter:brightness(.8)}to{opacity:1;filter:brightness(1.7)}}
+#seasonal-banner{position:relative;text-align:center;padding:9px 14px;font-weight:bold;letter-spacing:.3px;z-index:2}
+#seasonal-banner .seasonal-icon{font-size:1.3em;display:inline-block;animation:seasonalWiggle 2s ease-in-out infinite}
+@keyframes seasonalWiggle{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+#seasonal-music{position:fixed;left:12px;bottom:12px;z-index:9997;border:2px solid #fff8;border-radius:999px;padding:11px 14px;box-shadow:0 4px 14px #0005;font-size:.92rem}
+#seasonal-particles{position:fixed;inset:0;z-index:9996;pointer-events:none;overflow:hidden}
+.seasonal-particle{position:absolute;top:-35px;animation:seasonalFall linear infinite;opacity:.85;filter:drop-shadow(0 1px 2px #0004)}
+@keyframes seasonalFall{to{transform:translateY(110vh) rotate(360deg)}}
+body[data-holiday="christmas"]{background:#10251d!important;color:#fff7df}
+body[data-holiday="christmas"] header{background:linear-gradient(120deg,#123d2d,#7c1827,#123d2d)!important;border-color:#e7c66b!important}
+body[data-holiday="christmas"] nav{background:#123426!important}
+body[data-holiday="christmas"] h1,body[data-holiday="christmas"] h2{color:#ffe49a!important}
+body[data-holiday="christmas"] .card,body[data-holiday="christmas"] .games-panel,body[data-holiday="christmas"] .member-action-card{background:rgba(25,66,48,.94)!important;border-color:#caa84f!important}
+body[data-holiday="christmas"] button{background:#d8b75d;color:#3a1720}
+body[data-holiday="christmas"] button:hover{background:#f4d987}
+body[data-holiday="christmas"] .message,body[data-holiday="christmas"] .item,body[data-holiday="christmas"] .member{background:#28533b}
+body[data-holiday="christmas"] input,body[data-holiday="christmas"] textarea,body[data-holiday="christmas"] select,body[data-holiday="christmas"] #chatMessages,body[data-holiday="christmas"] #dmMessages{background:#10291f;color:#fff7df;border-color:#a58b4d}
+body[data-holiday="christmas"] #seasonal-banner{background:#174a35;color:#ffe49a;border-bottom:2px solid #caa84f}
+body[data-holiday="halloween"]{background:#1b1028!important;color:#fff0d8}
+body[data-holiday="halloween"] header{background:linear-gradient(120deg,#2b1740,#632b13,#2b1740)!important;border-color:#ff9b37!important}
+body[data-holiday="halloween"] nav{background:#281738!important}
+body[data-holiday="halloween"] h1,body[data-holiday="halloween"] h2{color:#ffb45e!important}
+body[data-holiday="halloween"] .card,body[data-holiday="halloween"] .games-panel,body[data-holiday="halloween"] .member-action-card{background:rgba(49,27,62,.95)!important;border-color:#a95b33!important}
+body[data-holiday="halloween"] button{background:#ff9b37;color:#30152a}
+body[data-holiday="halloween"] .message,body[data-holiday="halloween"] .item,body[data-holiday="halloween"] .member{background:#42264f}
+body[data-holiday="halloween"] #seasonal-banner{background:#321b42;color:#ffbc69;border-bottom:2px solid #f38b32}
+body[data-holiday="valentine"]{background:#2a1024!important}
+body[data-holiday="valentine"] header{background:linear-gradient(120deg,#521b3a,#8b2c58,#521b3a)!important;border-color:#ffb4d8!important}
+body[data-holiday="valentine"] h1,body[data-holiday="valentine"] h2{color:#ffb4d8!important}
+body[data-holiday="valentine"] .card,body[data-holiday="valentine"] .games-panel,body[data-holiday="valentine"] .member-action-card{border-color:#d96b9f!important}
+body[data-holiday="valentine"] #seasonal-banner{background:#571f40;color:#ffd5e8}
+body[data-holiday="spring"] header{background:linear-gradient(120deg,#34543c,#75527c,#34543c)!important;border-color:#c4f0b3!important}
+body[data-holiday="spring"] h1,body[data-holiday="spring"] h2{color:#d7ffbc!important}
+body[data-holiday="spring"] #seasonal-banner{background:#31513a;color:#e5ffd5}
+body[data-holiday="summer"] header{background:linear-gradient(120deg,#15506a,#7b397b,#15506a)!important;border-color:#9ef3f2!important}
+body[data-holiday="summer"] h1,body[data-holiday="summer"] h2{color:#a6f5ff!important}
+body[data-holiday="summer"] #seasonal-banner{background:#124b60;color:#d2fcff}
+@media(prefers-reduced-motion:reduce){.seasonal-bulb,.seasonal-particle,#seasonal-banner .seasonal-icon{animation:none!important}}
+</style>
+<script id="clickrfun-seasonal-script">
+(function(){
+  if(document.getElementById('seasonal-banner')) return;
+  const now=new Date(),m=now.getMonth(),d=now.getDate();
+  let key='cozy',title='✨ A little seasonal magic',banner='A little extra sparkle for your corner of the internet!',icon='✨',particles=['✦','♡'];
+  if(m===9&&d>=20&&d<=31){key='halloween';title='🎃 Spooky season';banner='BOO! Clickrfun has turned into a cute little haunted hideaway!';icon='🎃';particles=['🦇','✦','🕸️','🍬'];}
+  else if(m===11&&d>=1||m===0&&d<=2){key='christmas';title='🎄 Christmas wonderland';banner='Merry Clickrmas! Twinkly lights, cozy vibes & holiday magic!';icon='🎄';particles=['❄','✨','🎁','❄','⭐'];}
+  else if(m===0&&d>=3&&d<=7){key='winter';title='❄️ Snowy season';banner='Stay cozy, little snowflakes!';icon='❄️';particles=['❄','❅','✨'];}
+  else if(m===1&&d<=14){key='valentine';title='💗 Sweetheart season';banner='Sending paws, hugs and a whole lot of love!';icon='💗';particles=['♡','💗','💌','✨'];}
+  else if(m===2||m===3){key='spring';title='🌷 Spring bloom';banner='The flowers are blooming and the world feels brand new!';icon='🌷';particles=['🌸','🌷','✿','🦋'];}
+  else if(m>=5&&m<=7){key='summer';title='☀️ Summer paws';banner='Sunny days, beachy colors and endless playtime!';icon='☀️';particles=['☀','✦','🌼','🫧'];}
+  else if(m===10){key='autumn';title='🍂 Cozy autumn';banner='Crisp leaves, warm drinks and cozy little corners!';icon='🍂';particles=['🍂','🍁','✦'];}
+  else {particles=['✨','♡','✦'];}
+  document.body.dataset.holiday=key;
+  const bannerEl=document.createElement('div');bannerEl.id='seasonal-banner';bannerEl.innerHTML='<span class="seasonal-icon" aria-hidden="true">'+icon+'</span> '+banner+' <span class="seasonal-icon" aria-hidden="true">'+icon+'</span>';
+  const header=document.querySelector('header');
+  if(header) header.insertAdjacentElement('beforebegin',bannerEl); else document.body.prepend(bannerEl);
+  if(key==='christmas'){
+    const lights=document.createElement('div');lights.id='seasonal-lights';lights.setAttribute('aria-hidden','true');
+    ['#ff595e','#ffe66d','#8affc1','#72d7ff','#ff8fe5','#ffffff'].forEach((color,i)=>{for(let n=0;n<4;n++){const bulb=document.createElement('span');bulb.className='seasonal-bulb';bulb.style.color=color;bulb.style.background=color;bulb.style.animationDelay=((i+n)%5)*.17+'s';lights.appendChild(bulb);}});
+    document.body.appendChild(lights);
+    if(header){const h=header.querySelector('h1');if(h&&!h.dataset.holidayDecorated){h.dataset.holidayDecorated='1';h.insertAdjacentText('afterbegin','🎅 ');h.insertAdjacentText('beforeend',' 🎄');}}
+  }
+  if(key==='halloween'&&header){const h=header.querySelector('h1');if(h&&!h.dataset.holidayDecorated){h.dataset.holidayDecorated='1';h.insertAdjacentText('afterbegin','🦇 ');h.insertAdjacentText('beforeend',' 🎃');}}
+  const particleLayer=document.createElement('div');particleLayer.id='seasonal-particles';particleLayer.setAttribute('aria-hidden','true');
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce){for(let i=0;i<18;i++){const p=document.createElement('span');p.className='seasonal-particle';p.textContent=particles[i%particles.length];p.style.left=(i*5.7%100)+'%';p.style.animationDuration=(8+(i%7)*2)+'s';p.style.animationDelay=(-1*(i%11))+'s';p.style.fontSize=(13+(i%4)*5)+'px';particleLayer.appendChild(p);}}
+  document.body.appendChild(particleLayer);
+  const music=document.createElement('button');music.id='seasonal-music';music.type='button';music.textContent='🎵 Play holiday music';music.setAttribute('aria-pressed','false');music.setAttribute('aria-label','Play or stop seasonal music');
+  document.body.appendChild(music);
+  let audio=null,playing=false,timer=null,step=0;
+  const melodies={
+    christmas:[523.25,659.25,783.99,659.25,587.33,698.46,880,698.46,523.25,587.33,659.25,523.25,392,440,523.25,440],
+    halloween:[392,0,392,523.25,0,466.16,392,0,349.23,0,392,466.16,0,349.23,293.66,0],
+    valentine:[523.25,659.25,783.99,659.25,587.33,698.46,659.25,523.25],
+    spring:[523.25,587.33,659.25,783.99,659.25,587.33,523.25,392],
+    summer:[659.25,783.99,880,783.99,659.25,523.25,587.33,659.25],
+    cozy:[523.25,659.25,587.33,523.25,392,440,523.25,0]
+  };
+  function playNote(){
+    if(!playing||!audio)return;
+    const seq=melodies[key]||melodies.cozy,frequency=seq[step%seq.length];step++;
+    if(frequency){const osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';osc.frequency.value=frequency;gain.gain.setValueAtTime(.0001,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.045,audio.currentTime+.035);gain.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+.28);osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+.3);}
+    timer=setTimeout(playNote,340);
+  }
+  music.addEventListener('click',async function(){
+    if(playing){playing=false;if(timer)clearTimeout(timer);if(audio){audio.close();audio=null;}music.textContent='🎵 Play holiday music';music.setAttribute('aria-pressed','false');return;}
+    const AudioCtx=window.AudioContext||window.webkitAudioContext;
+    if(!AudioCtx){music.textContent='Music unavailable in this browser';return;}
+    try{audio=new AudioCtx();if(audio.state==='suspended')await audio.resume();playing=true;step=0;music.textContent='🔇 Stop holiday music';music.setAttribute('aria-pressed','true');playNote();}
+    catch(e){music.textContent='Tap to retry music';}
+  });
+})();
+</script>
+</body></html>
