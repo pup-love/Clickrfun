@@ -67,9 +67,9 @@ else if(m===2||m===3){key='spring';msg='🌷 Spring flowers are blooming! 🦋';
 else if(m>=5&&m<=7){key='summer';msg='☀️ Sunny days and summer paws! 🌼';particles=['☀','🌼','🫧'];}
 else if(m===10){msg='🍂 Cozy autumn vibes 🍁';particles=['🍂','🍁','✦'];}
 document.body.dataset.holiday=key;const b=document.createElement('div');b.id='seasonal-banner';b.textContent=msg;const h=document.querySelector('header');if(h)h.before(b);else document.body.prepend(b);
-const btn=document.createElement('button');btn.id='seasonal-music';btn.textContent='🎵 Play seasonal music';document.body.appendChild(btn);let ctx=null,timer=null,on=false,i=0;
+const btn=document.createElement('button');btn.id='seasonal-music';btn.textContent='🎵 Play seasonal music';document.body.appendChild(btn);let ctx=null,timer=null,on=false,i=0,holidayTrack=null;
 function note(){if(!on||!ctx)return;const f=seq[i++%seq.length];if(f){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.04,ctx.currentTime+.03);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.25);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.27);}timer=setTimeout(note,340);}
-btn.addEventListener('click',async()=>{if(on){on=false;clearTimeout(timer);if(ctx)ctx.close();ctx=null;btn.textContent='🎵 Play seasonal music';return;}try{const A=window.AudioContext||window.webkitAudioContext;if(!A)throw Error();ctx=new A();await ctx.resume();on=true;i=0;btn.textContent='🔇 Stop seasonal music';note();}catch(e){btn.textContent='Tap to retry music';}});
+btn.addEventListener('click',async()=>{if(on){on=false;clearTimeout(timer);if(holidayTrack){holidayTrack.pause();holidayTrack.currentTime=0;holidayTrack=null;}if(ctx){ctx.close();ctx=null;}btn.textContent='🎵 Play seasonal music';return;}try{if(key==='halloween'){holidayTrack=new Audio('nastelbom-halloween-halloween-music-617003.mp3');holidayTrack.loop=true;holidayTrack.volume=.45;await holidayTrack.play();on=true;btn.textContent='🔇 Stop Halloween music';return;}const A=window.AudioContext||window.webkitAudioContext;if(!A)throw Error();ctx=new A();await ctx.resume();on=true;i=0;btn.textContent='🔇 Stop seasonal music';note();}catch(e){btn.textContent='Tap to retry music';}});
 })();
 </script>
 </body></html>
