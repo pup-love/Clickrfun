@@ -49,4 +49,27 @@ document.getElementById("sendInDM").onclick=()=>{try{localStorage.setItem("click
 try{const saved=localStorage.getItem(STORAGE_KEY);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))strokes=parsed}}catch(e){}
 window.addEventListener("resize",resizeCanvas);resizeCanvas();say("🔒 Private board ready! Only saved in this browser. Have fun doodling! 💗");
 </script>
+
+<style>
+#seasonal-banner{padding:10px;text-align:center;font-weight:bold;background:#4b2145;color:#ffd6ed;border-bottom:2px solid #ff9cde}
+#seasonal-music{position:fixed;left:12px;bottom:12px;z-index:9997;border:2px solid #fff8;border-radius:999px;padding:11px 14px;background:#e879c4;color:#28132f;font-weight:bold}
+body[data-holiday="christmas"]{background:#10251d!important;color:#fff7df}body[data-holiday="christmas"] header,body[data-holiday="christmas"] h1{color:#ffe49a}body[data-holiday="christmas"] #seasonal-banner{background:#174a35;color:#ffe49a;border-color:#caa84f}body[data-holiday="christmas"] button{background:#d8b75d;color:#3a1720}
+body[data-holiday="halloween"] #seasonal-banner{background:#321b42;color:#ffbc69;border-color:#f38b32}body[data-holiday="halloween"] h1{color:#ffb45e}
+body[data-holiday="valentine"] #seasonal-banner{background:#571f40;color:#ffd5e8}
+body[data-holiday="spring"] #seasonal-banner{background:#31513a;color:#e5ffd5}body[data-holiday="summer"] #seasonal-banner{background:#124b60;color:#d2fcff}
+</style>
+<script id="clickrfun-seasonal-script">
+(function(){const n=new Date(),m=n.getMonth(),d=n.getDate();let key='cozy',msg='✨ A little seasonal magic ✨',seq=[523.25,659.25,587.33,523.25,392,440,523.25,0],particles=['✨','♡','✦'];
+if(m===9&&d>=20){key='halloween';msg='🎃 Spooky season has arrived! 🦇';seq=[392,0,392,523.25,0,466.16,392,0];particles=['🦇','🎃','🍬'];}
+else if(m===11&&d>=1||m===0&&d<=2){key='christmas';msg='🎄 Merry Clickrmas! Twinkly lights & holiday magic! 🎁';seq=[523.25,659.25,783.99,659.25,587.33,698.46,880,698.46];particles=['❄','✨','🎁'];}
+else if(m===1&&d<=14){key='valentine';msg='💗 Sending paws, hugs and love! 💌';particles=['♡','💗','💌'];}
+else if(m===2||m===3){key='spring';msg='🌷 Spring flowers are blooming! 🦋';particles=['🌸','🌷','🦋'];}
+else if(m>=5&&m<=7){key='summer';msg='☀️ Sunny days and summer paws! 🌼';particles=['☀','🌼','🫧'];}
+else if(m===10){msg='🍂 Cozy autumn vibes 🍁';particles=['🍂','🍁','✦'];}
+document.body.dataset.holiday=key;const b=document.createElement('div');b.id='seasonal-banner';b.textContent=msg;const h=document.querySelector('header');if(h)h.before(b);else document.body.prepend(b);
+const btn=document.createElement('button');btn.id='seasonal-music';btn.textContent='🎵 Play seasonal music';document.body.appendChild(btn);let ctx=null,timer=null,on=false,i=0;
+function note(){if(!on||!ctx)return;const f=seq[i++%seq.length];if(f){const o=ctx.createOscillator(),g=ctx.createGain();o.frequency.value=f;g.gain.setValueAtTime(.0001,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.04,ctx.currentTime+.03);g.gain.exponentialRampToValueAtTime(.0001,ctx.currentTime+.25);o.connect(g);g.connect(ctx.destination);o.start();o.stop(ctx.currentTime+.27);}timer=setTimeout(note,340);}
+btn.addEventListener('click',async()=>{if(on){on=false;clearTimeout(timer);if(ctx)ctx.close();ctx=null;btn.textContent='🎵 Play seasonal music';return;}try{const A=window.AudioContext||window.webkitAudioContext;if(!A)throw Error();ctx=new A();await ctx.resume();on=true;i=0;btn.textContent='🔇 Stop seasonal music';note();}catch(e){btn.textContent='Tap to retry music';}});
+})();
+</script>
 </body></html>
