@@ -902,6 +902,10 @@ async function openPrivateDM(userId,username){
  catch(error){$("dmStatus").textContent="Couldn't check block settings: "+error.message;return;}
  activeDmUserId=userId;
  activeDmUsername=username;
+ const voiceRecordControl=$("voiceRecordButton");if(voiceRecordControl)voiceRecordControl.disabled=false;
+ const voiceStopControl=$("voiceStopButton");if(voiceStopControl)voiceStopControl.disabled=true;
+ const voiceSendControl=$("voiceSendButton");if(voiceSendControl)voiceSendControl.disabled=true;
+ const voiceStatusControl=$("voiceNoteStatus");if(voiceStatusControl)voiceStatusControl.textContent="Ready! Tap Record voice note and allow microphone access. 🎙️";
  updateDoodleDmButton();
  dmLastRead[userId]=new Date().toISOString();saveDmLastRead();
  const {data:dmProfile}=await supabaseClient.from("profiles").select("account_type,bio").eq("id",userId).maybeSingle(); const dmType=accountTypeOf(dmProfile,null); const dmGender=genderLabel(splitGenderBio(dmProfile&&dmProfile.bio||"").gender); $("dmChatTitle").textContent="💌 "+(dmType==="human"?"🧑 Hooman":dmType==="kitty"?"🐱 Kitty":dmType==="owner"?"💗 Owner":"🐶 Puppy")+" · "+username+(dmGender?" · "+dmGender:"");
