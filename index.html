@@ -672,6 +672,7 @@ hr{border:0;border-top:1px solid var(--cf-border)}
 <button id="dmSendButton" type="submit" disabled>Send Private Message 💌</button>
 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0"><button id="voiceRecordButton" type="button" disabled>🎙️ Record voice note</button><button id="voiceStopButton" type="button" disabled>⏹️ Stop recording</button><button id="voiceSendButton" type="button" disabled>💌 Send voice note</button><span id="voiceNoteStatus" class="small" role="status" aria-live="polite">Record a short voice note for this DM.</span></div><audio id="voicePreview" controls class="hidden" style="max-width:100%;width:360px;margin:6px 0"></audio>
 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0"><label for="dmMediaFile">🖼️ Attach photo/video</label><input id="dmMediaFile" type="file" accept="image/*,video/*" disabled><button id="dmMediaSendButton" type="button" disabled>Send photo/video 💗</button><span id="dmMediaStatus" class="small" role="status" aria-live="polite">Photos and videos up to 25 MB.</span></div><video id="dmMediaPreview" controls class="hidden" style="max-width:100%;max-height:320px;width:100%;margin:6px 0" playsinline></video>
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0"><button id="dmCameraOpen" type="button" disabled>📷 Open camera</button><button id="dmTakePhoto" type="button" disabled>✨ Take photo</button><button id="dmRecordVideo" type="button" disabled>🎥 Start video</button><button id="dmStopCamera" type="button" disabled>Close camera</button></div><video id="dmCameraLive" class="hidden" autoplay muted playsinline style="max-width:100%;width:100%;max-height:360px;border-radius:14px;border:2px solid #e779c7;background:#180d25;margin:6px 0"></video><p id="dmCameraStatus" class="small" role="status" aria-live="polite">Open the camera to take a photo or record a video. Camera permission may be needed.</p>
 <button id="sendDoodleDMButton" type="button" disabled>🖼️ Send saved doodle</button>
 <p id="doodleDmStatus" class="small" role="status">To share a doodle, open Doodle Den and choose “Send in Clickrfun DM”.</p>
 </form>
@@ -1116,6 +1117,51 @@ voiceSendButton.addEventListener("click",async()=>{
 });
 const dmMediaFile=$("dmMediaFile"),dmMediaSendButton=$("dmMediaSendButton"),dmMediaStatus=$("dmMediaStatus"),dmMediaPreview=$("dmMediaPreview");
 let dmMediaPreviewUrl=null;
+const dmCameraOpen=$("dmCameraOpen"),dmTakePhoto=$("dmTakePhoto"),dmRecordVideo=$("dmRecordVideo"),dmStopCamera=$("dmStopCamera"),dmCameraLive=$("dmCameraLive"),dmCameraStatus=$("dmCameraStatus");
+let dmCameraStream=null,dmRecorder=null,dmRecordedChunks=[];
+function cameraStatus(message){if(dmCameraStatus)dmCameraStatus.textContent=message;}
+function stopDmCamera(){
+ if(dmRecorder&&dmRecorder.state!=="inactive"){try{dmRecorder.stop();}catch(e){}}
+ if(dmCameraStream){dmCameraStream.getTracks().forEach(track=>track.stop());dmCameraStream=null;}
+ if(dmCameraLive){dmCameraLive.srcObject=null;dmCameraLive.classList.add("hidden");}
+ if(dmTakePhoto)dmTakePhoto.disabled=true;
+ if(dmRecordVideo)dmRecordVideo.disabled=true;
+ if(dmStopCamera)dmStopCamera.disabled=true;
+ if(dmCameraOpen)dmCameraOpen.disabled=!currentUser||!activeDmUserId;
+ if(dmRecordVideo)dmRecordVideo.textContent="🎥 Start video";
+}
+function setCapturedDmFile(file){
+ if(!dmMediaFile||!file)return;
+ if(file.size>25*1024*1024){cameraStatus("That recording is over 25 MB. Please record a shorter video.");return;}
+ try{const transfer=new DataTransfer();transfer.items.add(file);dmMediaFile.files=transfer.files;dmMediaFile.dispatchEvent(new Event("change",{bubbles:true}));cameraStatus("Captured! Tap “Send photo/video 💗” to send it.");}
+ catch(error){cameraStatus("Your browser couldn't prepare the capture. Please use Attach photo/video instead.");}
+}
+if(dmCameraOpen)dmCameraOpen.addEventListener("click",async()=>{
+ if(!currentUser||!activeDmUserId)return;
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){cameraStatus("Camera access needs a supported browser and a secure connection (HTTPS).");return;}
+ dmCameraOpen.disabled=true;cameraStatus("Asking for camera permission…");
+ try{dmCameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:"environment"}},audio:true});dmCameraLive.srcObject=dmCameraStream;dmCameraLive.classList.remove("hidden");await dmCameraLive.play();dmTakePhoto.disabled=false;dmRecordVideo.disabled=typeof MediaRecorder==="undefined";dmStopCamera.disabled=false;cameraStatus("Camera ready! Take a photo or record a video. 🎀");}
+ catch(error){stopDmCamera();cameraStatus(error.name==="NotAllowedError"?"Camera/microphone permission was blocked. Allow it in your browser settings, then try again.":"Couldn't open the camera: "+(error.message||"check camera permissions."));}
+});
+if(dmTakePhoto)dmTakePhoto.addEventListener("click",()=>{
+ if(!dmCameraStream||!dmCameraLive.videoWidth){cameraStatus("Wait for the camera picture to appear, then try again.");return;}
+ const canvas=document.createElement("canvas");canvas.width=dmCameraLive.videoWidth;canvas.height=dmCameraLive.videoHeight;canvas.getContext("2d").drawImage(dmCameraLive,0,0,canvas.width,canvas.height);
+ canvas.toBlob(blob=>{if(blob)setCapturedDmFile(new File([blob],"clickrfun-photo-"+Date.now()+".jpg",{type:"image/jpeg"}));else cameraStatus("Couldn't capture that photo. Try again!");},"image/jpeg",0.9);
+});
+if(dmRecordVideo)dmRecordVideo.addEventListener("click",()=>{
+ if(!dmCameraStream)return;
+ if(dmRecorder&&dmRecorder.state==="recording"){dmRecorder.stop();return;}
+ try{
+  const mimeType=["video/webm;codecs=vp8,opus","video/webm","video/mp4"].find(type=>MediaRecorder.isTypeSupported(type))||"";
+  dmRecordedChunks=[];dmRecorder=new MediaRecorder(dmCameraStream,mimeType?{mimeType}:undefined);
+  dmRecorder.ondataavailable=event=>{if(event.data&&event.data.size)dmRecordedChunks.push(event.data);};
+  dmRecorder.onerror=()=>cameraStatus("Recording had a problem. Please try again.");
+  dmRecorder.onstop=()=>{const type=dmRecorder.mimeType||"video/webm";const blob=new Blob(dmRecordedChunks,{type});setCapturedDmFile(new File([blob],"clickrfun-video-"+Date.now()+(type.includes("mp4")?".mp4":".webm"),{type}));dmRecordVideo.textContent="🎥 Start video";cameraStatus("Video ready! Tap “Send photo/video 💗” to send it.");};
+  dmRecorder.start();dmRecordVideo.textContent="⏹ Stop recording";cameraStatus("Recording… tap Stop recording when you're done! 🎬");
+ }catch(error){cameraStatus("Couldn't start video recording: "+(error.message||"your browser may not support it."));}
+});
+if(dmStopCamera)dmStopCamera.addEventListener("click",()=>{stopDmCamera();cameraStatus("Camera closed. 💗");});
+
 function setDmMediaStatus(message){if(dmMediaStatus)dmMediaStatus.textContent=message;}
 if(dmMediaFile&&dmMediaSendButton){
  dmMediaFile.addEventListener("change",()=>{
