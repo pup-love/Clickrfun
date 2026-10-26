@@ -85,7 +85,7 @@
 <!-- unmistakable waterfall -->
 <path d="M714 130h89v63h-17v31h-18v25h-39v-26h-15z" fill="#477fc3" stroke="#f1f5ff" stroke-width="5"/><path d="M727 140h15v75h-15zM753 140h12v92h-12zM777 144h12v63h-12z" fill="#c6faff"/><path d="M724 233h63v14h-63zM733 248h45v12h-45z" fill="#8de7f4"/>
 <!-- large winding blue pond -->
-<path d="M720 218C686 252 650 269 650 307S691 352 747 370S820 405 804 445S837 502 900 481S973 439 941 399S879 352 882 315S929 276 912 237" fill="none" stroke="#438bd0" stroke-width="112" stroke-linecap="round"/><path d="M720 218C686 252 650 269 650 307S691 352 747 370S820 405 804 445S837 502 900 481S973 439 941 399S879 352 882 315S929 276 912 237" fill="none" stroke="url(#pond2)" stroke-width="96" stroke-linecap="round"/><path d="M700 280l19-6m-3 20 16-5M740 350l25 7m-5 15 18 5M845 422l24 7m-5 16 20 4M900 372l23 5" stroke="#e1ffff" stroke-width="5" stroke-linecap="round"/>
+<path d="M755 235C741 275 684 281 685 321C686 359 744 370 779 395C816 421 815 454 847 469C882 486 921 462 916 428C911 394 866 380 858 347C850 314 897 286 893 250" fill="none" stroke="#438bd0" stroke-width="112" stroke-linecap="round"/><path d="M755 235C741 275 684 281 685 321C686 359 744 370 779 395C816 421 815 454 847 469C882 486 921 462 916 428C911 394 866 380 858 347C850 314 897 286 893 250" fill="none" stroke="url(#pond2)" stroke-width="96" stroke-linecap="round"/><path d="M700 280l19-6m-3 20 16-5M740 350l25 7m-5 15 18 5M845 422l24 7m-5 16 20 4M900 372l23 5" stroke="#e1ffff" stroke-width="5" stroke-linecap="round"/>
 <!-- little lily pads -->
 <g fill="#3aaf88" stroke="#e0ffe8" stroke-width="2"><path d="M720 329q-21-17-30 1 13 19 30-1z"/><path d="M851 460q-21-17-30 1 13 19 30-1z"/><path d="M899 334q-21-17-30 1 13 19 30-1z"/></g><g fill="#ffacd7" stroke="#fff2fa" stroke-width="2"><path d="M706 325l5-9 5 9-5 8z"/><path d="M838 456l5-9 5 9-5 8z"/><path d="M886 330l5-9 5 9-5 8z"/></g>
 <!-- clear arched bridge with rails -->
@@ -200,11 +200,26 @@ if(!pixelWorldState||!Array.isArray(pixelWorldState.pets)){pixelWorldState={star
 function pixelSave(){write('meadowWorld',pixelWorldState);}
 function pixelSelected(){return pixelWorldState.pets.find(p=>p.id===pixelWorldState.selected)||pixelWorldState.pets[0];}
 function pixelPetArt(pet){
- const cat=/cat|shadow|twinkle|mochi|kitty/i.test((pet.name||'')+' '+(pet.emoji||'')) || (pet.emoji||'').includes('🐱') || (pet.emoji||'').includes('🐈');
- const fur=cat?'#f3a16c':'#d9a16f',light=cat?'#ffd0a5':'#ffe0bd',ear=cat?'#cf7c63':'#b77b61';
- const ears=cat?'<path d="M24 37L22 10 43 27M58 27L78 10 76 38" fill="'+ear+'" stroke="#865477" stroke-width="3"/><path d="M28 29l-2-11 11 12M63 30l11-12-2 13" fill="#f5a6b9"/>':'<path d="M28 30Q7 24 13 52Q17 68 33 54M67 30Q89 23 86 50Q82 67 66 54" fill="'+ear+'" stroke="#865477" stroke-width="3"/>';
- const accessory=pet.accessory==='none'?'':pet.accessory==='bow'?'<path d="M60 20q-16-15-16 0t16 0q16-15 16 0t-16 0" fill="#ff6db8" stroke="#a94f95" stroke-width="3"/>':pet.accessory==='crown'?'<path d="M35 25L30 8 45 17 53 3 61 17 75 8 70 27z" fill="#ffe57d" stroke="#c68c56" stroke-width="3"/>':pet.accessory==='flower'?'<g fill="#ff9fd1" stroke="#fff0fb" stroke-width="2"><circle cx="53" cy="18" r="7"/><circle cx="44" cy="18" r="7"/><circle cx="49" cy="10" r="7"/><circle cx="49" cy="25" r="7"/><circle cx="49" cy="18" r="4" fill="#ffe58a"/></g>':'';
- return '<svg viewBox="0 0 100 110" role="img" aria-label="'+escapeHtml(pet.name)+' pet sprite" shape-rendering="crispEdges"><ellipse cx="50" cy="101" rx="31" ry="6" fill="#478b6d" opacity=".28"/>'+ears+'<path d="M28 38Q27 24 50 24Q74 24 73 40L78 65Q78 88 50 92Q22 88 22 65z" fill="'+fur+'" stroke="#865477" stroke-width="3"/><path d="M31 57Q31 45 50 45Q69 45 69 57L66 74Q50 86 34 74z" fill="'+light+'"/><ellipse cx="39" cy="54" rx="4" ry="6" fill="#543d61"/><ellipse cx="61" cy="54" rx="4" ry="6" fill="#543d61"/><rect x="47" y="63" width="6" height="5" rx="2" fill="#8f5a72"/><path d="M45 69q5 6 10 0" fill="none" stroke="#8f5a72" stroke-width="2.5" stroke-linecap="round"/><path d="M29 67l-12-2m13 7-12 2m55-7 12-2m-13 7 12 2" stroke="#fff0d9" stroke-width="2" stroke-linecap="round"/>'+accessory+'<path d="M32 88l-2 10h13l2-9m13 0 2 9h13l-2-10" fill="'+light+'" stroke="#865477" stroke-width="3"/></svg>';
+ const details=((pet.name||'')+' '+(pet.emoji||'')).toLowerCase();
+ const cat=/cat|kitty|kitten|mochi|twinkle|shadow/.test(details)||details.includes('🐱')||details.includes('🐈');
+ const fur=cat?'#f2a36e':'#d8a16f', shadow=cat?'#cf7d59':'#b98259', cream=cat?'#fff0d7':'#fff0dc';
+ const ears=cat
+ ? '<path d="M23 48L18 13Q18 8 24 13L44 32M57 32L77 13Q83 8 82 16L77 49" fill="'+fur+'" stroke="#80547d" stroke-width="3"/><path d="M25 34l-2-13 12 12M64 33l13-12-3 14" fill="#f4a5b6"/>'
+ : '<path d="M29 38Q8 22 10 48Q10 69 31 68L37 48M69 38Q92 22 90 48Q90 69 69 68L63 48" fill="'+shadow+'" stroke="#80547d" stroke-width="3"/>';
+ const head=cat
+ ? '<path d="M24 40Q24 25 50 25Q76 25 76 43L73 61Q70 79 50 80Q30 79 27 61Z" fill="'+fur+'" stroke="#80547d" stroke-width="3"/>'
+ : '<path d="M25 40Q27 23 50 23Q73 23 75 40L73 58Q70 77 50 78Q30 77 27 58Z" fill="'+fur+'" stroke="#80547d" stroke-width="3"/>';
+ const accessory=pet.accessory==='bow'?'<path d="M59 22Q42 8 44 23Q45 32 59 27Q74 34 75 22Q74 10 59 22Z" fill="#ff70b9" stroke="#a74f94" stroke-width="2"/><circle cx="59" cy="24" r="3" fill="#ffe5f6"/>'
+ :pet.accessory==='crown'?'<path d="M35 25L31 9 45 18 51 5 59 18 72 9 68 27Z" fill="#ffe47d" stroke="#c18a56" stroke-width="2.5"/>'
+ :pet.accessory==='flower'?'<g stroke="#fff5fb" stroke-width="1.5" fill="#ff9fd2"><circle cx="52" cy="20" r="6"/><circle cx="44" cy="22" r="6"/><circle cx="48" cy="14" r="6"/><circle cx="56" cy="14" r="6"/><circle cx="56" cy="25" r="6"/><circle cx="50" cy="20" r="3" fill="#ffe77b"/></g>'
+ :pet.accessory==='shades'?'<path d="M31 44h16l-2 9q-7 5-12-1zM53 44h16l-2 8q-6 6-12 0zM47 46h6" fill="#8b79bc" stroke="#614d85" stroke-width="2"/>'
+ :pet.accessory==='scarf'?'<path d="M31 72Q50 82 69 72L67 81Q50 90 33 81Z" fill="#ff8dc6" stroke="#a74f94" stroke-width="2"/><path d="M62 79l6 14-8 2-3-14" fill="#ff8dc6" stroke="#a74f94" stroke-width="2"/>'
+ :pet.accessory==='wings'?'<path d="M31 58Q6 36 12 62Q16 78 31 69M69 58Q94 36 88 62Q84 78 69 69" fill="#d9f7ff" stroke="#7bbdd8" stroke-width="2"/>':'';
+ const muzzle=cat
+ ? '<ellipse cx="50" cy="60" rx="15" ry="11" fill="'+cream+'"/><path d="M46 57l4-3 4 3-4 4z" fill="#8b5a78"/><path d="M50 61q-5 6-9 1m9-1q5 6 9 1" fill="none" stroke="#8b5a78" stroke-width="2" stroke-linecap="round"/>'
+ : '<ellipse cx="50" cy="59" rx="17" ry="13" fill="'+cream+'"/><ellipse cx="50" cy="55" rx="5" ry="4" fill="#674765"/><path d="M50 59v4m0 0q-6 7-11 0m11 0q6 7 11 0" fill="none" stroke="#80547d" stroke-width="2.5" stroke-linecap="round"/>';
+ const tail=cat?'<path d="M70 83Q88 78 84 62Q82 54 77 59" fill="none" stroke="'+fur+'" stroke-width="8" stroke-linecap="round"/><path d="M70 83Q88 78 84 62" fill="none" stroke="#80547d" stroke-width="2"/>':'<path d="M69 84Q88 82 83 69" fill="none" stroke="'+fur+'" stroke-width="9" stroke-linecap="round"/><path d="M69 84Q88 82 83 69" fill="none" stroke="#80547d" stroke-width="2"/>';
+ return '<svg viewBox="0 0 100 112" role="img" aria-label="'+escapeHtml(pet.name)+' '+(cat?'cat':'puppy')+' pet sprite" shape-rendering="geometricPrecision"><ellipse cx="50" cy="104" rx="29" ry="5" fill="#397c62" opacity=".24"/>'+tail+'<path d="M32 72Q50 64 68 72L73 93Q73 99 65 99H35Q27 99 27 93Z" fill="'+fur+'" stroke="#80547d" stroke-width="3"/><path d="M33 88v9q0 5 7 5h4v-7m12 0v7h4q7 0 7-5v-9" fill="'+cream+'" stroke="#80547d" stroke-width="2.5"/>'+ears+head+'<ellipse cx="39" cy="47" rx="4" ry="5.5" fill="#4c3859"/><ellipse cx="61" cy="47" rx="4" ry="5.5" fill="#4c3859"/><circle cx="40" cy="45" r="1.6" fill="#fff"/><circle cx="62" cy="45" r="1.6" fill="#fff"/><ellipse cx="31" cy="58" rx="5" ry="3" fill="#ff9fbd" opacity=".8"/><ellipse cx="69" cy="58" rx="5" ry="3" fill="#ff9fbd" opacity=".8"/>'+muzzle+accessory+'</svg>';
 }
 function pixelRender(){
  const pet=pixelSelected();$('pixelWorldStars').textContent=pixelWorldState.stars;
