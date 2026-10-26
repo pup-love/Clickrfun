@@ -1031,7 +1031,7 @@ async function loadPrivateInbox(){
 // Only the newest conversation load may render. This prevents overlapping refresh/navigation
 // requests from appending the same history twice.
 let privateMessagesLoadVersion=0;
-async function loadPrivateMessages(){
+async async function loadPrivateMessages(){
  const loadVersion=++privateMessagesLoadVersion;
  const requestedUserId=activeDmUserId;
  const container=$("dmMessages");
