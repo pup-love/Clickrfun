@@ -2917,7 +2917,7 @@ body[data-holiday="summer"] #seasonal-banner{background:#124b60;color:#d2fcff}
   document.body.appendChild(particleLayer);
   const music=document.createElement('button');music.id='seasonal-music';music.type='button';music.textContent='🎵 Play holiday music';music.setAttribute('aria-pressed','false');music.setAttribute('aria-label','Play or stop seasonal music');
   document.body.appendChild(music);
-  let audio=null,playing=false,timer=null,step=0;
+  let audio=null,playing=false,timer=null,step=0,holidayTrack=null;
   const melodies={
     christmas:[523.25,659.25,783.99,659.25,587.33,698.46,880,698.46,523.25,587.33,659.25,523.25,392,440,523.25,440],
     halloween:[392,0,392,523.25,0,466.16,392,0,349.23,0,392,466.16,0,349.23,293.66,0],
@@ -2933,7 +2933,8 @@ body[data-holiday="summer"] #seasonal-banner{background:#124b60;color:#d2fcff}
     timer=setTimeout(playNote,340);
   }
   music.addEventListener('click',async function(){
-    if(playing){playing=false;if(timer)clearTimeout(timer);if(audio){audio.close();audio=null;}music.textContent='🎵 Play holiday music';music.setAttribute('aria-pressed','false');return;}
+    if(playing){playing=false;if(timer)clearTimeout(timer);if(holidayTrack){holidayTrack.pause();holidayTrack.currentTime=0;holidayTrack=null;}if(audio){audio.close();audio=null;}music.textContent='🎵 Play holiday music';music.setAttribute('aria-pressed','false');return;}
+    if(key==='halloween'){try{holidayTrack=new Audio('nastelbom-halloween-halloween-music-617003.mp3');holidayTrack.loop=true;holidayTrack.volume=.45;await holidayTrack.play();playing=true;music.textContent='🔇 Stop Halloween music';music.setAttribute('aria-pressed','true');return;}catch(e){holidayTrack=null;music.textContent='Tap to retry music';return;}}
     const AudioCtx=window.AudioContext||window.webkitAudioContext;
     if(!AudioCtx){music.textContent='Music unavailable in this browser';return;}
     try{audio=new AudioCtx();if(audio.state==='suspended')await audio.resume();playing=true;step=0;music.textContent='🔇 Stop holiday music';music.setAttribute('aria-pressed','true');playNote();}
