@@ -2934,7 +2934,7 @@ body[data-holiday="summer"] #seasonal-banner{background:#124b60;color:#d2fcff}
   }
   music.addEventListener('click',async function(){
     if(playing){playing=false;if(timer)clearTimeout(timer);if(holidayTrack){holidayTrack.pause();holidayTrack.currentTime=0;holidayTrack=null;}if(audio){audio.close();audio=null;}music.textContent='🎵 Play holiday music';music.setAttribute('aria-pressed','false');return;}
-    if(key==='halloween'){try{holidayTrack=new Audio('nastelbom-halloween-halloween-music-617003.mp3');holidayTrack.loop=true;holidayTrack.volume=.45;await holidayTrack.play();playing=true;music.textContent='🔇 Stop Halloween music';music.setAttribute('aria-pressed','true');return;}catch(e){holidayTrack=null;music.textContent='Tap to retry music';return;}}
+    if(key==='halloween'){try{holidayTrack=new Audio('https://raw.githubusercontent.com/pup-love/Clickrfun/main/nastelbom-halloween-halloween-music-617003.mp3');holidayTrack.loop=true;holidayTrack.volume=.45;await holidayTrack.play();playing=true;music.textContent='🔇 Stop Halloween music';music.setAttribute('aria-pressed','true');return;}catch(e){holidayTrack=null;music.textContent='Music failed — tap to retry';console.error('Halloween audio playback failed:',e);return;}}
     const AudioCtx=window.AudioContext||window.webkitAudioContext;
     if(!AudioCtx){music.textContent='Music unavailable in this browser';return;}
     try{audio=new AudioCtx();if(audio.state==='suspended')await audio.resume();playing=true;step=0;music.textContent='🔇 Stop holiday music';music.setAttribute('aria-pressed','true');playNote();}
